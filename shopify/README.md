@@ -1,0 +1,1 @@
+## Shopify config and extension files
