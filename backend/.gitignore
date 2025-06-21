@@ -1,0 +1,45 @@
+# 二进制编译文件
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# 日志文件和临时文件
+*.log
+*.out
+
+# 依赖包缓存（不应该提交到版本控制）
+/vendor/
+
+# Go 构建缓存和模块文件
+/go.sum
+/go.work
+/go.work.sum
+
+# 本地环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 临时工作和构建目录
+/tmp/
+*.tmp
+
+# macOS 系统文件
+.DS_Store
+
+# IDE 配置文件
+.idea/
+*.iml
+
+# Visual Studio Code 配置文件
+.vscode/
+
+# Git 临时文件
+*.orig
+
+# 可能的包管理文件（如 npm/yarn 生成文件）
+node_modules/
+pnp.*  # 如果你使用的是 Yarn PnP
