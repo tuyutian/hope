@@ -22,6 +22,7 @@
 .env
 .env.local
 .env.*.local
+app.yaml
 
 # 临时工作和构建目录
 /tmp/

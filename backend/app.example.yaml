@@ -1,0 +1,22 @@
+# shopify 配置
+shopify:
+  app_key:
+  app_secret:
+
+# redis配置
+redis_conf:
+  Address: "127.0.0.1:6379" # host:port address.
+  Password:
+  MaxIdle: 150
+  Active: 150
+  IdleTimeout: 200s
+  Prefix: "insurance_api_"
+
+# mysql配置
+db_conf:
+  Dsn: "shopify:shopify_test@tcp(127.0.0.1:3306)/shopify_test?charset=utf8mb4&parseTime=True&loc=Local"
+  UsePool: true
+  MaxIdleConn: 100  #设置连接池的空闲数大小
+  MaxOpenConn: 600  #最大open connection个数
+  MaxLifetime: 1800s
+  ShowSql: true

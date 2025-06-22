@@ -1,0 +1,34 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "4671d70a5c747b907f02e007a22cbd2b"
+name = "insurance"
+handle = "insurance-11"
+application_url = "https://sunshine-boy.click/auth"
+embedded = true
+
+[build]
+dev_store_url = "test-shop2-xx.myshopify.com"
+
+[auth]
+redirect_urls = [
+  "https://sunshine-boy.click/auth",
+  "https://api.sunshine-boy.click/api/webhook/install"
+]
+
+[webhooks]
+api_version = "2025-04"
+
+  [[webhooks.subscriptions]]
+  uri = "https://api.sunshine-boy.click/api/webhook/customers/data_request"
+  compliance_topics = [ "customers/data_request" ]
+
+  [[webhooks.subscriptions]]
+  uri = "https://api.sunshine-boy.click/api/webhook/customers/redact"
+  compliance_topics = [ "customers/redact" ]
+
+  [[webhooks.subscriptions]]
+  uri = "https://api.sunshine-boy.click/api/webhook/shop/redact"
+  compliance_topics = [ "shop/redact" ]
+
+[pos]
+embedded = false

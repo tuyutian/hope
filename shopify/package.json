@@ -1,35 +1,22 @@
 {
-  "name": "tms-extensions",
-  "version": "1.1.0",
-  "private": true,
-  "author": {
-    "name": "tomaxut",
-    "email": "1635358408@qq.com"
-  },
+  "name": "hope-app",
+  "version": "1.0.0",
   "license": "UNLICENSED",
   "scripts": {
     "shopify": "shopify",
     "build": "shopify app build",
     "dev": "shopify app dev",
-    "dev-test": "shopify app dev -c shopify.app.app-test.toml",
+    "dev-test": "shopify app dev -c shopify.app.insurance-test.toml",
     "push": "shopify app push",
     "generate": "shopify app generate",
     "deploy": "shopify app deploy",
-    "deploy-test": "shopify app deploy  -c shopify.app.app-test.toml",
+    "deploy-test": "shopify app deploy  -c shopify.app.insurance-test.toml",
     "info": "shopify app info"
   },
-  "dependencies": {
-    "@shopify/app": "3.58.2",
-    "@shopify/cli": "3.75.3",
-    "@shopify/ui-extensions": "2025.1.3",
-    "@shopify/ui-extensions-react": "2025.1.3",
-    "react": "^18.3.1"
-  },
-  "engines": {
-    "node": ">=20",
-    "pnpm": ">=9"
-  },
-  "overrides": {
-    "@types/react": "17.0.30"
-  }
+  "dependencies": {},
+  "trustedDependencies": [
+    "@shopify/plugin-cloudflare"
+  ],
+  "author": "tuyutian",
+  "private": true
 }
