@@ -1,21 +1,48 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
+	"backend/internal/infras/config"
+	"backend/internal/interfaces/web/handler"
+	routers "backend/internal/interfaces/web/router"
+	"backend/internal/providers"
+	"backend/pkg/logger"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-	//TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-	// to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
+	pid := os.Getpid()
+	fmt.Printf("current service pid: %d\n", pid)
+	// 初始化配置
+	appConf := config.InitAppConfig()
+	// 日志输出采用zap框架实现日志json格式输出
+	logger.Default(
+		logger.WriteToFile(true), logger.WithStdout(true), // 将日志写到stdout
+		logger.WithAddCaller(true), logger.WithLogLevel(appConf.GetLogLevel()),
+	)
 
-	for i := 1; i <= 5; i++ {
-		//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-		fmt.Println("i =", 100/i)
+	logger.Info(context.Background(), "starting server", zap.Int("pid", pid))
+	db, err := config.NewDB("db_conf")
+	if err != nil {
+		log.Fatalf("db init error:%v", err)
 	}
+	redisClient, err := config.NewRedis("redis_conf")
+	if err != nil {
+		log.Fatalf("redis init error:%v", err)
+	}
+	// 初始化repos
+	repos := providers.NewRepositories(db, redisClient)
+	// 初始化 handlers
+	handlers := handler.InitHandlers(repos)
+	// 初始化路由规则
+	router := gin.New()
+	// 注册路由规则
+	routers.InitRouters(router, handlers)
+
 }
