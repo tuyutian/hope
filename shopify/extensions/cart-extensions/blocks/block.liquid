@@ -1,0 +1,14 @@
+{% if request.page_type == "cart"%}
+  {% comment %}or request.page_type == "product"{% endcomment %}
+  <script src="{{ 'cart.js' | asset_url }}" defer></script>
+  <link  rel="stylesheet" href="{{ 'cart.css' | asset_url }}"  type="text/css">
+{% endif %}
+
+
+{% schema %}
+{
+"name": "Insurance-Cart",
+"target": "body",
+"settings": []
+}
+{% endschema %}
