@@ -2,13 +2,14 @@
   "name": "hope-project",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:staging": "tsc && vite build --mode staging --config vite.config.ts",
+    "build": "tsc && vite build --config vite.config.ts",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
+  },
   "dependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
     "@types/node": "^22.15.32",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
@@ -20,13 +21,10 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.21.0",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
     "@vitejs/plugin-react": "^4.5.2",
+    "@vitest/browser": "^3.2.4",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.31.0",
@@ -41,14 +39,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4",
+    "vitest-browser-react": "^1.0.0",
     "web-vitals": "^5.0.3"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build:staging": "tsc && vite build --mode staging --config vite.config.mts",
-    "build": "tsc && vite build --config vite.config.mts",
-    "test": "vite test",
-    "eject": "vite eject"
   },
   "eslintConfig": {
     "extends": [
@@ -67,5 +60,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
   }
 }

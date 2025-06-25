@@ -14,7 +14,7 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"jsx": "react-jsx",
-		"types": ["vite/client"],
+		"types": ["vite/client","vitest/globals", "@testing-library/jest-dom"],
 		
 		/* Linting */
 		"strict": true,
@@ -26,13 +26,13 @@
         "paths": {
             "@/*": ["./src/*"],
             "~/*": ["./src/*"],
-        }
+        },
     },
     "include": [
 		"./src/**/*.ts",
 		"./src/**/*.tsx",
 		"./src/*env.d.ts",
-		"./eslint.config.mjs",
+		"./eslint.config.ts",
 		"types"
 	],
     "references": [{ "path": "./tsconfig.node.json" }],
