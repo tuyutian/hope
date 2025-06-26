@@ -18,19 +18,18 @@ export default defineConfig({
       },
       {
         test: {
-          // an example of file-based convention,
-          // you don't have to follow it
-          include: [
-            'tests/browser/**/*.{test,spec}.ts',
-            'tests/**/*.browser.{test,spec}.ts',
-          ],
-          name: 'browser',
+          name: "browser",
+          include: ["src/**/*.browser.test.tsx"],
+          setupFiles: ["./setupTest.ts"],
           browser: {
             enabled: true,
+            provider: "playwright",
+            // https://playwright.dev
             instances: [
               { browser: 'chromium' },
             ],
           },
+
         },
       },
     ],

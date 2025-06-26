@@ -2,6 +2,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import {resolve} from "path";
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from '@tailwindcss/vite'
 
 
 const pathResolve = (dir: string): string => {
@@ -15,6 +16,7 @@ export default defineConfig({
     },
     base: "/",
     plugins: [
+        tailwindcss(),
         react(),
         tsconfigPaths(),
     ],
@@ -43,6 +45,6 @@ export default defineConfig({
     },
     server: {
         host: "0.0.0.0",
-        port: 10086
+        port: 9527
     },
 });
