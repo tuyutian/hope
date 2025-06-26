@@ -1,12 +1,14 @@
 package config
 
 import (
-	"backend/pkg/settings"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"log"
 	"path/filepath"
 	"time"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
+	"backend/pkg/settings"
 )
 
 // AppConfig 应用基本配置
@@ -15,10 +17,34 @@ type AppConfig struct {
 	AppDebug bool   `mapstructure:"app_debug"` // 是否开启调试模式
 	AppEnv   string `mapstructure:"app_env"`   // prod,test,local,dev
 
+	AppPort      uint16        `mapstructure:"app_port"`      // metrics服务端口
 	MonitorPort  uint16        `mapstructure:"monitor_port"`  // metrics服务端口
 	GrpcPort     uint16        `mapstructure:"grpc_port"`     // grpc 服务端口
 	GracefulWait time.Duration `mapstructure:"graceful_wait"` // 平滑退出等待时间
 	LogLevel     string        `mapstructure:"log_level"`     // 日志等级
+	JWT          JWT           `mapstructure:"jwt"`
+	Crypto       struct {
+		AES CryptoAES
+	} `mapstructure:"crypto"` // 加密算法
+	Shopify Shopify `mapstructure:"shopify"`
+}
+
+type Shopify struct {
+	AppSecret string `mapstructure:"app_secret"`
+	AppKey    string `mapstructure:"app_key"`
+}
+
+// JWT config
+type JWT struct {
+	SecretKey         string        `mapstructure:"secret_key"`         // jwt secret key
+	AccessExpiration  time.Duration `mapstructure:"access_expiration"`  // access token 过期时间
+	RefreshExpiration time.Duration `mapstructure:"refresh_expiration"` // refresh token 过期时间
+}
+
+// CryptoAES aes 加密算法
+type CryptoAES struct {
+	IV  string `mapstructure:"iv"`
+	Key string `mapstructure:"key"`
 }
 
 // 配置文件读取的接口
@@ -60,6 +86,7 @@ func loadConfig(path string) (settings.Config, error) {
 
 	return c, nil
 }
+
 func (appConfig *AppConfig) GetLogLevel() zapcore.Level {
 	switch appConfig.LogLevel {
 	case "debug":

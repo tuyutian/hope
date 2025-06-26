@@ -2,18 +2,26 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
+	"backend/internal/application"
 	"backend/internal/infras/config"
 	"backend/internal/interfaces/web/handler"
-	routers "backend/internal/interfaces/web/router"
+	"backend/internal/interfaces/web/middleware"
+	"backend/internal/interfaces/web/routers"
 	"backend/internal/providers"
 	"backend/pkg/logger"
+	"backend/pkg/monitor"
 )
 
 func main() {
@@ -37,12 +45,81 @@ func main() {
 		log.Fatalf("redis init error:%v", err)
 	}
 	// 初始化repos
-	repos := providers.NewRepositories(db, redisClient)
+	repos := providers.NewRepositories(db, redisClient, appConf)
+	// 初始化服务
+	services := application.NewServices(repos)
 	// 初始化 handlers
-	handlers := handler.InitHandlers(repos)
+	handlers := handler.InitHandlers(services.OrderService)
+	// 初始化 middlewares
+	// init middleware and routers
+	middlewares := &routers.Middleware{
+		AuthWare:    middleware.NewAuthWare(services.UserService, repos),
+		RequestWare: &middleware.RequestWare{},
+		CorsWare:    &middleware.CorsWare{},
+	}
 	// 初始化路由规则
 	router := gin.New()
 	// 注册路由规则
-	routers.InitRouters(router, handlers)
+	routers.InitRouters(router, handlers, middlewares)
 
+	// http server设置
+	server := &http.Server{
+		Handler:           router,
+		Addr:              fmt.Sprintf("0.0.0.0:%d", appConf.AppPort),
+		IdleTimeout:       20 * time.Second, // tcp idle time
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+	}
+
+	// 在独立携程中运行
+	log.Println("server run on: ", appConf.AppPort)
+	go func() {
+		defer logger.Recover(context.Background(), "server start panic")
+		if err2 := server.ListenAndServe(); err2 != nil {
+			if !errors.Is(err2, http.ErrServerClosed) {
+				log.Println(context.Background(), "server close error", map[string]interface{}{
+					"trace_error": err2.Error(),
+				})
+
+				log.Println("server close error:", err2)
+				return
+			}
+
+			log.Println("server will exit...")
+		}
+	}()
+
+	// 初始化prometheus和pprof
+	// 访问地址：http://localhost:8090/metrics
+	// 访问地址：http://localhost:8090/debug/pprof/
+	monitor.InitMonitor(appConf.MonitorPort, true)
+
+	// server平滑重启
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block until we receive our signal.
+	sig := <-ch
+	log.Println("exit signal: ", sig.String())
+	ctx, cancel := context.WithTimeout(context.Background(), appConf.GracefulWait)
+	defer cancel()
+
+	done := make(chan struct{}, 1)
+	go func() {
+		defer close(done)
+		if err2 := server.Shutdown(ctx); err2 != nil {
+			log.Println("server shutdown error", map[string]interface{}{
+				"trace_error": err2.Error(),
+			})
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Println("context deadline timeout")
+	case <-done:
+	}
+
+	log.Println("server shutting down")
 }
