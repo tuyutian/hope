@@ -1,9 +1,10 @@
-import React from 'react';
-import { render } from 'vitest-browser-react';
-import App from '@/App';
+import App from "./App";
+import {expect, test} from "vitest";
+import {render} from "vitest-browser-react";
 
-test('renders learn react link', () => {
-  const screen = render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test("renders learn react link", async () => {
+
+  const {getByText} = render(<App />);
+  await expect.element(getByText(/learn react/i)).toBeInTheDocument();
+
 });
