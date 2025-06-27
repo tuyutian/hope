@@ -8,15 +8,15 @@ import (
 
 type OrderRepository interface {
 	// DelOrder 软删除订单
-	DelOrder(ctx context.Context, uid int, orderId string) error
+	DelOrder(ctx context.Context, userID int64, orderId string) error
 	// List 分页查询订单列表
-	List(req orderEntity.QueryOrderEntity) ([]*orderEntity.UserOrder, int64, error)
+	List(req orderEntity.QueryOrderEntity) (ctx context.Context, []*orderEntity.UserOrder, int64, error)
 	// Create 创建订单
-	Create(ctx context.Context, order *orderEntity.UserOrder) (int, error)
+	Create(ctx context.Context, order *orderEntity.UserOrder) (int64, error)
 	// ExistsByOrderID 检查订单是否存在
-	ExistsByOrderID(ctx context.Context, orderId string, uid int) int
+	ExistsByOrderID(ctx context.Context, orderId string, userID int64) int64
 	// UpdateShopifyOrderId 更新订单信息
 	UpdateShopifyOrderId(ctx context.Context, order *orderEntity.UserOrder) error
 	// GetOrderStatistics 获取订单统计信息
-	GetOrderStatistics(ctx context.Context, start, end int64, uid int) (*orderEntity.OrderStatistics, error)
+	GetOrderStatistics(ctx context.Context, start, end int64, userID int64) (*orderEntity.OrderStatistics, error)
 }

@@ -20,10 +20,10 @@ func NewOrderSummaryRepository(engine *xorm.Engine) orderRepo.OrderSummaryReposi
 	return &summaryRepoImpl{db: engine}
 }
 
-func (s *summaryRepoImpl) GetByDays(userId int64, days int) ([]orders.OrderSummary, error) {
+func (s *summaryRepoImpl) GetByDays(ctx context.Context, userId int64, days int) ([]orders.OrderSummary, error) {
 	var summary []orders.OrderSummary
 	err := s.db.
-		Where("uid = ? ", userId).
+		Where("user_id = ? ", userId).
 		Desc("id").
 		Limit(int(days)).
 		Find(&summary)
@@ -33,10 +33,10 @@ func (s *summaryRepoImpl) GetByDays(userId int64, days int) ([]orders.OrderSumma
 	return summary, nil
 }
 
-func (s *summaryRepoImpl) ExistOrder(ctx context.Context, uid int, today int64) (int, error) {
+func (s *summaryRepoImpl) ExistOrder(ctx context.Context, userID int64, today int64) (int64, error) {
 	var orderSummary orders.OrderSummary
 	has, err := s.db.Context(ctx).
-		Where("uid = ? AND today = ?", uid, today).
+		Where("user_id = ? AND today = ?", userID, today).
 		Cols("id").
 		Get(&orderSummary)
 	if err != nil {

@@ -32,7 +32,7 @@ type OrderSummaryResp struct {
 	OrderStatisticsTable []OrderStatisticsTable `json:"order_statistics_table"`
 }
 
-func (s OrderService) Summary(ctx *gin.Context, userId int64, days int) (interface{}, error) {
+func (s OrderService) Summary(ctx *gin.Context, userId int64, days int64) (interface{}, error) {
 
 	summary, err := s.orderSummaryRep.GetByDays(userId, days)
 

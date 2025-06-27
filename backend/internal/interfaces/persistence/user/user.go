@@ -85,8 +85,8 @@ func (u *userRepoImpl) Update(ctx context.Context, user *users.User) error {
 }
 
 // UpdateIsDel 更新用户卸载状态
-func (u *userRepoImpl) UpdateIsDel(ctx context.Context, uid int) error {
-	_, err := u.db.Context(ctx).Where("id = ?", uid).
+func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int) error {
+	_, err := u.db.Context(ctx).Where("id = ?", userID).
 		Update(&users.User{IsDel: 2, UnInstallTime: time.Now().Unix()})
 	if err != nil {
 		return err
@@ -95,8 +95,8 @@ func (u *userRepoImpl) UpdateIsDel(ctx context.Context, uid int) error {
 }
 
 // UpdateIsClose 更新用户关店状态
-func (u *userRepoImpl) UpdateIsClose(ctx context.Context, uid int, planDisplayName string) error {
-	_, err := u.db.Context(ctx).Where("id = ?", uid).
+func (u *userRepoImpl) UpdateIsClose(ctx context.Context, userID int, planDisplayName string) error {
+	_, err := u.db.Context(ctx).Where("id = ?", userID).
 		Update(&users.User{PlanDisplayName: planDisplayName, IsDel: 3, UnInstallTime: time.Now().Unix()})
 	if err != nil {
 		return err
@@ -105,8 +105,8 @@ func (u *userRepoImpl) UpdateIsClose(ctx context.Context, uid int, planDisplayNa
 }
 
 // UpdateStep 更新用户引导步骤
-func (u *userRepoImpl) UpdateStep(ctx context.Context, uid int, steps string) error {
-	_, err := u.db.Context(ctx).Where("id = ?", uid).
+func (u *userRepoImpl) UpdateStep(ctx context.Context, userID int, steps string) error {
+	_, err := u.db.Context(ctx).Where("id = ?", userID).
 		Update(&users.User{Steps: steps})
 	if err != nil {
 		return err
@@ -115,8 +115,8 @@ func (u *userRepoImpl) UpdateStep(ctx context.Context, uid int, steps string) er
 }
 
 // SetToken 设置用户令牌和密码
-func (u *userRepoImpl) SetToken(ctx context.Context, uid int, token string, pwd string) error {
-	_, err := u.db.Context(ctx).Where("id = ?", uid).
+func (u *userRepoImpl) SetToken(ctx context.Context, userID int, token string, pwd string) error {
+	_, err := u.db.Context(ctx).Where("id = ?", userID).
 		Update(&users.User{UserToken: token, Pwd: pwd})
 	if err != nil {
 		return err
@@ -139,9 +139,9 @@ func (u *userRepoImpl) FirstEmail(ctx context.Context, email string) (*users.Use
 }
 
 // UpdatePublishCollection 更新用户发布集合信息
-func (u *userRepoImpl) UpdatePublishCollection(ctx context.Context, uid int, publishId string, collection string) error {
+func (u *userRepoImpl) UpdatePublishCollection(ctx context.Context, userID int, publishId string, collection string) error {
 	_, err := u.db.Context(ctx).
-		Where("id = ?", uid).
+		Where("id = ?", userID).
 		Update(&users.User{PublishId: publishId, Collection: collection})
 	if err != nil {
 		return err
@@ -150,9 +150,9 @@ func (u *userRepoImpl) UpdatePublishCollection(ctx context.Context, uid int, pub
 }
 
 // BatchUid 批量获取用户ID
-func (u *userRepoImpl) BatchUid(ctx context.Context, uid int, batchSize int) ([]*users.User, error) {
+func (u *userRepoImpl) BatchUid(ctx context.Context, userID int, batchSize int) ([]*users.User, error) {
 	var users []*users.User
-	err := u.db.Context(ctx).Where("id > ? and is_del = 1", uid).Cols("id").Limit(batchSize).Find(&users)
+	err := u.db.Context(ctx).Where("id > ? and is_del = 1", userID).Cols("id").Limit(batchSize).Find(&users)
 
 	if err != nil {
 		return nil, err

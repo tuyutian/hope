@@ -193,20 +193,20 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 }
 
 func (auth *AuthWare) checkClaims(ctx context.Context, claims *jwt.BizClaims) error {
+	// 主账号登录
+	if claims.UserID > 0 {
+		if err := auth.checkUser(ctx, claims); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	// 超管账户登录
 	if claims.AdminID > 0 {
 		if err := auth.checkManage(ctx, claims); err != nil {
 			return err
 		}
 
-		return nil
-	}
-
-	// 主账号登录
-	if claims.UserID > 0 {
-		if err := auth.checkUser(ctx, claims); err != nil {
-			return err
-		}
 		return nil
 	}
 
@@ -236,7 +236,7 @@ func (auth *AuthWare) checkShop(ctx context.Context, claims *jwt.BizClaims) erro
 }
 
 func (auth *AuthWare) checkManage(ctx context.Context, claims *jwt.BizClaims) error {
-	// 检查用户是否存在
+	// 检查超管用户是否存在
 	if _, err := auth.userService.GetLoginAdminFromID(ctx, claims.AdminID); err != nil {
 		return err
 	}

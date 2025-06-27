@@ -18,7 +18,7 @@ func NewProductRepository(db *xorm.Engine) jobRepo.ProductRepository {
 	return &ProductRepoImpl{db: db}
 }
 
-func (j *ProductRepoImpl) First(ctx context.Context, id int) (*jobs.JobProduct, error) {
+func (j *ProductRepoImpl) First(ctx context.Context, id int64) (*jobs.JobProduct, error) {
 	var jobProduct jobs.JobProduct
 	has, err := j.db.Context(ctx).Where("id = ?", id).Get(&jobProduct)
 
@@ -32,7 +32,7 @@ func (j *ProductRepoImpl) First(ctx context.Context, id int) (*jobs.JobProduct, 
 	return &jobProduct, nil
 }
 
-func (j *ProductRepoImpl) Create(ctx context.Context, jobProduct *jobs.JobProduct) (int, error) {
+func (j *ProductRepoImpl) Create(ctx context.Context, jobProduct *jobs.JobProduct) (int64, error) {
 	_, err := j.db.Context(ctx).Insert(jobProduct)
 	if err != nil {
 		return 0, err
@@ -41,7 +41,7 @@ func (j *ProductRepoImpl) Create(ctx context.Context, jobProduct *jobs.JobProduc
 	return jobProduct.Id, nil
 }
 
-func (j *ProductRepoImpl) UpdateJobTime(ctx context.Context, id int) error {
+func (j *ProductRepoImpl) UpdateJobTime(ctx context.Context, id int64) error {
 	_, err := j.db.Context(ctx).
 		Where("id = ?", id).
 		Update(&jobs.JobProduct{JobTime: time.Now().Unix()})
@@ -51,7 +51,7 @@ func (j *ProductRepoImpl) UpdateJobTime(ctx context.Context, id int) error {
 	return nil
 }
 
-func (j *ProductRepoImpl) UpdateStatus(ctx context.Context, id int, status int) error {
+func (j *ProductRepoImpl) UpdateStatus(ctx context.Context, id int64, status int) error {
 	_, err := j.db.Context(ctx).
 		Where("id = ?", id).
 		Update(&jobs.JobProduct{IsSuccess: status})

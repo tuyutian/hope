@@ -38,12 +38,12 @@ func (o *infoRepoImpl) UpdateShopifyVariants(ctx context.Context, userOrderId in
 	return nil
 }
 
-func (o *infoRepoImpl) GetOrderDetailVariantIDs(ctx context.Context, userOrderId int, uid int) ([]string, error) {
+func (o *infoRepoImpl) GetOrderDetailVariantIDs(ctx context.Context, userOrderId int, userID int) ([]string, error) {
 	var variantIDs []string
 
 	err := o.db.Context(ctx).
 		Table(new(orders.UserOrderInfo)).
-		Where("user_order_id = ? and uid = ?", userOrderId, uid).
+		Where("user_order_id = ? and user_id = ?", userOrderId, userID).
 		Cols("variant_id").
 		Find(&variantIDs)
 	if err != nil {

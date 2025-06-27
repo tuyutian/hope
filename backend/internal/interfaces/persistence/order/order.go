@@ -20,8 +20,8 @@ func NewOrderRepository(db *xorm.Engine) orderRepo.OrderRepository {
 }
 
 // DelOrder 软删除订单
-func (o *orderRepoImpl) DelOrder(ctx context.Context, uid int, orderId string) error {
-	_, err := o.db.Context(ctx).Where("uid = ? and order_id = ?", uid, orderId).
+func (o *orderRepoImpl) DelOrder(ctx context.Context, userID int64, orderId string) error {
+	_, err := o.db.Context(ctx).Where("user_id = ? and order_id = ?", userID, orderId).
 		Update(&orderEntity.UserOrder{IsDel: 1})
 	if err != nil {
 		return err
@@ -30,19 +30,19 @@ func (o *orderRepoImpl) DelOrder(ctx context.Context, uid int, orderId string) e
 }
 
 // List 分页查询订单列表
-func (o *orderRepoImpl) List(req orderEntity.QueryOrderEntity) ([]*orderEntity.UserOrder, int64, error) {
+func (o *orderRepoImpl) List(ctx context.Context, req orderEntity.QueryOrderEntity) ([]*orderEntity.UserOrder, int64, error) {
 	var orders []*orderEntity.UserOrder // 直接查询到指针切片，避免二次转换
 
 	// 计算偏移量
 	offset := (req.Page - 1) * req.PageSize
 
-	session := o.db.Where("uid = ? AND is_del = 0", req.UserID)
+	session := o.db.Where("user_id = ? AND is_del = 0", req.UserID)
 
 	// 1. 根据 Type 筛选状态
 	switch req.Type {
-	case "Paid":
+	case 1:
 		session = session.In("financial_status", []string{"PAID", "PARTIALLY_PAID"})
-	case "Refund":
+	case 2:
 		session = session.In("financial_status", []string{"REFUNDED", "PARTIALLY_REFUNDED"})
 		// "All" 不加任何条件
 	}
@@ -61,13 +61,13 @@ func (o *orderRepoImpl) List(req orderEntity.QueryOrderEntity) ([]*orderEntity.U
 	if err != nil {
 		return nil, 0, err
 	}
-	builder := o.db.Where("uid = ? AND is_del = 0", req.UserID)
+	builder := o.db.Where("user_id = ? AND is_del = 0", req.UserID)
 
 	// 根据 Type 筛选
 	switch req.Type {
-	case "Paid":
+	case 1:
 		builder = builder.In("financial_status", []string{"PAID", "PARTIALLY_PAID"})
-	case "Refund":
+	case 2:
 		builder = builder.In("financial_status", []string{"REFUNDED", "PARTIALLY_REFUNDED"})
 	}
 
@@ -84,7 +84,7 @@ func (o *orderRepoImpl) List(req orderEntity.QueryOrderEntity) ([]*orderEntity.U
 }
 
 // Create 创建订单
-func (o *orderRepoImpl) Create(ctx context.Context, order *orderEntity.UserOrder) (int, error) {
+func (o *orderRepoImpl) Create(ctx context.Context, order *orderEntity.UserOrder) (int64, error) {
 	_, err := o.db.Context(ctx).Insert(order)
 	if err != nil {
 		return 0, err
@@ -93,9 +93,9 @@ func (o *orderRepoImpl) Create(ctx context.Context, order *orderEntity.UserOrder
 }
 
 // ExistsByOrderID 检查订单是否存在
-func (o *orderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string, uid int) int {
+func (o *orderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string, userID int64) int64 {
 	var userOrder orderEntity.UserOrder
-	has, err := o.db.Context(ctx).Cols("id").Where("uid = ? and order_id = ?", uid, orderId).Get(&userOrder)
+	has, err := o.db.Context(ctx).Cols("id").Where("user_id = ? and order_id = ?", userID, orderId).Get(&userOrder)
 
 	if err != nil || !has {
 		return 0
@@ -114,11 +114,11 @@ func (o *orderRepoImpl) UpdateShopifyOrderId(ctx context.Context, order *orderEn
 }
 
 // GetOrderStatistics 获取订单统计信息
-func (o *orderRepoImpl) GetOrderStatistics(ctx context.Context, start, end int64, uid int) (*orderEntity.OrderStatistics, error) {
+func (o *orderRepoImpl) GetOrderStatistics(ctx context.Context, start, end int64, userID int64) (*orderEntity.OrderStatistics, error) {
 	var stats orderEntity.OrderStatistics
 
 	// 在XORM中使用SQL构建统计查询
-	has, err := o.db.Context(ctx).SQL("SELECT SUM(refund_price_amount) AS total_refund, SUM(insurance_amount) AS total_insurance, COUNT(*) AS total_orders FROM user_order WHERE order_created_at BETWEEN ? AND ? AND uid = ?", start, end, uid).Get(&stats)
+	has, err := o.db.Context(ctx).SQL("SELECT SUM(refund_price_amount) AS total_refund, SUM(insurance_amount) AS total_insurance, COUNT(*) AS total_orders FROM user_order WHERE order_created_at BETWEEN ? AND ? AND user_id = ?", start, end, userID).Get(&stats)
 
 	if err != nil {
 		return nil, err

@@ -20,9 +20,9 @@ func NewProductRepository(engine *xorm.Engine) productRepo.ProductRepository {
 	return &productRepoImpl{db: engine}
 }
 
-func (p *productRepoImpl) First(ctx context.Context, uid int) (*products.UserProduct, error) {
+func (p *productRepoImpl) First(ctx context.Context, userID int) (*products.UserProduct, error) {
 	var product products.UserProduct
-	has, err := p.db.Context(ctx).Where("uid = ?", uid).Get(&product)
+	has, err := p.db.Context(ctx).Where("user_id = ?", userID).Get(&product)
 
 	if err != nil {
 		return nil, err
@@ -34,9 +34,9 @@ func (p *productRepoImpl) First(ctx context.Context, uid int) (*products.UserPro
 	return &product, nil
 }
 
-func (p *productRepoImpl) FirstProductByID(ctx context.Context, id int, uid int) (*products.UserProduct, error) {
+func (p *productRepoImpl) FirstProductByID(ctx context.Context, id int, userID int) (*products.UserProduct, error) {
 	var product products.UserProduct
-	has, err := p.db.Context(ctx).Where("id = ? and uid = ?", id, uid).Get(&product)
+	has, err := p.db.Context(ctx).Where("id = ? and user_id = ?", id, userID).Get(&product)
 
 	if err != nil {
 		return nil, err
@@ -48,9 +48,9 @@ func (p *productRepoImpl) FirstProductByID(ctx context.Context, id int, uid int)
 	return &product, nil
 }
 
-func (p *productRepoImpl) FirstProductID(ctx context.Context, uid int) string {
+func (p *productRepoImpl) FirstProductID(ctx context.Context, userID int) string {
 	var product products.UserProduct
-	has, err := p.db.Context(ctx).Cols("product_id").Where("uid = ?", uid).Get(&product)
+	has, err := p.db.Context(ctx).Cols("product_id").Where("user_id = ?", userID).Get(&product)
 
 	if err != nil || !has {
 		return ""
@@ -66,16 +66,16 @@ func (p *productRepoImpl) CreateProduct(ctx context.Context, product *products.U
 	return product.Id, nil
 }
 
-func (p *productRepoImpl) UpdateProduct(ctx context.Context, id int, uid int, product *products.UserProduct) error {
-	_, err := p.db.Context(ctx).Where("id = ? and uid = ?", id, uid).Update(product)
+func (p *productRepoImpl) UpdateProduct(ctx context.Context, id int, userID int, product *products.UserProduct) error {
+	_, err := p.db.Context(ctx).Where("id = ? and user_id = ?", id, userID).Update(product)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (p *productRepoImpl) DelShopifyProduct(ctx context.Context, uid int) error {
-	_, err := p.db.Context(ctx).Where("uid = ?", uid).
+func (p *productRepoImpl) DelShopifyProduct(ctx context.Context, userID int) error {
+	_, err := p.db.Context(ctx).Where("user_id = ?", userID).
 		Update(&products.UserProduct{ProductId: "", IsPublish: 0})
 	if err != nil {
 		return err
@@ -83,9 +83,9 @@ func (p *productRepoImpl) DelShopifyProduct(ctx context.Context, uid int) error 
 	return nil
 }
 
-func (p *productRepoImpl) ExistsByProductID(ctx context.Context, uid int, productId string) int {
+func (p *productRepoImpl) ExistsByProductID(ctx context.Context, userID int, productId string) int {
 	var userProduct products.UserProduct
-	has, err := p.db.Context(ctx).Cols("id").Where("uid = ? and product_id = ?", uid, productId).Get(&userProduct)
+	has, err := p.db.Context(ctx).Cols("id").Where("user_id = ? and product_id = ?", userID, productId).Get(&userProduct)
 
 	if err != nil || !has {
 		return 0

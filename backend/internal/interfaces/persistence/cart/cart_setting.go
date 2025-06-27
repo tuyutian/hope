@@ -21,9 +21,9 @@ func NewCartSettingRepository(engine *xorm.Engine) cartRepo.CartSettingRepositor
 }
 
 // First 根据用户ID获取购物车设置
-func (s *cartSettingRepoImpl) First(ctx context.Context, uid int) (*entity.UserCartSetting, error) {
+func (s *cartSettingRepoImpl) First(ctx context.Context, userID int64) (*entity.UserCartSetting, error) {
 	var cartSetting entity.UserCartSetting
-	has, err := s.db.Context(ctx).Where("uid = ?", uid).Get(&cartSetting)
+	has, err := s.db.Context(ctx).Where("user_id = ?", userID).Get(&cartSetting)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (s *cartSettingRepoImpl) First(ctx context.Context, uid int) (*entity.UserC
 }
 
 // Create 创建购物车设置
-func (s *cartSettingRepoImpl) Create(ctx context.Context, setting *entity.UserCartSetting) (int, error) {
+func (s *cartSettingRepoImpl) Create(ctx context.Context, setting *entity.UserCartSetting) (int64, error) {
 	_, err := s.db.Context(ctx).Insert(setting)
 	if err != nil {
 		return 0, err
@@ -53,8 +53,8 @@ func (s *cartSettingRepoImpl) Update(ctx context.Context, setting *entity.UserCa
 }
 
 // ExistsByShowID 检查是否存在显示购物车的设置
-func (s *cartSettingRepoImpl) ExistsByShowID(ctx context.Context, uid int) int {
-	exists, err := s.db.Context(ctx).Where("uid = ? and show_cart = 1", uid).Exist(&entity.UserCartSetting{})
+func (s *cartSettingRepoImpl) ExistsByShowID(ctx context.Context, userID int64) int64 {
+	exists, err := s.db.Context(ctx).Where("user_id = ? and show_cart = 1", userID).Exist(&entity.UserCartSetting{})
 
 	if err != nil || !exists {
 		return 0
@@ -64,9 +64,9 @@ func (s *cartSettingRepoImpl) ExistsByShowID(ctx context.Context, uid int) int {
 }
 
 // CloseCart 关闭购物车
-func (s *cartSettingRepoImpl) CloseCart(ctx context.Context, uid int) error {
+func (s *cartSettingRepoImpl) CloseCart(ctx context.Context, userID int64) error {
 	zero := 0
-	_, err := s.db.Context(ctx).Where("uid = ?", uid).
+	_, err := s.db.Context(ctx).Where("user_id = ?", userID).
 		Update(&entity.UserCartSetting{ShowCart: &zero}) // ShowCart 设为 0
 	if err != nil {
 		return err

@@ -18,9 +18,9 @@ func NewVariantRepository(engine *xorm.Engine) productRepo.VariantRepository {
 	return &variantRepoImpl{db: engine}
 }
 
-func (v *variantRepoImpl) First(ctx context.Context, uid int) (*products.UserVariant, error) {
+func (v *variantRepoImpl) First(ctx context.Context, userID int) (*products.UserVariant, error) {
 	var variant products.UserVariant
-	has, err := v.db.Context(ctx).Where("uid = ?", uid).Get(&variant)
+	has, err := v.db.Context(ctx).Where("user_id = ?", userID).Get(&variant)
 
 	if err != nil {
 		return nil, err
@@ -54,20 +54,20 @@ func (v *variantRepoImpl) CreateVariants(ctx context.Context, variants []*produc
 	return nil
 }
 
-func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int, uid int, variant *products.UserVariant) error {
-	_, err := v.db.Context(ctx).Where("id = ? and uid = ?", id, uid).Update(variant)
+func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int, userID int, variant *products.UserVariant) error {
+	_, err := v.db.Context(ctx).Where("id = ? and user_id = ?", id, userID).Update(variant)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, uid int) ([]string, error) {
+func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int) ([]string, error) {
 	var variantIDs []string
 
 	err := v.db.Context(ctx).
 		Table(new(products.UserVariant)).
-		Where("uid = ?", uid).
+		Where("user_id = ?", userID).
 		Cols("variant_id").
 		Find(&variantIDs)
 	if err != nil {
@@ -77,10 +77,10 @@ func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, uid int) ([
 	return variantIDs, nil
 }
 
-func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, uid int) error {
+func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int) error {
 	// 使用XORM的Update方法更新多个字段
 	_, err := v.db.Context(ctx).
-		Where("uid = ?", uid).
+		Where("user_id = ?", userID).
 		Update(&products.UserVariant{
 			ProductId:   "",
 			VariantId:   "",
@@ -92,12 +92,12 @@ func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, uid int) error 
 	return nil
 }
 
-func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, uid int) (map[string]string, string, error) {
+func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int) (map[string]string, string, error) {
 	var userVariants []products.UserVariant
 
 	// 查询所有数据
 	err := v.db.Context(ctx).
-		Where("uid = ? AND user_product_id != ?", uid, "").
+		Where("user_id = ? AND user_product_id != ?", userID, "").
 		Cols("sku_name", "product_id", "variant_id").
 		Find(&userVariants)
 	if err != nil {

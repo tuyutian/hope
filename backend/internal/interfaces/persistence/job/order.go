@@ -20,7 +20,7 @@ func NewOrderRepository(db *xorm.Engine) jobRepo.OrderRepository {
 	return &OrderRepoImpl{db: db}
 }
 
-func (j *OrderRepoImpl) Create(ctx context.Context, jobOrder *jobs.JobOrder) (int, error) {
+func (j *OrderRepoImpl) Create(ctx context.Context, jobOrder *jobs.JobOrder) (int64, error) {
 	_, err := j.db.Context(ctx).Insert(jobOrder)
 	if err != nil {
 		return 0, err
@@ -28,7 +28,7 @@ func (j *OrderRepoImpl) Create(ctx context.Context, jobOrder *jobs.JobOrder) (in
 	return jobOrder.Id, nil
 }
 
-func (j *OrderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string) int {
+func (j *OrderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string) int64 {
 	var jobOrder jobs.JobOrder
 	has, err := j.db.Context(ctx).Cols("id").Where("order_id = ? and is_success = 0", orderId).Get(&jobOrder)
 
@@ -38,7 +38,7 @@ func (j *OrderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string) int
 	return 1
 }
 
-func (j *OrderRepoImpl) First(ctx context.Context, id int) (*jobs.JobOrder, error) {
+func (j *OrderRepoImpl) First(ctx context.Context, id int64) (*jobs.JobOrder, error) {
 	var jobOrder jobs.JobOrder
 	has, err := j.db.Context(ctx).Where("id = ?", id).Get(&jobOrder)
 	if err != nil {

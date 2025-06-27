@@ -29,13 +29,13 @@ func (h *OrderHandler) Dashboard(ctx *gin.Context) {
 		return
 	}
 
-	uid, transfer := ctx.Value("id").(int64)
+	userID, transfer := ctx.Value("id").(int64)
 	if !transfer {
 		h.Error(ctx, code.Unauthorized, message.ErrorBadRequest.Error(), nil)
 		return
 	}
 
-	resp, err := h.orderService.Summary(ctx, uid, days)
+	resp, err := h.orderService.Summary(ctx, userID, days)
 	if err != nil {
 		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return
@@ -54,12 +54,12 @@ func (h *OrderHandler) OrderList(ctx *gin.Context) {
 		return
 	}
 
-	uid, transfer := ctx.Value("id").(int)
+	userID, transfer := ctx.Value("id").(int)
 	if !transfer {
 		h.Error(ctx, code.Unauthorized, message.ErrorBadRequest.Error(), nil)
 		return
 	}
-	orderListParams.UserID = uid
+	orderListParams.UserID = userID
 
 	resp, err := h.orderService.OrderList(orderListParams)
 	if err != nil {
