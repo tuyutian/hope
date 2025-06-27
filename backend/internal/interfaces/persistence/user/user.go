@@ -37,7 +37,7 @@ func (u *userRepoImpl) FirstName(ctx context.Context, name string) (*users.User,
 }
 
 // FirstNameByUid 根据店铺名称获取用户ID
-func (u *userRepoImpl) FirstNameByUid(ctx context.Context, name string) (int, error) {
+func (u *userRepoImpl) FirstNameByUid(ctx context.Context, name string) (int64, error) {
 	var user users.User
 	has, err := u.db.Context(ctx).Where("name = ?", name).Cols("id").Get(&user)
 
@@ -51,7 +51,7 @@ func (u *userRepoImpl) FirstNameByUid(ctx context.Context, name string) (int, er
 }
 
 // FirstID 根据ID查找用户
-func (u *userRepoImpl) FirstID(ctx context.Context, id int) (*users.User, error) {
+func (u *userRepoImpl) FirstID(ctx context.Context, id int64) (*users.User, error) {
 	var user users.User
 	has, err := u.db.Context(ctx).Where("id = ?", id).Get(&user)
 
@@ -65,7 +65,7 @@ func (u *userRepoImpl) FirstID(ctx context.Context, id int) (*users.User, error)
 }
 
 // CreateUser 创建用户
-func (u *userRepoImpl) CreateUser(ctx context.Context, user *users.User) (int, error) {
+func (u *userRepoImpl) CreateUser(ctx context.Context, user *users.User) (int64, error) {
 	_, err := u.db.Context(ctx).Insert(user)
 	if err != nil {
 		return 0, err
@@ -85,9 +85,9 @@ func (u *userRepoImpl) Update(ctx context.Context, user *users.User) error {
 }
 
 // UpdateIsDel 更新用户卸载状态
-func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int) error {
+func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int64) error {
 	_, err := u.db.Context(ctx).Where("id = ?", userID).
-		Update(&users.User{IsDel: 2, UnInstallTime: time.Now().Unix()})
+		Update(&users.User{IsDel: 2, UninstallTime: time.Now().Unix()})
 	if err != nil {
 		return err
 	}
@@ -95,9 +95,9 @@ func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int) error {
 }
 
 // UpdateIsClose 更新用户关店状态
-func (u *userRepoImpl) UpdateIsClose(ctx context.Context, userID int, planDisplayName string) error {
+func (u *userRepoImpl) UpdateIsClose(ctx context.Context, userID int64, planDisplayName string) error {
 	_, err := u.db.Context(ctx).Where("id = ?", userID).
-		Update(&users.User{PlanDisplayName: planDisplayName, IsDel: 3, UnInstallTime: time.Now().Unix()})
+		Update(&users.User{PlanDisplayName: planDisplayName, IsDel: 3, UninstallTime: time.Now().Unix()})
 	if err != nil {
 		return err
 	}
@@ -105,19 +105,20 @@ func (u *userRepoImpl) UpdateIsClose(ctx context.Context, userID int, planDispla
 }
 
 // UpdateStep 更新用户引导步骤
-func (u *userRepoImpl) UpdateStep(ctx context.Context, userID int, steps string) error {
-	_, err := u.db.Context(ctx).Where("id = ?", userID).
+func (u *userRepoImpl) UpdateStep(ctx context.Context, userID int64, steps string) error {
+	// TODO 这块实现要放到 user_setting表里去
+	/*_, err := u.db.Context(ctx).Where("id = ?", userID).
 		Update(&users.User{Steps: steps})
 	if err != nil {
 		return err
-	}
+	}*/
 	return nil
 }
 
 // SetToken 设置用户令牌和密码
-func (u *userRepoImpl) SetToken(ctx context.Context, userID int, token string, pwd string) error {
+func (u *userRepoImpl) SetToken(ctx context.Context, userID int64, token string, pwd string) error {
 	_, err := u.db.Context(ctx).Where("id = ?", userID).
-		Update(&users.User{UserToken: token, Pwd: pwd})
+		Update(&users.User{AccessToken: token, Password: pwd})
 	if err != nil {
 		return err
 	}
@@ -139,26 +140,40 @@ func (u *userRepoImpl) FirstEmail(ctx context.Context, email string) (*users.Use
 }
 
 // UpdatePublishCollection 更新用户发布集合信息
-func (u *userRepoImpl) UpdatePublishCollection(ctx context.Context, userID int, publishId string, collection string) error {
-	_, err := u.db.Context(ctx).
+func (u *userRepoImpl) UpdatePublishCollection(ctx context.Context, userID int64, publishId string, collection string) error {
+	// TODO 这块实现要放到 user_setting表里去
+	/*_, err := u.db.Context(ctx).
 		Where("id = ?", userID).
 		Update(&users.User{PublishId: publishId, Collection: collection})
 	if err != nil {
 		return err
-	}
+	}*/
 	return nil
 }
 
 // BatchUid 批量获取用户ID
-func (u *userRepoImpl) BatchUid(ctx context.Context, userID int, batchSize int) ([]*users.User, error) {
-	var users []*users.User
-	err := u.db.Context(ctx).Where("id > ? and is_del = 1", userID).Cols("id").Limit(batchSize).Find(&users)
+func (u *userRepoImpl) BatchUid(ctx context.Context, userID int64, batchSize int) ([]*users.User, error) {
+	var usersList []*users.User
+	err := u.db.Context(ctx).Where("id > ? and is_del = 1", userID).Cols("id").Limit(batchSize).Find(&usersList)
 
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
+	if len(usersList) == 0 {
 		return nil, nil
 	}
-	return users, nil
+	return usersList, nil
+}
+
+// GetByShop 获取用户店铺
+func (u *userRepoImpl) GetByShop(ctx context.Context, shop string) (*users.User, error) {
+	var user users.User
+	has, err := u.db.Context(ctx).Where("shop = ?", shop).Get(&user)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, nil
+	}
+	return &user, nil
 }

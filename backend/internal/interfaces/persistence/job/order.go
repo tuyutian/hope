@@ -50,7 +50,7 @@ func (j *OrderRepoImpl) First(ctx context.Context, id int64) (*jobs.JobOrder, er
 	return &jobOrder, nil
 }
 
-func (j *OrderRepoImpl) UpdateJobTime(ctx context.Context, id int) error {
+func (j *OrderRepoImpl) UpdateJobTime(ctx context.Context, id int64) error {
 	_, err := j.db.Context(ctx).
 		Table(new(jobs.JobOrder)).
 		Where("id = ?", id).
@@ -60,7 +60,7 @@ func (j *OrderRepoImpl) UpdateJobTime(ctx context.Context, id int) error {
 	return err
 }
 
-func (j *OrderRepoImpl) UpdateStatus(ctx context.Context, id int, status int) error {
+func (j *OrderRepoImpl) UpdateStatus(ctx context.Context, id int64, status int) error {
 	_, err := j.db.Context(ctx).
 		Table(new(jobs.JobOrder)).
 		Where("id = ?", id).

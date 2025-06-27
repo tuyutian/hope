@@ -10,7 +10,7 @@ type OrderRepository interface {
 	// DelOrder 软删除订单
 	DelOrder(ctx context.Context, userID int64, orderId string) error
 	// List 分页查询订单列表
-	List(req orderEntity.QueryOrderEntity) (ctx context.Context, []*orderEntity.UserOrder, int64, error)
+	List(ctx context.Context, req orderEntity.QueryOrderEntity) ([]*orderEntity.UserOrder, int64, error)
 	// Create 创建订单
 	Create(ctx context.Context, order *orderEntity.UserOrder) (int64, error)
 	// ExistsByOrderID 检查订单是否存在

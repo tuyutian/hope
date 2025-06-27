@@ -15,8 +15,8 @@ type infoRepoImpl struct {
 	db *xorm.Engine
 }
 
-// NewInfoRepository 从数据库获取订单详情资源
-func NewInfoRepository(engine *xorm.Engine) orderRepo.OrderInfoRepository {
+// NewOrderInfoRepository NewInfoRepository 从数据库获取订单详情资源
+func NewOrderInfoRepository(engine *xorm.Engine) orderRepo.OrderInfoRepository {
 	return &infoRepoImpl{db: engine}
 }
 
@@ -28,7 +28,7 @@ func (o *infoRepoImpl) Create(ctx context.Context, orderInfo []*orders.UserOrder
 	return nil
 }
 
-func (o *infoRepoImpl) UpdateShopifyVariants(ctx context.Context, userOrderId int, variantId string, orderInfo *orders.UserOrderInfo) error {
+func (o *infoRepoImpl) UpdateShopifyVariants(ctx context.Context, userOrderId int64, variantId string, orderInfo *orders.UserOrderInfo) error {
 	_, err := o.db.Context(ctx).
 		Where("user_order_id = ? and variant_id = ?", userOrderId, variantId).
 		Update(orderInfo)
@@ -38,7 +38,7 @@ func (o *infoRepoImpl) UpdateShopifyVariants(ctx context.Context, userOrderId in
 	return nil
 }
 
-func (o *infoRepoImpl) GetOrderDetailVariantIDs(ctx context.Context, userOrderId int, userID int) ([]string, error) {
+func (o *infoRepoImpl) GetOrderDetailVariantIDs(ctx context.Context, userOrderId int64, userID int64) ([]string, error) {
 	var variantIDs []string
 
 	err := o.db.Context(ctx).

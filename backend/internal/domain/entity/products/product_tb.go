@@ -4,6 +4,7 @@ package products
 type UserProduct struct {
 	Id          int64  `xorm:"pk autoincr 'id' bigint(20) comment('ID')" json:"id"`
 	UserID      int64  `xorm:"'user_id' bigint(20) notnull comment('用户id')" json:"user_id"`
+	AppId       string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
 	ProductId   string `xorm:"'product_id' varchar(100) notnull default '' comment('shopify上传成功的产品ID')" json:"product_id"`
 	Title       string `xorm:"'title' varchar(255) notnull comment('标题')" json:"title"`
 	ProductType string `xorm:"'product_type' varchar(255) notnull comment('产品类型')" json:"product_type"`
@@ -15,7 +16,7 @@ type UserProduct struct {
 	Option2     string `xorm:"'option_2' varchar(255) notnull default '' comment('产品属性2')" json:"option_2"`
 	Option3     string `xorm:"'option_3' varchar(255) notnull default '' comment('产品属性3')" json:"option_3"`
 	ImageUrl    string `xorm:"'image_url' varchar(500) notnull comment('封面图')" json:"image_url"`
-	IsPublish   int    `xorm:"'is_publish' tinyint(1) notnull default 0 comment('发布Shopify：0:未发布 1:已发布 2:正在发布中 3:shopify平台已删除')" json:"is_publish"`
+	Status      int    `xorm:"'status' tinyint(1) notnull default 0 comment('发布Shopify：0:未发布 1:已发布 2:正在发布中 3:shopify平台已删除')" json:"is_publish"`
 	PublishTime int64  `xorm:"'publish_time' bigint(20) notnull default 0 comment('发布时间')" json:"publish_time"`
 	IsDel       int    `xorm:"'is_del' tinyint(1) notnull default 0 comment('删除状态 0 正常 1 已删除')" json:"is_del"`
 	CreateTime  int64  `xorm:"created 'create_time' bigint(20) notnull comment('创建时间')" json:"create_time"`

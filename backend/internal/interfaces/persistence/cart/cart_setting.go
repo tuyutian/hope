@@ -67,7 +67,7 @@ func (s *cartSettingRepoImpl) ExistsByShowID(ctx context.Context, userID int64) 
 func (s *cartSettingRepoImpl) CloseCart(ctx context.Context, userID int64) error {
 	zero := 0
 	_, err := s.db.Context(ctx).Where("user_id = ?", userID).
-		Update(&entity.UserCartSetting{ShowCart: &zero}) // ShowCart 设为 0
+		Update(&entity.UserCartSetting{ShowCart: zero}) // ShowCart 设为 0
 	if err != nil {
 		return err
 	}

@@ -31,4 +31,5 @@ type UserRepository interface {
 	UpdatePublishCollection(ctx context.Context, userID int64, publishId string, collection string) error
 	// BatchUid 批量获取用户ID
 	BatchUid(ctx context.Context, userID int64, batchSize int) ([]*users.User, error)
+	GetByShop(ctx context.Context, shop string) (*users.User, error)
 }

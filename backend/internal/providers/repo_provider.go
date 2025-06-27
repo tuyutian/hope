@@ -4,14 +4,18 @@ import (
 	"github.com/redis/go-redis/v9"
 	"xorm.io/xorm"
 
+	"backend/internal/domain/repo/carts"
 	"backend/internal/domain/repo/jobs"
 	jwtRepo "backend/internal/domain/repo/jwtauth"
 	"backend/internal/domain/repo/orders"
+	"backend/internal/domain/repo/products"
 	"backend/internal/domain/repo/users"
 	"backend/internal/infras/config"
 	"backend/internal/infras/jwtauth"
+	"backend/internal/interfaces/persistence/cart"
 	"backend/internal/interfaces/persistence/job"
 	"backend/internal/interfaces/persistence/order"
+	"backend/internal/interfaces/persistence/product"
 	"backend/internal/interfaces/persistence/user"
 	"backend/pkg/crypto/bcrypt"
 	"backend/pkg/jwt"
@@ -21,6 +25,10 @@ import (
 // 资源列表
 type Repositories struct {
 	UserRepo         users.UserRepository
+	OrderInfoRep     orders.OrderInfoRepository
+	ProductRepo      products.ProductRepository
+	CartSettingRepo  carts.CartSettingRepository
+	VariantRepo      products.VariantRepository
 	OrderRepo        orders.OrderRepository
 	JobOrderRepo     jobs.OrderRepository
 	OrderSummaryRepo orders.OrderSummaryRepository
@@ -33,6 +41,10 @@ func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf
 	userRepo := user.NewUserRepository(db)
 	orderRepo := order.NewOrderRepository(db)
 	jobOrderRepo := job.NewOrderRepository(db)
+	orderInfoRepo := order.NewOrderInfoRepository(db)
+	productRepo := product.NewProductRepository(db)
+	variantRepo := product.NewVariantRepository(db)
+	cartSettingRepo := cart.NewCartSettingRepository(db)
 	orderSummaryRepo := order.NewOrderSummaryRepository(db)
 
 	aesCrypto := bcrypt.NewAesBCrypto(appConf.Crypto.AES.Key, appConf.Crypto.AES.IV)
@@ -45,12 +57,16 @@ func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf
 	jwtRepository := jwtauth.NewJWTRepository(appConf.JWT.SecretKey, jwtManager, aesCrypto)
 
 	r := &Repositories{
-		userRepo,
-		orderRepo,
-		jobOrderRepo,
-		orderSummaryRepo,
-		jwtRepository,
-		aesCrypto,
+		UserRepo:         userRepo,
+		OrderRepo:        orderRepo,
+		JobOrderRepo:     jobOrderRepo,
+		OrderSummaryRepo: orderSummaryRepo,
+		JwtRepo:          jwtRepository,
+		AesCrypto:        aesCrypto,
+		OrderInfoRep:     orderInfoRepo,
+		ProductRepo:      productRepo,
+		VariantRepo:      variantRepo,
+		CartSettingRepo:  cartSettingRepo,
 	}
 
 	return r

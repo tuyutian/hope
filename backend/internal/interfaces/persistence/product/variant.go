@@ -1,10 +1,12 @@
 package product
 
 import (
+	"context"
+
+	"xorm.io/xorm"
+
 	"backend/internal/domain/entity/products"
 	productRepo "backend/internal/domain/repo/products"
-	"context"
-	"xorm.io/xorm"
 )
 
 var _ productRepo.VariantRepository = (*variantRepoImpl)(nil)
@@ -18,7 +20,7 @@ func NewVariantRepository(engine *xorm.Engine) productRepo.VariantRepository {
 	return &variantRepoImpl{db: engine}
 }
 
-func (v *variantRepoImpl) First(ctx context.Context, userID int) (*products.UserVariant, error) {
+func (v *variantRepoImpl) First(ctx context.Context, userID int64) (*products.UserVariant, error) {
 	var variant products.UserVariant
 	has, err := v.db.Context(ctx).Where("user_id = ?", userID).Get(&variant)
 
@@ -32,7 +34,7 @@ func (v *variantRepoImpl) First(ctx context.Context, userID int) (*products.User
 	return &variant, nil
 }
 
-func (v *variantRepoImpl) FindID(ctx context.Context, userProductId int) ([]*products.UserVariant, error) {
+func (v *variantRepoImpl) FindID(ctx context.Context, userProductId int64) ([]*products.UserVariant, error) {
 	var variants []*products.UserVariant
 	err := v.db.Context(ctx).Where("user_product_id = ?", userProductId).Find(&variants)
 
@@ -54,7 +56,7 @@ func (v *variantRepoImpl) CreateVariants(ctx context.Context, variants []*produc
 	return nil
 }
 
-func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int, userID int, variant *products.UserVariant) error {
+func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int64, userID int64, variant *products.UserVariant) error {
 	_, err := v.db.Context(ctx).Where("id = ? and user_id = ?", id, userID).Update(variant)
 	if err != nil {
 		return err
@@ -62,7 +64,7 @@ func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int, userID int
 	return nil
 }
 
-func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int) ([]string, error) {
+func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int64) ([]string, error) {
 	var variantIDs []string
 
 	err := v.db.Context(ctx).
@@ -77,7 +79,7 @@ func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int)
 	return variantIDs, nil
 }
 
-func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int) error {
+func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int64) error {
 	// 使用XORM的Update方法更新多个字段
 	_, err := v.db.Context(ctx).
 		Where("user_id = ?", userID).
@@ -92,7 +94,7 @@ func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int) err
 	return nil
 }
 
-func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int) (map[string]string, string, error) {
+func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int64) (map[string]string, string, error) {
 	var userVariants []products.UserVariant
 
 	// 查询所有数据
