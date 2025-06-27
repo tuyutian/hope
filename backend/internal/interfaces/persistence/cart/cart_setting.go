@@ -5,7 +5,7 @@ import (
 
 	"xorm.io/xorm"
 
-	"backend/internal/domain/entity"
+	entity "backend/internal/domain/entity/carts"
 	cartRepo "backend/internal/domain/repo/carts"
 )
 

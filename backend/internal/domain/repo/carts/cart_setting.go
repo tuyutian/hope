@@ -3,7 +3,7 @@ package carts
 import (
 	"context"
 
-	"backend/internal/domain/entity"
+	entity "backend/internal/domain/entity/carts"
 )
 
 type CartSettingRepository interface {
