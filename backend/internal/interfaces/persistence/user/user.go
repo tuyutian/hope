@@ -47,21 +47,27 @@ func (u *userRepoImpl) FirstNameByUid(ctx context.Context, name string) (int64, 
 	if !has {
 		return 0, nil
 	}
-	return user.Id, nil
+	return user.ID, nil
 }
 
-// FirstID 根据ID查找用户
-func (u *userRepoImpl) FirstID(ctx context.Context, id int64) (*users.User, error) {
-	var user users.User
-	has, err := u.db.Context(ctx).Where("id = ?", id).Get(&user)
+// Get 根据 id 获取 users.User
+func (u *userRepoImpl) Get(ctx context.Context, id int64, columns ...string) (*users.User, error) {
+	user := &users.User{}
+	_, err := u.db.Table(user.TableName()).Cols(columns...).
+		Where("id = ?", id).
+		Limit(1).
+		Get(user)
+	return user, err
+}
 
-	if err != nil {
-		return nil, err
-	}
-	if !has {
-		return nil, nil
-	}
-	return &user, nil
+// GetActiveUser 根据 id 获取 users.User
+func (u *userRepoImpl) GetActiveUser(ctx context.Context, id int64, columns ...string) (*users.User, error) {
+	user := &users.User{}
+	_, err := u.db.Table(user.TableName()).Cols(columns...).
+		Where("id = ?", id).
+		Limit(1).
+		Get(user)
+	return user, err
 }
 
 // CreateUser 创建用户
@@ -71,13 +77,13 @@ func (u *userRepoImpl) CreateUser(ctx context.Context, user *users.User) (int64,
 		return 0, err
 	}
 
-	return user.Id, nil
+	return user.ID, nil
 }
 
 // Update 更新用户信息
 func (u *userRepoImpl) Update(ctx context.Context, user *users.User) error {
 	user.LastLogin = time.Now().Unix()
-	_, err := u.db.Context(ctx).ID(user.Id).Update(user)
+	_, err := u.db.Context(ctx).ID(user.ID).Update(user)
 	if err != nil {
 		return err
 	}
@@ -166,9 +172,22 @@ func (u *userRepoImpl) BatchUid(ctx context.Context, userID int64, batchSize int
 }
 
 // GetByShop 获取用户店铺
-func (u *userRepoImpl) GetByShop(ctx context.Context, shop string) (*users.User, error) {
+func (u *userRepoImpl) GetByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
 	var user users.User
-	has, err := u.db.Context(ctx).Where("shop = ?", shop).Get(&user)
+	has, err := u.db.Context(ctx).Where("shop = ?", shop).OrderBy("create_time").Get(&user)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, nil
+	}
+	return &user, nil
+}
+
+// GetActiveUserByShop 获取用户正常店铺
+func (u *userRepoImpl) GetActiveUserByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
+	var user users.User
+	has, err := u.db.Context(ctx).Where("shop = ? and is_del = 0", shop).Get(&user)
 	if err != nil {
 		return nil, err
 	}

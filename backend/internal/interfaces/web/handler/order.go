@@ -7,6 +7,8 @@ import (
 
 	"backend/internal/application/orders"
 	orderEntity "backend/internal/domain/entity/orders"
+	"backend/pkg/ctxkeys"
+	"backend/pkg/jwt"
 	"backend/pkg/logger"
 	"backend/pkg/response"
 	"backend/pkg/response/code"
@@ -53,15 +55,11 @@ func (h *OrderHandler) OrderList(ctx *gin.Context) {
 		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return
 	}
+	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 
-	userID, transfer := ctx.Value("id").(int)
-	if !transfer {
-		h.Error(ctx, code.Unauthorized, message.ErrorBadRequest.Error(), nil)
-		return
-	}
-	orderListParams.UserID = userID
+	orderListParams.UserID = claims.UserID
 
-	resp, err := h.orderService.OrderList(orderListParams)
+	resp, err := h.orderService.OrderList(ctx, orderListParams)
 	if err != nil {
 		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return

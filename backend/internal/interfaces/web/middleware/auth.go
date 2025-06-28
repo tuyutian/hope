@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/users"
+	userEntity "backend/internal/domain/entity/users"
 	"backend/internal/domain/repo/jwtauth"
 	"backend/internal/providers"
 	"backend/pkg/crypto/bcrypt"
@@ -68,7 +69,9 @@ func (auth *AuthWare) CheckLogin() gin.HandlerFunc {
 			})
 			return
 		}
-
+		if strings.HasPrefix(claims.Dest, "https://") {
+			c.Header("Content-Security-Policy", "frame-ancestors "+claims.Dest+" https://admin.shopify.com;")
+		}
 		ctx = context.WithValue(ctx, ctxkeys.BizClaims, claims)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
@@ -182,9 +185,12 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// 去掉 shopify 域名前的 https
+	if claims.Dest != "" && strings.HasPrefix(claims.Dest, "https://") {
+		claims.Dest = strings.TrimPrefix(claims.Dest, "https://")
+	}
 	// 验证claims是否合法
-	err = auth.checkClaims(ctx, claims)
+	err = auth.checkClaims(ctx, token, claims)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +198,7 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	return claims, nil
 }
 
-func (auth *AuthWare) checkClaims(ctx context.Context, claims *jwt.BizClaims) error {
+func (auth *AuthWare) checkClaims(ctx context.Context, token string, claims *jwt.BizClaims) error {
 	// 主账号登录
 	if claims.UserID > 0 {
 		if err := auth.checkUser(ctx, claims); err != nil {
@@ -212,7 +218,7 @@ func (auth *AuthWare) checkClaims(ctx context.Context, claims *jwt.BizClaims) er
 
 	// shopify登录
 	if len(claims.Dest) > 0 {
-		if err := auth.checkShop(ctx, claims); err != nil {
+		if err := auth.checkShop(ctx, token, claims); err != nil {
 			return err
 		}
 		return nil
@@ -227,12 +233,34 @@ func (auth *AuthWare) checkUser(ctx context.Context, claims *jwt.BizClaims) erro
 	return err
 }
 
-func (auth *AuthWare) checkShop(ctx context.Context, claims *jwt.BizClaims) error {
-	shop := strings.TrimPrefix(claims.Dest, "https://")
-
+func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.BizClaims) error {
 	// 检查主账号是否存在
-	_, err := auth.userService.GetLoginUserFromShop(ctx, shop)
-	return err
+	user, err := auth.userService.GetLoginUserFromShop(ctx, claims.Dest)
+	if user != nil {
+		claims.UserID = user.ID
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	user, err = auth.sessionStore(ctx, token)
+	if err != nil {
+		return err
+	}
+	if user != nil {
+		claims.UserID = user.ID
+		return nil
+	}
+	return message.ErrInvalidAccount
+}
+
+// sessionStore   session 授权部分
+func (auth *AuthWare) sessionStore(ctx context.Context, token string) (*userEntity.User, error) {
+	user, err := auth.userService.AuthFromSession(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (auth *AuthWare) checkManage(ctx context.Context, claims *jwt.BizClaims) error {

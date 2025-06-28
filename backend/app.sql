@@ -1,11 +1,27 @@
 
--- 用户表
+
+-- Redact 历史记录表 (仅记录最小信息，用于防重复)
+CREATE TABLE `redact_history`
+(
+    `id`           bigint(20)  NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `app_id`       varchar(50) NOT NULL COMMENT 'App标识',
+    `shop`         varchar(100) NOT NULL COMMENT 'Shop域名',
+    `redact_time`  bigint(20)  NOT NULL COMMENT 'Redact处理时间',
+    `create_time`  bigint(20)  NOT NULL COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_app_shop` (`app_id`, `shop`),
+    KEY `idx_redact_time` (`redact_time`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='Redact历史记录表(最小化记录)';
+
+-- 用户表 (移除 redact 字段，因为 redact 的用户会被物理删除)
 CREATE TABLE `user`
 (
     `id`                bigint(20)   NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `app_id`            varchar(50)  NOT NULL COMMENT 'App标识',
     `name`              varchar(255) NOT NULL COMMENT 'shopify-name',
-    `shop`              varchar(100) NOT NULL DEFAULT '' COMMENT 'my shopify Domain网站域名',
+    `shop`              varchar(100) NOT NULL COMMENT 'shopify域名',
     `real_domain`       varchar(100) NOT NULL DEFAULT '' COMMENT '网站真实域名',
     `plan_display_name` varchar(40)  NOT NULL DEFAULT '' COMMENT 'shopify套餐版本',
     `access_token`      varchar(512) NOT NULL DEFAULT '' COMMENT 'shopify-token',
@@ -23,18 +39,18 @@ CREATE TABLE `user`
     `money_format`      varchar(20)  NOT NULL DEFAULT '' COMMENT '货币单位符号',
     `last_login`        bigint(20)   NOT NULL DEFAULT 0 COMMENT '最后登录时间',
     `is_del`            tinyint(1)   NOT NULL DEFAULT 0 COMMENT '删除状态 0正常 1已删除',
-    `redact`            tinyint(1)   NOT NULL DEFAULT 1 COMMENT 'redact 0正常 1账号删除',
     `publish_id`        varchar(100) NOT NULL DEFAULT '' COMMENT '店铺publish_id',
+    `install_time`      bigint(20)   NOT NULL DEFAULT 0 COMMENT '安装时间',
     `uninstall_time`    bigint(20)   NOT NULL DEFAULT 0 COMMENT '卸载时间',
     `create_time`       bigint(20)   NOT NULL COMMENT '创建时间',
     `update_time`       bigint(20)   NOT NULL COMMENT '最近修改时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_app_shop` (`app_id`, `shop`),
     KEY `idx_app_id` (`app_id`),
+    KEY `idx_shop` (`shop`),
     KEY `idx_name` (`name`),
     KEY `idx_email` (`email`),
     KEY `idx_is_del` (`is_del`),
-    KEY `idx_redact` (`redact`),
     KEY `idx_plans` (`plans`),
     KEY `idx_last_login` (`last_login`),
     KEY `idx_create_time` (`create_time`)
@@ -313,6 +329,7 @@ CREATE TABLE `user_app_auth`
     `id`               bigint(20)   NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `user_id`          bigint(20)   NOT NULL COMMENT '用户ID',
     `app_id`           varchar(50)  NOT NULL COMMENT 'App标识',
+    `shop`              varchar(100) NOT NULL DEFAULT '' COMMENT 'my shopify Domain网站域名',
     `auth_token`       varchar(255) NOT NULL DEFAULT '' COMMENT '授权token',
     `refresh_token`    varchar(255) NOT NULL DEFAULT '' COMMENT '刷新token',
     `token_expires_at` bigint(20)   NOT NULL DEFAULT 0 COMMENT 'token过期时间',

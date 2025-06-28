@@ -4,14 +4,20 @@ import (
 	"github.com/redis/go-redis/v9"
 	"xorm.io/xorm"
 
+	"backend/internal/domain/repo"
+	"backend/internal/domain/repo/apps"
 	"backend/internal/domain/repo/carts"
 	"backend/internal/domain/repo/jobs"
 	jwtRepo "backend/internal/domain/repo/jwtauth"
 	"backend/internal/domain/repo/orders"
 	"backend/internal/domain/repo/products"
+	"backend/internal/domain/repo/shopifys"
 	"backend/internal/domain/repo/users"
+	"backend/internal/infras/cache"
 	"backend/internal/infras/config"
 	"backend/internal/infras/jwtauth"
+	"backend/internal/infras/shopify"
+	"backend/internal/interfaces/persistence/app"
 	"backend/internal/interfaces/persistence/cart"
 	"backend/internal/interfaces/persistence/job"
 	"backend/internal/interfaces/persistence/order"
@@ -25,6 +31,7 @@ import (
 // 资源列表
 type Repositories struct {
 	UserRepo         users.UserRepository
+	AppAuthRepo      users.AppAuthRepository
 	OrderInfoRep     orders.OrderInfoRepository
 	ProductRepo      products.ProductRepository
 	CartSettingRepo  carts.CartSettingRepository
@@ -34,6 +41,9 @@ type Repositories struct {
 	OrderSummaryRepo orders.OrderSummaryRepository
 	JwtRepo          jwtRepo.JWTRepository
 	AesCrypto        bcrypt.BCrypto
+	AppRepo          apps.AppRepository
+	CacheRepo        repo.CacheRepository
+	ShopifyRepo      shopifys.ShopifyRepository
 }
 
 // NewRepositories 创建 Repositories
@@ -46,7 +56,10 @@ func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf
 	variantRepo := product.NewVariantRepository(db)
 	cartSettingRepo := cart.NewCartSettingRepository(db)
 	orderSummaryRepo := order.NewOrderSummaryRepository(db)
-
+	shopifyRepo := shopify.NewShopifyRepository()
+	appRepo := app.NewAppRepository(db, redisClient)
+	appAuthRepo := user.NewAppAuthRepository(db)
+	cacheRepo := cache.NewCacheRepository(redisClient)
 	aesCrypto := bcrypt.NewAesBCrypto(appConf.Crypto.AES.Key, appConf.Crypto.AES.IV)
 	// JwtManager
 	jwtManager := jwt.New(
@@ -66,7 +79,11 @@ func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf
 		OrderInfoRep:     orderInfoRepo,
 		ProductRepo:      productRepo,
 		VariantRepo:      variantRepo,
+		ShopifyRepo:      shopifyRepo,
+		AppAuthRepo:      appAuthRepo,
 		CartSettingRepo:  cartSettingRepo,
+		AppRepo:          appRepo,
+		CacheRepo:        cacheRepo,
 	}
 
 	return r

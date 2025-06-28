@@ -2,30 +2,30 @@ package users
 
 // User 用户表
 type User struct {
-	Id              int64  `xorm:"pk autoincr 'id' comment('ID')"`
+	ID              int64  `xorm:"pk autoincr 'id' comment('ID')"`
 	AppId           string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
 	Name            string `xorm:"notnull varchar(255) 'name' comment('shopify-name')"`
-	Shop            string `xorm:"notnull varchar(100) default '' 'shop' comment('my shopify Domain网站域名')"`
-	RealDomain      string `xorm:"notnull varchar(100) default '' 'real_domain' comment('网站真实域名')"`
-	PlanDisplayName string `xorm:"notnull varchar(40) default '' 'plan_display_name' comment('shopify套餐版本')"`
-	AccessToken     string `xorm:"notnull varchar(512) default '' 'access_token' comment('shopify-token')"`
-	Password        string `xorm:"notnull varchar(255) default '' 'password' comment('密码')"`
-	Plans           int    `xorm:"notnull int(11) default 0 'plans' comment('app套餐id')"`
-	Email           string `xorm:"notnull varchar(100) default '' 'email' comment('邮箱')"`
-	Phone           string `xorm:"notnull varchar(20) default '' 'phone' comment('电话号码')"`
-	CountryName     string `xorm:"notnull varchar(50) default '' 'country_name' comment('国家名称')"`
-	CountryCode     string `xorm:"notnull varchar(5) default '' 'country_code' comment('国家简码')"`
-	City            string `xorm:"notnull varchar(50) default '' 'city' comment('城市')"`
-	FreeTrialDays   int8   `xorm:"notnull tinyint(4) default 0 'free_trial_days' comment('试用天数')"`
-	TrialTime       int64  `xorm:"notnull default 0 'trial_time' comment('试用时间')"`
-	CurrencyCode    string `xorm:"notnull varchar(10) default '' 'currency_code' comment('货币简码')"`
-	Timezone        string `xorm:"notnull varchar(50) default '' 'timezone' comment('时区')"`
-	MoneyFormat     string `xorm:"notnull varchar(20) default '' 'money_format' comment('货币单位符号')"`
-	LastLogin       int64  `xorm:"notnull default 0 'last_login' comment('最后登录时间')"`
-	IsDel           int8   `xorm:"notnull tinyint(1) default 0 'is_del' comment('删除状态 0正常 1已删除')"`
-	Redact          int8   `xorm:"notnull tinyint(1) default 1 'redact' comment('redact 0正常 1账号删除')"`
-	PublishId       string `xorm:"notnull varchar(100) default '' 'publish_id' comment('店铺publish_id')"`
-	UninstallTime   int64  `xorm:"notnull default 0 'uninstall_time' comment('卸载时间')"`
+	Shop            string `xorm:"notnull varchar(100) 'shop' comment('shopify域名')"`
+	RealDomain      string `xorm:"varchar(100) default '' 'real_domain' comment('网站真实域名')"`
+	PlanDisplayName string `xorm:"varchar(40) default '' 'plan_display_name' comment('shopify套餐版本')"`
+	AccessToken     string `xorm:"varchar(512) default '' 'access_token' comment('shopify-token')"`
+	Password        string `xorm:"varchar(255) default '' 'password' comment('密码')"`
+	Plans           int    `xorm:"int(11) default 0 'plans' comment('app套餐id')"`
+	Email           string `xorm:"varchar(100) default '' 'email' comment('邮箱')"`
+	Phone           string `xorm:"varchar(20) default '' 'phone' comment('电话号码')"`
+	CountryName     string `xorm:"varchar(50) default '' 'country_name' comment('国家名称')"`
+	CountryCode     string `xorm:"varchar(5) default '' 'country_code' comment('国家简码')"`
+	City            string `xorm:"varchar(50) default '' 'city' comment('城市')"`
+	FreeTrialDays   int8   `xorm:"tinyint(4) default 0 'free_trial_days' comment('试用天数')"`
+	TrialTime       int64  `xorm:"default 0 'trial_time' comment('试用时间')"`
+	CurrencyCode    string `xorm:"varchar(10) default '' 'currency_code' comment('货币简码')"`
+	Timezone        string `xorm:"varchar(50) default '' 'timezone' comment('时区')"`
+	MoneyFormat     string `xorm:"varchar(20) default '' 'money_format' comment('货币单位符号')"`
+	LastLogin       int64  `xorm:"default 0 'last_login' comment('最后登录时间')"`
+	IsDel           int8   `xorm:"tinyint(1) default 0 'is_del' comment('删除状态 0正常 1已删除')"`
+	PublishId       string `xorm:"varchar(100) default '' 'publish_id' comment('店铺publish_id')"`
+	InstallTime     int64  `xorm:"default 0 'install_time' comment('安装时间')"`
+	UninstallTime   int64  `xorm:"default 0 'uninstall_time' comment('卸载时间')"`
 	CreateTime      int64  `xorm:"created 'create_time' bigint(20) default 0 notnull comment('创建时间')" json:"create_time"`
 	UpdateTime      int64  `xorm:"updated 'update_time' bigint(20) default 0 notnull comment('最近修改时间')" json:"update_time"`
 }

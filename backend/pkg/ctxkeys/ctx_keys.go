@@ -37,4 +37,13 @@ var (
 
 	// BizClaims for biz claims key
 	BizClaims = CtxKey{"biz_claims"}
+
+	// AppID for shopify app
+	AppID = CtxKey{"app_id"}
+
+	// ShopifyClient for shopify app
+	ShopifyClient = CtxKey{"shopify_client"}
+
+	// ShopifyApp for shopify app
+	ShopifyApp = CtxKey{"shopify_app"}
 )

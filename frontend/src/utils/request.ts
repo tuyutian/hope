@@ -7,7 +7,6 @@ import useUserStore from "@/stores/userStore.ts";
 import {useMessageStore} from "@/stores/messageStore.ts";
 
 // 返回res.data的interface
-
 const axiosInstance: AxiosInstance = axios.create({
   timeout: import.meta.env.VITE_REQUEST_TIME_OUT,
   baseURL: import.meta.env.VITE_API_URL,

@@ -32,9 +32,9 @@ type OrderSummaryResp struct {
 	OrderStatisticsTable []OrderStatisticsTable `json:"order_statistics_table"`
 }
 
-func (s OrderService) Summary(ctx *gin.Context, userId int64, days int64) (interface{}, error) {
+func (s OrderService) Summary(ctx *gin.Context, userId int64, days int) (interface{}, error) {
 
-	summary, err := s.orderSummaryRep.GetByDays(userId, days)
+	summary, err := s.orderSummaryRep.GetByDays(ctx, userId, days)
 
 	if err != nil {
 		logger.Error(ctx, "summary-db异常:"+err.Error())
@@ -57,7 +57,7 @@ func (s OrderService) Summary(ctx *gin.Context, userId int64, days int64) (inter
 
 	for _, v := range summary {
 		// 将 v.Today (时间戳) 转换为 time.Time
-		t := time.Unix(v.Today, 0)
+		t := time.Unix(int64(v.Today), 0)
 
 		// 转换到美国时区
 		t = t.In(loc)
@@ -84,8 +84,8 @@ type OrderListResp struct {
 	Count  int64                    `json:"count"`
 }
 
-func (s OrderService) OrderList(req orderEntity.QueryOrderEntity) (OrderListResp, error) {
-	userOrders, count, err := s.orderRep.List(req)
+func (s OrderService) OrderList(ctx *gin.Context, req orderEntity.QueryOrderEntity) (OrderListResp, error) {
+	userOrders, count, err := s.orderRep.List(ctx, req)
 	return OrderListResp{Orders: userOrders, Count: count}, err
 }
 

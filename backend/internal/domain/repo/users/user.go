@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"time"
 
 	"backend/internal/domain/entity/users"
 )
@@ -11,8 +12,8 @@ type UserRepository interface {
 	FirstName(ctx context.Context, name string) (*users.User, error)
 	// FirstNameByUid 根据店铺名称获取用户ID
 	FirstNameByUid(ctx context.Context, name string) (int64, error)
-	// FirstID 根据ID查找用户
-	FirstID(ctx context.Context, id int64) (*users.User, error)
+	// Get 根据 id 获取 users.User
+	Get(ctx context.Context, id int64, columns ...string) (*users.User, error)
 	// CreateUser 创建用户
 	CreateUser(ctx context.Context, user *users.User) (int64, error)
 	// Update 更新用户信息
@@ -31,5 +32,19 @@ type UserRepository interface {
 	UpdatePublishCollection(ctx context.Context, userID int64, publishId string, collection string) error
 	// BatchUid 批量获取用户ID
 	BatchUid(ctx context.Context, userID int64, batchSize int) ([]*users.User, error)
-	GetByShop(ctx context.Context, shop string) (*users.User, error)
+	// GetByShop 通过域名获取店铺
+	GetByShop(ctx context.Context, appId string, shop string) (*users.User, error)
+	GetActiveUserByShop(ctx context.Context, appId string, shop string) (*users.User, error)
+	GetActiveUser(ctx context.Context, id int64, columns ...string) (*users.User, error)
+}
+
+type UserCacheRepository interface {
+	// Set 将 users.User 写入缓存
+	Set(ctx context.Context, id int64, user *users.User, ttl time.Duration) error
+	// Get 从缓存中根据 id 获取 users.User
+	Get(ctx context.Context, id int64) (*users.User, error)
+	// SetByShop Set 将 users.User 写入缓存
+	SetByShop(ctx context.Context, appId string, shop string, user *users.User, ttl time.Duration) error
+	// GetByShop Get 从缓存中根据 id 获取 users.User
+	GetByShop(ctx context.Context, appId string, shop string) (*users.User, error)
 }

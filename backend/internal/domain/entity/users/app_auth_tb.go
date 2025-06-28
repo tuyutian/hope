@@ -1,9 +1,14 @@
 package users
 
+const (
+	UserAppAuthTable = "user_app_auth"
+)
+
 // UserAppAuth 用户对应用授权表
 type UserAppAuth struct {
 	Id             int64  `xorm:"pk autoincr 'id' comment('ID')"`
 	UserId         int64  `xorm:"notnull 'user_id' comment('用户ID')"`
+	Shop           string `xorm:"notnull varchar(100) default '' 'shop' comment('my shopify Domain网站域名')"`
 	AppId          string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
 	AuthToken      string `xorm:"varchar(255) default '' 'auth_token' comment('授权token')"`
 	RefreshToken   string `xorm:"varchar(255) default '' 'refresh_token' comment('刷新token')"`
@@ -16,5 +21,5 @@ type UserAppAuth struct {
 
 // TableName 设置 UserAppAuth 对应的表名
 func (u *UserAppAuth) TableName() string {
-	return "user_app_auth"
+	return UserAppAuthTable
 }
