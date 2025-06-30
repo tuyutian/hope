@@ -20,8 +20,8 @@ type userCacheImpl struct {
 	userRepo    ur.UserRepository
 }
 
-// NewUserCache 用户缓存资源
-func NewUserCache(redisClient redis.UniversalClient, userRepo ur.UserRepository) ur.UserCacheRepository {
+// NewUserCacheRepository NewUserCacheRepo 用户缓存资源
+func NewUserCacheRepository(redisClient redis.UniversalClient, userRepo ur.UserRepository) ur.UserCacheRepository {
 	return &userCacheImpl{redisClient: redisClient, userRepo: userRepo}
 }
 

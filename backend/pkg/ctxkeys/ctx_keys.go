@@ -41,9 +41,6 @@ var (
 	// AppID for shopify app
 	AppID = CtxKey{"app_id"}
 
-	// ShopifyClient for shopify app
-	ShopifyClient = CtxKey{"shopify_client"}
-
-	// ShopifyApp for shopify app
-	ShopifyApp = CtxKey{"shopify_app"}
+	// ShopifyGraphqlClient for shopify app
+	ShopifyGraphqlClient = CtxKey{"shopify_graphql_client"}
 )

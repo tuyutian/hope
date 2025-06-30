@@ -14,9 +14,10 @@ import (
 
 // Middleware 路由中间件
 type Middleware struct {
-	AuthWare    *middleware.AuthWare
-	RequestWare *middleware.RequestWare
-	CorsWare    *middleware.CorsWare
+	AuthWare           *middleware.AuthWare
+	RequestWare        *middleware.RequestWare
+	CorsWare           *middleware.CorsWare
+	ShopifyGraphqlWare *middleware.ShopifyGraphqlWare
 }
 
 // InitRouters 初始化router规则
@@ -43,5 +44,5 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 	// 路由找不到的情况
 	router.NoRoute(requestWare.NotFoundHandler())
 	api := router.Group("api/v1") // 定义路由组
-	RegisterOrderRouter(api, handlers.OrderHandler, middlewares.AuthWare)
+	RegisterOrderRouter(api, handlers.OrderHandler, middlewares)
 }

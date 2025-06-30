@@ -4,11 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/interfaces/web/handler"
-	"backend/internal/interfaces/web/middleware"
 )
 
-func RegisterOrderRouter(r *gin.RouterGroup, h *handler.OrderHandler, m *middleware.AuthWare) {
-	orderGroup := r.Group("/order", m.CheckLogin())
+func RegisterOrderRouter(r *gin.RouterGroup, h *handler.OrderHandler, m *Middleware) {
+	orderGroup := r.Group("/order", m.AuthWare.CheckLogin(), m.ShopifyGraphqlWare.ShopifyGraphqlClient())
 
 	orderGroup.GET("/orders", h.OrderList)
 }

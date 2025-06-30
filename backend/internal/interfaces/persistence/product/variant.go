@@ -64,8 +64,8 @@ func (v *variantRepoImpl) UpdateVariants(ctx context.Context, id int64, userID i
 	return nil
 }
 
-func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int64) ([]string, error) {
-	var variantIDs []string
+func (v *variantRepoImpl) GetUploadedVariantIDs(ctx context.Context, userID int64) ([]int64, error) {
+	var variantIDs []int64
 
 	err := v.db.Context(ctx).
 		Table(new(products.UserVariant)).
@@ -84,9 +84,9 @@ func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int64) e
 	_, err := v.db.Context(ctx).
 		Where("user_id = ?", userID).
 		Update(&products.UserVariant{
-			ProductId:   "",
-			VariantId:   "",
-			InventoryId: "",
+			ProductId:   0,
+			VariantId:   0,
+			InventoryId: 0,
 		})
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (v *variantRepoImpl) DelShopifyVariant(ctx context.Context, userID int64) e
 	return nil
 }
 
-func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int64) (map[string]string, string, error) {
+func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int64) (map[string]int64, int64, error) {
 	var userVariants []products.UserVariant
 
 	// 查询所有数据
@@ -103,15 +103,15 @@ func (v *variantRepoImpl) GetVariantConfig(ctx context.Context, userID int64) (m
 		Cols("sku_name", "product_id", "variant_id").
 		Find(&userVariants)
 	if err != nil {
-		return nil, "", err
+		return nil, 0, err
 	}
 
-	resultMap := make(map[string]string)
-	var productId string
+	resultMap := make(map[string]int64)
+	var productId int64
 
 	// 构建 sku_name -> variant_id 的映射
 	for _, variant := range userVariants {
-		if productId == "" {
+		if productId == 0 {
 			productId = variant.ProductId
 		}
 		resultMap[variant.SkuName] = variant.VariantId

@@ -196,3 +196,15 @@ func (u *userRepoImpl) GetActiveUserByShop(ctx context.Context, appId string, sh
 	}
 	return &user, nil
 }
+
+func (u *userRepoImpl) GetUsers(ctx context.Context, cursorId int64, limit int) ([]*users.User, error) {
+	var usersList []*users.User
+	err := u.db.Context(ctx).Where("id > ? and is_del = 0", cursorId).Cols("id").Limit(limit).Find(&usersList)
+	if err != nil {
+		return nil, err
+	}
+	if len(usersList) == 0 {
+		return nil, nil
+	}
+	return usersList, nil
+}

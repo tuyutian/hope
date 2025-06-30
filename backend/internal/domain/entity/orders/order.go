@@ -12,5 +12,5 @@ type QueryOrderEntity struct {
 type OrderStatistics struct {
 	TotalRefund    float64 `xorm:"'total_refund'" json:"total_refund"`
 	TotalInsurance float64 `xorm:"'total_insurance'" json:"total_insurance"`
-	TotalOrders    *int    `xorm:"'total_orders'" json:"total_orders"`
+	TotalOrders    int     `xorm:"'total_orders'" json:"total_orders"`
 }

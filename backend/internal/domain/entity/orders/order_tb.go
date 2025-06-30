@@ -4,7 +4,7 @@ package orders
 type UserOrder struct {
 	Id                int64   `xorm:"pk autoincr 'id' bigint(20) comment('ID')" json:"id"`
 	UserID            int64   `xorm:"'user_id' bigint(20) notnull comment('用户id')" json:"user_id"`
-	OrderId           string  `xorm:"'order_id' varchar(50) notnull default '' comment('Shopify订单ID')" json:"order_id"`
+	OrderId           int64   `xorm:"'order_id' bigint(20) notnull default '' comment('Shopify订单ID')" json:"order_id"`
 	OrderName         string  `xorm:"'order_name' varchar(50) notnull default '' comment('订单编号（#xxx）')" json:"order_name"`
 	OrderCreatedAt    int64   `xorm:"'order_created_at' bigint(20) notnull default 0 comment('订单创建时间')" json:"order_created_at"`
 	OrderCompletionAt int64   `xorm:"'order_completion_at' bigint(20) notnull default 0 comment('订单完成时间')" json:"order_completion_at"`

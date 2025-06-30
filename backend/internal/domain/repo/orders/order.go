@@ -14,7 +14,7 @@ type OrderRepository interface {
 	// Create 创建订单
 	Create(ctx context.Context, order *orderEntity.UserOrder) (int64, error)
 	// ExistsByOrderID 检查订单是否存在
-	ExistsByOrderID(ctx context.Context, orderId string, userID int64) int64
+	ExistsByOrderID(ctx context.Context, orderId int64, userID int64) int64
 	// UpdateShopifyOrderId 更新订单信息
 	UpdateShopifyOrderId(ctx context.Context, order *orderEntity.UserOrder) error
 	// GetOrderStatistics 获取订单统计信息

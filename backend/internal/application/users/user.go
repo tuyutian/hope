@@ -5,33 +5,42 @@ import (
 	"errors"
 	"time"
 
-	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
+	shopifyEntity "backend/internal/domain/entity/shopifys"
 	"backend/internal/domain/entity/users"
 	"backend/internal/domain/repo"
 	appRepo "backend/internal/domain/repo/apps"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	userRepo "backend/internal/domain/repo/users"
+	"backend/internal/infras/shopify_graphql"
 	"backend/internal/providers"
 	"backend/pkg/ctxkeys"
 	"backend/pkg/jwt"
 	"backend/pkg/logger"
 	"backend/pkg/response/message"
+	"backend/pkg/utils"
 )
 
 type UserService struct {
-	appRepo     appRepo.AppRepository
-	userRepo    userRepo.UserRepository
-	cacheRepo   repo.CacheRepository
-	userCache   userRepo.UserCacheRepository
-	shopifyRepo shopifyRepo.ShopifyRepository
-	appAuthRepo userRepo.AppAuthRepository
+	appRepo         appRepo.AppRepository
+	userRepo        userRepo.UserRepository
+	cacheRepo       repo.CacheRepository
+	userCache       userRepo.UserCacheRepository
+	shopifyRepo     shopifyRepo.ShopifyRepository
+	appAuthRepo     userRepo.AppAuthRepository
+	shopGraphqlRepo shopifyRepo.ShopGraphqlRepository
 }
 
 func NewUserService(repos *providers.Repositories) *UserService {
-	return &UserService{userRepo: repos.UserRepo}
+	return &UserService{userRepo: repos.UserRepo,
+		appRepo:         repos.AppRepo,
+		cacheRepo:       repos.CacheRepo,
+		userCache:       repos.UserCacheRepo,
+		shopifyRepo:     repos.ShopifyRepo,
+		appAuthRepo:     repos.AppAuthRepo,
+		shopGraphqlRepo: repos.ShopGraphqlRepo}
 }
 
 func (u *UserService) GetLoginUserFromID(ctx context.Context, id int64) (*users.User, error) {
@@ -55,20 +64,17 @@ func (u *UserService) GetClaims(ctx context.Context) *jwt.BizClaims {
 	return claims
 }
 
-func (u *UserService) AuthFromSession(ctx context.Context, token string) (*users.User, error) {
+func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token) (*users.User, error) {
 	appID := ctx.Value(ctxkeys.AppID).(string)
 	claims := u.GetClaims(ctx)
-	sessionToken, err := u.shopifyRepo.RequestOfflineSessionToken(ctx, token)
+
+	shopName, err := utils.GetShopName(claims.Dest)
 	if err != nil {
 		return nil, err
 	}
-	app := ctx.Value(ctxkeys.ShopifyApp).(goshopify.App)
-	shopName, err := u.shopifyRepo.GetShopName(ctx, claims.Dest)
-	if err != nil {
-		return nil, err
-	}
-	client, err := app.NewClient(shopName, sessionToken.Token, nil)
-	shop, err := client.Shop.Get(ctx, nil)
+	client := shopify_graphql.NewGraphqlClient(shopName, sessionToken.Token, nil)
+	u.shopGraphqlRepo.WithClient(client)
+	shop, err := u.shopGraphqlRepo.GetShopInfo(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -79,17 +85,16 @@ func (u *UserService) AuthFromSession(ctx context.Context, token string) (*users
 	user.Shop = claims.Dest
 	user.IsDel = 0
 	if shop != nil {
-		user.City = shop.City
-		user.CurrencyCode = shop.Country
-		user.CountryName = shop.CountryName
-		user.CountryCode = shop.CountryCode
+		user.City = shop.BillingAddress.City
+		user.CountryName = shop.BillingAddress.Country
+		user.CountryCode = shop.BillingAddress.CountryCodeV2
 		user.Email = shop.Email
-		user.Phone = shop.Phone
-		user.Timezone = shop.Timezone
-		user.PlanDisplayName = shop.PlanDisplayName
+		user.Phone = shop.BillingAddress.Phone
+		user.Timezone = shop.TimezoneOffsetMinutes
+		user.PlanDisplayName = shop.Plan.DisplayName
 		user.Name = shop.Name
-		user.CurrencyCode = shop.Currency
-		user.MoneyFormat = u.shopifyRepo.ExtractCurrencySymbol(shop.MoneyFormat)
+		user.CurrencyCode = shop.CurrencyCode
+		user.MoneyFormat = u.shopifyRepo.ExtractCurrencySymbol(shop.CurrencyFormats.MoneyFormat)
 	}
 	if user.ID > 0 {
 		err := u.userRepo.Update(ctx, user)

@@ -93,7 +93,7 @@ func (o *orderRepoImpl) Create(ctx context.Context, order *orderEntity.UserOrder
 }
 
 // ExistsByOrderID 检查订单是否存在
-func (o *orderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string, userID int64) int64 {
+func (o *orderRepoImpl) ExistsByOrderID(ctx context.Context, orderId int64, userID int64) int64 {
 	var userOrder orderEntity.UserOrder
 	has, err := o.db.Context(ctx).Cols("id").Where("user_id = ? and order_id = ?", userID, orderId).Get(&userOrder)
 

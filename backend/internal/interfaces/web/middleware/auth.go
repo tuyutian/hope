@@ -9,14 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/users"
+	shopifyEntity "backend/internal/domain/entity/shopifys"
 	userEntity "backend/internal/domain/entity/users"
 	"backend/internal/domain/repo/jwtauth"
+	"backend/internal/infras/config"
 	"backend/internal/providers"
 	"backend/pkg/crypto/bcrypt"
 	"backend/pkg/ctxkeys"
 	"backend/pkg/jwt"
 	"backend/pkg/logger"
 	"backend/pkg/response/message"
+	"backend/pkg/utils"
 )
 
 // AuthWare auth 中间件
@@ -25,6 +28,7 @@ type AuthWare struct {
 	jwtRepo      jwtauth.JWTRepository
 	customCrypto bcrypt.BCrypto
 	aesCrypto    bcrypt.BCrypto
+	shopifyConf  config.Shopify
 }
 
 // CookieClaims cookie 中的登录信息
@@ -34,11 +38,12 @@ type CookieClaims struct {
 }
 
 // NewAuthWare JWT 中间件
-func NewAuthWare(userService *users.UserService, repos *providers.Repositories) *AuthWare {
+func NewAuthWare(userService *users.UserService, repos *providers.Repositories, shopifyConf config.Shopify) *AuthWare {
 	return &AuthWare{
 		userService: userService,
 		jwtRepo:     repos.JwtRepo,
 		aesCrypto:   repos.AesCrypto,
+		shopifyConf: shopifyConf,
 	}
 }
 
@@ -227,6 +232,8 @@ func (auth *AuthWare) checkClaims(ctx context.Context, token string, claims *jwt
 	return message.ErrInvalidAccount
 }
 
+var accessTokenRelPath = "admin/oauth/access_token"
+
 func (auth *AuthWare) checkUser(ctx context.Context, claims *jwt.BizClaims) error {
 	// 检查主账号是否存在
 	_, err := auth.userService.GetLoginUserFromID(ctx, claims.UserID)
@@ -243,7 +250,29 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	if err != nil {
 		return err
 	}
-	user, err = auth.sessionStore(ctx, token)
+	url := "https://" + claims.Dest + accessTokenRelPath
+	data := struct {
+		ClientId           string `json:"client_id"`
+		ClientSecret       string `json:"client_secret"`
+		GrantType          string `json:"grant_type"`
+		SubjectToken       string `json:"subject_token"`
+		SubjectTokenType   string `json:"subject_token_type"`
+		RequestedTokenType string `json:"requested_token_type"`
+	}{
+		ClientId:           auth.shopifyConf.AppKey,
+		ClientSecret:       auth.shopifyConf.AppSecret,
+		GrantType:          "urn:ietf:params:oauth:grant-type:token-exchange",
+		SubjectToken:       token,
+		SubjectTokenType:   "urn:ietf:params:oauth:token-type:id_token",
+		RequestedTokenType: "urn:shopify:params:oauth:token-type:offline-access-token",
+	}
+	client := utils.NewHTTPClient()
+	sessionToken := new(shopifyEntity.Token)
+	err = client.PostJSON(ctx, url, &data, &sessionToken)
+	if err != nil {
+		return err
+	}
+	user, err = auth.sessionStore(ctx, sessionToken)
 	if err != nil {
 		return err
 	}
@@ -255,7 +284,7 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 }
 
 // sessionStore   session 授权部分
-func (auth *AuthWare) sessionStore(ctx context.Context, token string) (*userEntity.User, error) {
+func (auth *AuthWare) sessionStore(ctx context.Context, token *shopifyEntity.Token) (*userEntity.User, error) {
 	user, err := auth.userService.AuthFromSession(ctx, token)
 	if err != nil {
 		return nil, err

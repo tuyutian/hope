@@ -30,8 +30,9 @@ type AppConfig struct {
 }
 
 type Shopify struct {
-	AppSecret string `mapstructure:"app_secret"`
-	AppKey    string `mapstructure:"app_key"`
+	AppSecret   string `mapstructure:"app_secret"`
+	AppKey      string `mapstructure:"app_key"`
+	WebhookHost string `mapstructure:"webhook_host"`
 }
 
 // JWT config

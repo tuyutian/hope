@@ -28,7 +28,7 @@ func (j *OrderRepoImpl) Create(ctx context.Context, jobOrder *jobs.JobOrder) (in
 	return jobOrder.Id, nil
 }
 
-func (j *OrderRepoImpl) ExistsByOrderID(ctx context.Context, orderId string) int64 {
+func (j *OrderRepoImpl) ExistsByOrderID(ctx context.Context, orderId int64) int64 {
 	var jobOrder jobs.JobOrder
 	has, err := j.db.Context(ctx).Cols("id").Where("order_id = ? and is_success = 0", orderId).Get(&jobOrder)
 

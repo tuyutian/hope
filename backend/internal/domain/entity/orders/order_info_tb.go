@@ -6,7 +6,7 @@ type UserOrderInfo struct {
 	UserID          int64   `xorm:"'user_id' bigint(20) notnull comment('用户id')" json:"user_id"`
 	UserOrderId     int64   `xorm:"'user_order_id' bigint(20) notnull comment('主表ID')" json:"user_order_id"`
 	Sku             string  `xorm:"'sku' varchar(100) notnull default '' comment('SKU')" json:"sku"`
-	VariantId       string  `xorm:"'variant_id' varchar(100) notnull default '' comment('变体ID')" json:"variant_id"`
+	VariantId       int64   `xorm:"'variant_id' bigint(20) notnull default '' comment('变体ID')" json:"variant_id"`
 	VariantTitle    string  `xorm:"'variant_title' varchar(255) notnull default '' comment('变体标题')" json:"variant_title"`
 	Quantity        int     `xorm:"'quantity' int(11) notnull default 0 comment('购买数量')" json:"quantity"`
 	UnitPriceAmount float64 `xorm:"'unit_price_amount' decimal(12,2) notnull default 0.00 comment('单价金额')" json:"unit_price_amount"`

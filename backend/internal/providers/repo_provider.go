@@ -14,9 +14,13 @@ import (
 	"backend/internal/domain/repo/shopifys"
 	"backend/internal/domain/repo/users"
 	"backend/internal/infras/cache"
+	userCacheRepo "backend/internal/infras/cache/users"
 	"backend/internal/infras/config"
 	"backend/internal/infras/jwtauth"
 	"backend/internal/infras/shopify"
+	shopifyOrderRepo "backend/internal/infras/shopify_graphql/orders"
+	shopifyProductRepo "backend/internal/infras/shopify_graphql/products"
+	shopifyShopRepo "backend/internal/infras/shopify_graphql/shops"
 	"backend/internal/interfaces/persistence/app"
 	"backend/internal/interfaces/persistence/cart"
 	"backend/internal/interfaces/persistence/job"
@@ -30,6 +34,14 @@ import (
 // Repositories 这个providers层可以根据实际情况看是否要添加
 // 资源列表
 type Repositories struct {
+	ShopifyRepos
+	TableRepos
+	CacheRepos
+	ThirdPartRepos
+}
+
+type TableRepos struct {
+	OrderSummaryRepo orders.OrderSummaryRepository
 	UserRepo         users.UserRepository
 	AppAuthRepo      users.AppAuthRepository
 	OrderInfoRep     orders.OrderInfoRepository
@@ -38,28 +50,81 @@ type Repositories struct {
 	VariantRepo      products.VariantRepository
 	OrderRepo        orders.OrderRepository
 	JobOrderRepo     jobs.OrderRepository
-	OrderSummaryRepo orders.OrderSummaryRepository
-	JwtRepo          jwtRepo.JWTRepository
-	AesCrypto        bcrypt.BCrypto
+	JobProductRepo   jobs.ProductRepository
 	AppRepo          apps.AppRepository
-	CacheRepo        repo.CacheRepository
-	ShopifyRepo      shopifys.ShopifyRepository
+}
+
+type CacheRepos struct {
+	CacheRepo     repo.CacheRepository
+	UserCacheRepo users.UserCacheRepository
+}
+
+type ThirdPartRepos struct {
+	AesCrypto bcrypt.BCrypto
+	JwtRepo   jwtRepo.JWTRepository
+}
+
+type ShopifyRepos struct {
+	ShopifyRepo        shopifys.ShopifyRepository
+	ProductGraphqlRepo shopifys.ProductGraphqlRepository
+	ShopGraphqlRepo    shopifys.ShopGraphqlRepository
+	OrderGraphqlRepo   shopifys.OrderGraphqlRepository
 }
 
 // NewRepositories 创建 Repositories
 func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf *config.AppConfig) *Repositories {
+	tableRepos := NewTableRepos(db, redisClient)
+	cacheRepos := NewCacheRepos(redisClient, tableRepos.UserRepo)
+	thirdPartRepos := NewThirdPartRepos(appConf)
+	shopifyRepos := NewShopifyRepos(&appConf.Shopify)
+
+	r := &Repositories{
+		TableRepos:     tableRepos,
+		CacheRepos:     cacheRepos,
+		ThirdPartRepos: thirdPartRepos,
+		ShopifyRepos:   shopifyRepos,
+	}
+
+	return r
+}
+
+func NewCacheRepos(redisClient redis.UniversalClient, userRepo users.UserRepository) CacheRepos {
+	cacheRepo := cache.NewCacheRepository(redisClient)
+	uCacheRepo := userCacheRepo.NewUserCacheRepository(redisClient, userRepo)
+	return CacheRepos{
+		CacheRepo:     cacheRepo,
+		UserCacheRepo: uCacheRepo,
+	}
+}
+
+func NewTableRepos(db *xorm.Engine, redisClient redis.UniversalClient) TableRepos {
 	userRepo := user.NewUserRepository(db)
 	orderRepo := order.NewOrderRepository(db)
 	jobOrderRepo := job.NewOrderRepository(db)
+	jobProductRepo := job.NewProductRepository(db)
 	orderInfoRepo := order.NewOrderInfoRepository(db)
 	productRepo := product.NewProductRepository(db)
 	variantRepo := product.NewVariantRepository(db)
 	cartSettingRepo := cart.NewCartSettingRepository(db)
 	orderSummaryRepo := order.NewOrderSummaryRepository(db)
-	shopifyRepo := shopify.NewShopifyRepository()
 	appRepo := app.NewAppRepository(db, redisClient)
 	appAuthRepo := user.NewAppAuthRepository(db)
-	cacheRepo := cache.NewCacheRepository(redisClient)
+	return TableRepos{
+		UserRepo:         userRepo,
+		OrderRepo:        orderRepo,
+		JobOrderRepo:     jobOrderRepo,
+		OrderSummaryRepo: orderSummaryRepo,
+		JobProductRepo:   jobProductRepo,
+		OrderInfoRep:     orderInfoRepo,
+		ProductRepo:      productRepo,
+		VariantRepo:      variantRepo,
+		AppAuthRepo:      appAuthRepo,
+		CartSettingRepo:  cartSettingRepo,
+		AppRepo:          appRepo,
+	}
+}
+
+func NewThirdPartRepos(appConf *config.AppConfig) ThirdPartRepos {
 	aesCrypto := bcrypt.NewAesBCrypto(appConf.Crypto.AES.Key, appConf.Crypto.AES.IV)
 	// JwtManager
 	jwtManager := jwt.New(
@@ -69,22 +134,21 @@ func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf
 	)
 	jwtRepository := jwtauth.NewJWTRepository(appConf.JWT.SecretKey, jwtManager, aesCrypto)
 
-	r := &Repositories{
-		UserRepo:         userRepo,
-		OrderRepo:        orderRepo,
-		JobOrderRepo:     jobOrderRepo,
-		OrderSummaryRepo: orderSummaryRepo,
-		JwtRepo:          jwtRepository,
-		AesCrypto:        aesCrypto,
-		OrderInfoRep:     orderInfoRepo,
-		ProductRepo:      productRepo,
-		VariantRepo:      variantRepo,
-		ShopifyRepo:      shopifyRepo,
-		AppAuthRepo:      appAuthRepo,
-		CartSettingRepo:  cartSettingRepo,
-		AppRepo:          appRepo,
-		CacheRepo:        cacheRepo,
+	return ThirdPartRepos{
+		JwtRepo:   jwtRepository,
+		AesCrypto: aesCrypto,
 	}
+}
 
-	return r
+func NewShopifyRepos(shopifyConf *config.Shopify) ShopifyRepos {
+	shopifyRepos := shopify.NewShopifyRepository(shopifyConf)
+	shopGraphqlRepo := shopifyShopRepo.NewShopGraphqlRepository()
+	productGraphqlRepo := shopifyProductRepo.NewProductGraphqlRepository()
+	orderGraphqlRepo := shopifyOrderRepo.NewOrderGraphqlRepository()
+	return ShopifyRepos{
+		ShopifyRepo:        shopifyRepos,
+		ProductGraphqlRepo: productGraphqlRepo,
+		ShopGraphqlRepo:    shopGraphqlRepo,
+		OrderGraphqlRepo:   orderGraphqlRepo,
+	}
 }

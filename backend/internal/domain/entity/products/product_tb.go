@@ -5,7 +5,7 @@ type UserProduct struct {
 	Id          int64  `xorm:"pk autoincr 'id' bigint(20) comment('ID')" json:"id"`
 	UserID      int64  `xorm:"'user_id' bigint(20) notnull comment('用户id')" json:"user_id"`
 	AppId       string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
-	ProductId   string `xorm:"'product_id' varchar(100) notnull default '' comment('shopify上传成功的产品ID')" json:"product_id"`
+	ProductId   int64  `xorm:"'product_id' varchar(100) notnull default '' comment('shopify上传成功的产品ID')" json:"product_id"`
 	Title       string `xorm:"'title' varchar(255) notnull comment('标题')" json:"title"`
 	ProductType string `xorm:"'product_type' varchar(255) notnull comment('产品类型')" json:"product_type"`
 	Vendor      string `xorm:"'vendor' varchar(255) notnull comment('vendor')" json:"vendor"`
@@ -28,9 +28,9 @@ type UserVariant struct {
 	Id            int64   `xorm:"pk autoincr 'id' bigint(20) comment('ID')" json:"id"`
 	UserID        int64   `xorm:"'user_id' bigint(20) notnull comment('用户id')" json:"user_id"`
 	UserProductId int64   `xorm:"'user_product_id' bigint(20) notnull comment('保险用户产品表ID')" json:"user_product_id"`
-	ProductId     string  `xorm:"'product_id' varchar(100) notnull default '' comment('Shopify产品ID')" json:"product_id"`
-	VariantId     string  `xorm:"'variant_id' varchar(100) notnull default '' comment('Shopify变体ID')" json:"variant_id"`
-	InventoryId   string  `xorm:"'inventory_id' varchar(100) notnull default '' comment('Shopify仓库ID')" json:"inventory_id"`
+	ProductId     int64   `xorm:"'product_id' bigint(20) notnull default '' comment('Shopify产品ID')" json:"product_id"`
+	VariantId     int64   `xorm:"'variant_id' bigint(20) notnull default '' comment('Shopify变体ID')" json:"variant_id"`
+	InventoryId   int64   `xorm:"'inventory_id' bigint(20) notnull default '' comment('Shopify仓库ID')" json:"inventory_id"`
 	SkuName       string  `xorm:"'sku_name' varchar(150) notnull default '' comment('SKU')" json:"sku_name"`
 	ImageUrl      string  `xorm:"'image_url' varchar(500) notnull default '' comment('变体封面图')" json:"image_url"`
 	Sku1          string  `xorm:"'sku_1' varchar(150) notnull default '' comment('变体属性1')" json:"sku_1"`

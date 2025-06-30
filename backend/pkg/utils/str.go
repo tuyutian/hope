@@ -6,11 +6,14 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+
+	"backend/pkg/response/message"
 )
 
 // Uuid 生成 version4 的uuid
@@ -54,4 +57,32 @@ func Md5(str string) string {
 	h := md5.New()
 	h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func GetShopName(shop string) (string, error) {
+	if !strings.HasPrefix(shop, "https://") {
+		shop = "https://" + shop
+	}
+	parsedURL, err := url.Parse(shop)
+	if err != nil {
+		return "", err
+	}
+
+	host := parsedURL.Hostname()
+
+	if strings.HasSuffix(host, ".myshopify.com") {
+		shopName := strings.TrimSuffix(host, ".myshopify.com")
+		return shopName, nil
+	}
+	return "", message.ErrInvalidAccount
+}
+
+func PaseTimeToStamp(timeStr string) int64 {
+	t, err := time.Parse(time.RFC3339, timeStr)
+	if err != nil {
+		// 如果解析失败，返回 0
+		return 0
+	}
+	// 返回 Unix 时间戳（秒级）
+	return t.Unix()
 }

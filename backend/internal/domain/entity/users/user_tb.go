@@ -19,13 +19,13 @@ type User struct {
 	FreeTrialDays   int8   `xorm:"tinyint(4) default 0 'free_trial_days' comment('试用天数')"`
 	TrialTime       int64  `xorm:"default 0 'trial_time' comment('试用时间')"`
 	CurrencyCode    string `xorm:"varchar(10) default '' 'currency_code' comment('货币简码')"`
-	Timezone        string `xorm:"varchar(50) default '' 'timezone' comment('时区')"`
+	Timezone        int    `xorm:"int(11) default 0 'timezone' comment('The shop's time zone offset expressed as a number of minutes.')"`
 	MoneyFormat     string `xorm:"varchar(20) default '' 'money_format' comment('货币单位符号')"`
 	LastLogin       int64  `xorm:"default 0 'last_login' comment('最后登录时间')"`
 	IsDel           int8   `xorm:"tinyint(1) default 0 'is_del' comment('删除状态 0正常 1已删除')"`
-	PublishId       string `xorm:"varchar(100) default '' 'publish_id' comment('店铺publish_id')"`
-	InstallTime     int64  `xorm:"default 0 'install_time' comment('安装时间')"`
-	UninstallTime   int64  `xorm:"default 0 'uninstall_time' comment('卸载时间')"`
+	PublishId       int64  `xorm:"bigint(20) default '' 'publish_id' comment('店铺publish_id')"`
+	InstallTime     int64  `xorm:"bigint(20) default 0 'install_time' comment('安装时间')"`
+	UninstallTime   int64  `xorm:"bigint(20) default 0 'uninstall_time' comment('卸载时间')"`
 	CreateTime      int64  `xorm:"created 'create_time' bigint(20) default 0 notnull comment('创建时间')" json:"create_time"`
 	UpdateTime      int64  `xorm:"updated 'update_time' bigint(20) default 0 notnull comment('最近修改时间')" json:"update_time"`
 }

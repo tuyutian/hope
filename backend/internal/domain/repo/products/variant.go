@@ -16,9 +16,9 @@ type VariantRepository interface {
 	// UpdateVariants 更新产品变体
 	UpdateVariants(ctx context.Context, id int64, userID int64, variant *products.UserVariant) error
 	// GetUploadedVariantIDs 获取已上传的变体ID列表
-	GetUploadedVariantIDs(ctx context.Context, userID int64) ([]string, error)
+	GetUploadedVariantIDs(ctx context.Context, userID int64) ([]int64, error)
 	// DelShopifyVariant 删除Shopify变体
 	DelShopifyVariant(ctx context.Context, userID int64) error
 	// GetVariantConfig 获取变体配置
-	GetVariantConfig(ctx context.Context, userID int64) (map[string]string, string, error)
+	GetVariantConfig(ctx context.Context, userID int64) (map[string]int64, int64, error)
 }

@@ -48,12 +48,12 @@ func (p *productRepoImpl) FirstProductByID(ctx context.Context, id int64, userID
 	return &product, nil
 }
 
-func (p *productRepoImpl) FirstProductID(ctx context.Context, userID int64) string {
+func (p *productRepoImpl) FirstProductID(ctx context.Context, userID int64) int64 {
 	var product products.UserProduct
 	has, err := p.db.Context(ctx).Cols("product_id").Where("user_id = ?", userID).Get(&product)
 
 	if err != nil || !has {
-		return ""
+		return 0
 	}
 	return product.ProductId
 }
@@ -76,14 +76,14 @@ func (p *productRepoImpl) UpdateProduct(ctx context.Context, id int64, userID in
 
 func (p *productRepoImpl) DelShopifyProduct(ctx context.Context, userID int64) error {
 	_, err := p.db.Context(ctx).Where("user_id = ?", userID).
-		Update(&products.UserProduct{ProductId: "", Status: 0})
+		Update(&products.UserProduct{ProductId: 0, Status: 0})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (p *productRepoImpl) ExistsByProductID(ctx context.Context, userID int64, productId string) int64 {
+func (p *productRepoImpl) ExistsByProductID(ctx context.Context, userID int64, productId int64) int64 {
 	var userProduct products.UserProduct
 	has, err := p.db.Context(ctx).Cols("id").Where("user_id = ? and product_id = ?", userID, productId).Get(&userProduct)
 

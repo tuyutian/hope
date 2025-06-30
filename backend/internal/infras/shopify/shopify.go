@@ -1,74 +1,30 @@
 package shopify
 
 import (
-	"context"
-	"net/url"
+	"fmt"
+	"strconv"
 	"strings"
 
-	goshopify "github.com/bold-commerce/go-shopify/v4"
-
-	shopifyEntity "backend/internal/domain/entity/shopifys"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
-	"backend/pkg/ctxkeys"
-	"backend/pkg/response/message"
+	"backend/internal/infras/config"
 )
 
 var _ shopifyRepo.ShopifyRepository = (*shopifyRepoImpl)(nil)
 
 type shopifyRepoImpl struct {
+	webhookHost string
 }
 
-func NewShopifyRepository() shopifyRepo.ShopifyRepository {
-	return &shopifyRepoImpl{}
+var WebhookShopifyEndpoint = "api/v1/shopify/webhook"
+
+func NewShopifyRepository(shopifyConf *config.Shopify) shopifyRepo.ShopifyRepository {
+	return &shopifyRepoImpl{
+		webhookHost: shopifyConf.WebhookHost,
+	}
 }
+func (s *shopifyRepoImpl) GetWebhookUrl() string {
 
-var accessTokenRelPath = "admin/oauth/access_token"
-
-func (s *shopifyRepoImpl) RequestOfflineSessionToken(ctx context.Context, token string) (*shopifyEntity.Token, error) {
-
-	app := ctx.Value(ctxkeys.ShopifyApp).(*goshopify.App)
-	client := ctx.Value(ctxkeys.ShopifyClient).(*goshopify.Client)
-	data := struct {
-		ClientId           string `json:"client_id"`
-		ClientSecret       string `json:"client_secret"`
-		GrantType          string `json:"grant_type"`
-		SubjectToken       string `json:"subject_token"`
-		SubjectTokenType   string `json:"subject_token_type"`
-		RequestedTokenType string `json:"requested_token_type"`
-	}{
-		ClientId:           app.ApiKey,
-		ClientSecret:       app.ApiSecret,
-		GrantType:          "urn:ietf:params:oauth:grant-type:token-exchange",
-		SubjectToken:       token,
-		SubjectTokenType:   "urn:ietf:params:oauth:token-type:id_token",
-		RequestedTokenType: "urn:shopify:params:oauth:token-type:offline-access-token",
-	}
-	req, err := client.NewRequest(ctx, "POST", accessTokenRelPath, data, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	sessionToken := new(shopifyEntity.Token)
-	err = client.Do(req, sessionToken)
-	return sessionToken, err
-}
-
-func (s *shopifyRepoImpl) GetShopName(ctx context.Context, shopUrl string) (string, error) {
-	if !strings.HasPrefix(shopUrl, "https://") {
-		shopUrl = "https://" + shopUrl
-	}
-	parsedURL, err := url.Parse(shopUrl)
-	if err != nil {
-		return "", err
-	}
-
-	host := parsedURL.Hostname()
-
-	if strings.HasSuffix(host, ".myshopify.com") {
-		shopName := strings.TrimSuffix(host, ".myshopify.com")
-		return shopName, nil
-	}
-	return "", message.ErrInvalidAccount
+	return fmt.Sprintf("https://%s/%s", s.webhookHost, WebhookShopifyEndpoint)
 }
 
 // ExtractCurrencySymbol 从 moneyFormat 提取货币符号
@@ -81,13 +37,27 @@ func (s *shopifyRepoImpl) ExtractCurrencySymbol(moneyFormat string) string {
 	return ""
 }
 
-// GetShopifyGraphqlId /**
-func GetShopifyGraphqlId(id string) string {
-	// 找到最后一个 "/" 的位置
-	index := strings.LastIndex(id, "/")
-	if index != -1 {
-		// 从 "/" 后面开始截取字符串
-		return id[index+1:]
+// GetIdFromShopifyGraphqlId /**
+func (s *shopifyRepoImpl) GetIdFromShopifyGraphqlId(gid string) int64 {
+	if gid == "" {
+		return 0
 	}
-	return ""
+
+	var idStr string
+	if strings.HasPrefix(gid, "gid://shopify/") {
+		parts := strings.Split(gid, "/")
+		if len(parts) > 0 {
+			idStr = parts[len(parts)-1]
+		}
+	} else {
+		idStr = gid
+	}
+
+	// 将字符串转换为 int64
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return 0 // 转换失败时返回 0
+	}
+
+	return id
 }
