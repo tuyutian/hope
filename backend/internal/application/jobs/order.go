@@ -306,20 +306,20 @@ func (o *OrderService) HandleOrderStatistics(ctx context.Context, t *asynq.Task)
 
 	batchSize := 300
 	// 获取全部userID 一次性300
-	users, err := o.userRepo.GetUsers(ctx, userID, batchSize)
+	userList, err := o.userRepo.GetUsers(ctx, userID, batchSize)
 	if err != nil {
 		logger.Error(ctx, "order_statistic_queue:获取用户信息失败", err)
 		return nil
 	}
 
-	if users == nil || len(users) == 0 {
+	if userList == nil || len(userList) == 0 {
 		logger.Info(ctx, "order_statistic_queue:执行完毕")
 		return nil
 	}
 
 	var lastUserID int64 // 用于存储最后一个处理的用户 userID
 	// 处理这一批
-	for _, user := range users {
+	for _, user := range userList {
 		lastUserID = user.ID
 		// 获取订单数据 订单数据 日退款数据
 		statistics, err := o.orderRepo.GetOrderStatistics(ctx, start, end, user.ID)

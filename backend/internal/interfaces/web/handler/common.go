@@ -26,8 +26,8 @@ func (c *CommonHandler) Upload(ctx *gin.Context) {
 		return
 	}
 	// 拼接uuid的图片名称
-	uuid := uuid.New()
-	imageName := uuid.String() + file.Filename
+	u := uuid.New()
+	imageName := u.String() + file.Filename
 	imagePath, err := c.ossRepo.UploadFile(ctx, imageName, file)
 	if err != nil {
 		c.Error(ctx, code.UploadFailed, message.ErrorBadRequest.Error(), nil)
