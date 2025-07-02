@@ -8,7 +8,7 @@ import (
 
 type OrderRepository interface {
 	// DelOrder 软删除订单
-	DelOrder(ctx context.Context, userID int64, orderId string) error
+	DelOrder(ctx context.Context, userID int64, orderId int64) error
 	// List 分页查询订单列表
 	List(ctx context.Context, req orderEntity.QueryOrderEntity) ([]*orderEntity.UserOrder, int64, error)
 	// Create 创建订单

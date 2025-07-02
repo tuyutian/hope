@@ -10,4 +10,5 @@ func RegisterOrderRouter(r *gin.RouterGroup, h *handler.OrderHandler, m *Middlew
 	orderGroup := r.Group("/order", m.AuthWare.CheckLogin(), m.ShopifyGraphqlWare.ShopifyGraphqlClient())
 
 	orderGroup.GET("/orders", h.OrderList)
+	orderGroup.GET("/dashboard", h.Dashboard)
 }

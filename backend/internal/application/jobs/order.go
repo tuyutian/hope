@@ -16,8 +16,8 @@ import (
 	"backend/internal/domain/repo/products"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	"backend/internal/domain/repo/users"
+	"backend/internal/infras/config"
 	"backend/internal/infras/shopify_graphql"
-	"backend/internal/infras/task"
 	"backend/internal/providers"
 	"backend/pkg/logger"
 	"backend/pkg/utils"
@@ -151,7 +151,7 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 	var insuranceAmount float64
 
 	for _, lineItem := range data.Order.LineItems.Edges {
-		variantID := o.shopifyRepo.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
+		variantID := utils.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
 		refundQuantity := refundMap[variantID]
 		skuNum++
 
@@ -202,7 +202,7 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 
 	userOrder := &orders.UserOrder{
 		UserID:            userID,
-		OrderId:           o.shopifyRepo.GetIdFromShopifyGraphqlId(data.Order.ID),
+		OrderId:           utils.GetIdFromShopifyGraphqlId(data.Order.ID),
 		OrderName:         data.Order.Name,
 		OrderCreatedAt:    createdAt,
 		OrderCompletionAt: processedAt,
@@ -219,7 +219,7 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 	var skuNum int
 
 	for _, lineItem := range data.Order.LineItems.Edges {
-		variantID := o.shopifyRepo.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
+		variantID := utils.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
 		price := o.parsePrice(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
 		refundQuantity := refundMap[variantID]
 		isInsurance := 0
@@ -269,7 +269,7 @@ func (o *OrderService) parseRefundInfo(data *shopifys.OrderResponse) (map[int64]
 	var refundAmount float64
 	for _, refund := range data.Order.Refunds {
 		for _, item := range refund.RefundLineItems.Edges {
-			variantID := o.shopifyRepo.GetIdFromShopifyGraphqlId(item.Node.LineItem.Variant.ID)
+			variantID := utils.GetIdFromShopifyGraphqlId(item.Node.LineItem.Variant.ID)
 			quantity := item.Node.Quantity
 			price := o.parsePrice(item.Node.SubtotalSet.ShopMoney.Amount)
 
@@ -352,11 +352,13 @@ func (o *OrderService) HandleOrderStatistics(ctx context.Context, t *asynq.Task)
 
 	// 递归处理下一批用户
 	if lastUserID != 0 {
-		orderStatisticTask, err := task.OrderStatisticsTask(ctx, lastUserID, start, end)
+		payload := jobs.OrderStatisticPayload{UserID: userID, Start: start, End: end}
+		data, err := json.Marshal(payload)
 		if err != nil {
 			logger.Error(ctx, "order_statistic_queue 构建任务失败:", err.Error())
 			return nil
 		}
+		orderStatisticTask := asynq.NewTask(config.SendOrderStatistics, data)
 		err = o.HandleOrderStatistics(ctx, orderStatisticTask)
 		if err != nil {
 			return err

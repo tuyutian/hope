@@ -165,8 +165,8 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			return p.fail(ctx, job.Id, "上传产品到 Shopify 失败", err)
 		}
 		shopifyProduct := shopifyProductResp.ProductCreate.Product
-		productId = p.shopifyRepo.GetIdFromShopifyGraphqlId(shopifyProduct.ID)
-		variantId = p.shopifyRepo.GetIdFromShopifyGraphqlId(shopifyProduct.Variants.Edges[0].Node.ID)
+		productId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.ID)
+		variantId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.Variants.Edges[0].Node.ID)
 		// 删除默认变体
 		err = p.productGraphqlRepo.DeleteVariant(ctx, productId, variantId)
 
@@ -218,8 +218,8 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 
 			_ = p.variantRepo.UpdateVariants(ctx, dbVariantId, uid, &productEntity.UserVariant{
 				ProductId:   productId,
-				VariantId:   p.shopifyRepo.GetIdFromShopifyGraphqlId(item["id"].(string)),
-				InventoryId: p.shopifyRepo.GetIdFromShopifyGraphqlId(item["inventory_id"].(string)),
+				VariantId:   utils.GetIdFromShopifyGraphqlId(item["id"].(string)),
+				InventoryId: utils.GetIdFromShopifyGraphqlId(item["inventory_id"].(string)),
 			})
 		}
 

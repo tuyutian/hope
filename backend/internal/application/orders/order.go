@@ -1,19 +1,27 @@
 package orders
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"backend/internal/domain/entity/jobs"
 	orderEntity "backend/internal/domain/entity/orders"
+	jobRepo "backend/internal/domain/repo/jobs"
 	"backend/internal/domain/repo/orders"
+	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/providers"
 	"backend/pkg/logger"
 )
 
 type OrderService struct {
-	orderRep        orders.OrderRepository
+	orderRepo       orders.OrderRepository
 	orderSummaryRep orders.OrderSummaryRepository
+	jobOrderRepo    jobRepo.OrderRepository
+	userRepo        userRepo.UserRepository
+	asynqRepo       jobRepo.AsynqRepository
 }
 type OrderStatisticsTable struct {
 	Date   string  `json:"date"`
@@ -25,16 +33,26 @@ type OrderStatistics struct {
 	Orders int     `json:"orders"`
 	Sales  float64 `json:"sales"`
 	Refund float64 `json:"refund"`
-	Total  float64 `json:"total";o`
+	Total  float64 `json:"total,omitempty"`
 }
 type OrderSummaryResp struct {
 	OrderStatistics      OrderStatistics        `json:"order_statistics"`
 	OrderStatisticsTable []OrderStatisticsTable `json:"order_statistics_table"`
 }
 
-func (s OrderService) Summary(ctx *gin.Context, userId int64, days int) (interface{}, error) {
+func NewOrderService(repos *providers.Repositories) *OrderService {
+	return &OrderService{
+		jobOrderRepo:    repos.JobOrderRepo,
+		orderRepo:       repos.OrderRepo,
+		orderSummaryRep: repos.OrderSummaryRepo,
+		asynqRepo:       repos.AsyncRepo,
+		userRepo:        repos.UserRepo,
+	}
+}
 
-	summary, err := s.orderSummaryRep.GetByDays(ctx, userId, days)
+func (o *OrderService) Summary(ctx *gin.Context, userId int64, days int) (interface{}, error) {
+
+	summary, err := o.orderSummaryRep.GetByDays(ctx, userId, days)
 
 	if err != nil {
 		logger.Error(ctx, "summary-db异常:"+err.Error())
@@ -84,14 +102,77 @@ type OrderListResp struct {
 	Count  int64                    `json:"count"`
 }
 
-func (s OrderService) OrderList(ctx *gin.Context, req orderEntity.QueryOrderEntity) (OrderListResp, error) {
-	userOrders, count, err := s.orderRep.List(ctx, req)
+func (o *OrderService) OrderList(ctx *gin.Context, req orderEntity.QueryOrderEntity) (OrderListResp, error) {
+	userOrders, count, err := o.orderRepo.List(ctx, req)
 	return OrderListResp{Orders: userOrders, Count: count}, err
 }
 
-func NewOrderService(repos *providers.Repositories) *OrderService {
-	return &OrderService{
-		orderRep:        repos.OrderRepo,
-		orderSummaryRep: repos.OrderSummaryRepo,
-	}
+// OrderSync 处理订单同步 WebHook
+func (o *OrderService) OrderSync(ctx context.Context, req orderEntity.OrderWebHookReq) error {
+	go func(req orderEntity.OrderWebHookReq) {
+		// 每个协程自己 new ctx，超时保护，防止协程卡死
+		newCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error(ctx, "OrderSync 协程 panic:", fmt.Sprintf("%v", r))
+			}
+		}()
+
+		row := o.jobOrderRepo.ExistsByOrderID(newCtx, req.OrderId)
+		if row != 0 {
+			logger.Info(ctx, "OrderSync 已存在订单记录，无需重复插入：", req.OrderId)
+			return
+		}
+
+		logger.Info(ctx, "OrderSync 订单日志不存在，开始插入：", req.OrderId, req.Shop)
+
+		log, err := o.jobOrderRepo.Create(newCtx, &jobs.JobOrder{
+			OrderId: req.OrderId,
+			Name:    req.Shop,
+		})
+		if err != nil {
+			logger.Error(ctx, "OrderSync 插入订单日志失败:", err.Error())
+			return
+		}
+
+		orderTask, err := o.asynqRepo.OrderWebhookTask(ctx, log)
+		if err != nil {
+			logger.Error(ctx, "OrderSync 推送订单队列失败:", err.Error(), orderTask)
+			return
+		}
+	}(req)
+
+	return nil
+}
+
+// OrderDel 处理订单删除 WebHook
+func (o *OrderService) OrderDel(ctx context.Context, req orderEntity.OrderWebHookReq) error {
+	go func(req orderEntity.OrderWebHookReq) {
+		newCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error(ctx, "OrderDel 协程 panic:", fmt.Sprintf("%v", r))
+			}
+		}()
+
+		uid, err := o.userRepo.GetUserIDByShop(newCtx, req.AppId, req.Shop)
+		if err != nil {
+			logger.Error(ctx, "OrderDel 获取UID失败:", err.Error())
+			return
+		}
+
+		if uid > 0 {
+			if err := o.orderRepo.DelOrder(newCtx, uid, req.OrderId); err != nil {
+				logger.Info(ctx, "OrderDel 删除订单失败：", req.OrderId, err.Error())
+				return
+			}
+			logger.Info(ctx, "OrderDel 成功删除订单：", req.OrderId)
+		}
+	}(req)
+
+	return nil
 }

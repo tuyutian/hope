@@ -2,7 +2,6 @@ package shopify
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	shopifyRepo "backend/internal/domain/repo/shopifys"
@@ -35,29 +34,4 @@ func (s *shopifyRepoImpl) ExtractCurrencySymbol(moneyFormat string) string {
 		return strings.TrimSpace(parts[0])
 	}
 	return ""
-}
-
-// GetIdFromShopifyGraphqlId /**
-func (s *shopifyRepoImpl) GetIdFromShopifyGraphqlId(gid string) int64 {
-	if gid == "" {
-		return 0
-	}
-
-	var idStr string
-	if strings.HasPrefix(gid, "gid://shopify/") {
-		parts := strings.Split(gid, "/")
-		if len(parts) > 0 {
-			idStr = parts[len(parts)-1]
-		}
-	} else {
-		idStr = gid
-	}
-
-	// 将字符串转换为 int64
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return 0 // 转换失败时返回 0
-	}
-
-	return id
 }

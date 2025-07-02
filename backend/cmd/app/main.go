@@ -44,12 +44,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("redis init error:%v", err)
 	}
+	ossClient, bucketName, err := config.NewAliyunOSS("aliyun_oss")
+	if err != nil {
+		log.Fatalf("oss init error:%v", err)
+	}
+	asynqClient, err := config.NewAsynqClient("redis_conf")
 	// 初始化repos
-	repos := providers.NewRepositories(db, redisClient, appConf)
+	repos := providers.NewRepositories(db, redisClient, appConf, providers.WithOssRepo(ossClient, bucketName), providers.WithAsynqRepo(asynqClient))
 	// 初始化服务
 	services := application.NewServices(repos)
 	// 初始化 handlers
-	handlers := handler.InitHandlers(services.OrderService)
+	handlers := handler.InitHandlers(services, repos)
 	// 初始化 middlewares
 	// init middleware and routers
 	middlewares := &routers.Middleware{

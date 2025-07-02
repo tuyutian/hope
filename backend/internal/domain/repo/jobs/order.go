@@ -13,4 +13,7 @@ type OrderRepository interface {
 	UpdateJobTime(ctx context.Context, jobId int64) error
 	// UpdateStatus 更新任务状态
 	UpdateStatus(ctx context.Context, jobId int64, status int) error
+	Create(ctx context.Context, jobOrder *jobs.JobOrder) (int64, error)
+	ExistsByOrderID(ctx context.Context, orderId int64) int64
+	Clear(ctx context.Context) error
 }

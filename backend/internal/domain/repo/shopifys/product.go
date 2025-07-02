@@ -18,4 +18,5 @@ type ProductGraphqlRepository interface {
 	PublishProduct(ctx context.Context, productID int64, publicationID int64) error
 	CollectionProduct(ctx context.Context, shopifyProductID, collectionID int64) error
 	UpdateVariants(ctx context.Context, productId int64, variants []*shopifyEntity.VariantUpdateInput) error
+	GetCollectionList(ctx context.Context) ([]map[string]interface{}, error)
 }

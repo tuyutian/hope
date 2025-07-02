@@ -1,4 +1,4 @@
-package entity
+package settings
 
 // UserCartSetting  保险用户基础配置表
 type UserCartSetting struct {

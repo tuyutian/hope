@@ -38,6 +38,7 @@ type Repositories struct {
 	TableRepos
 	CacheRepos
 	ThirdPartRepos
+	AsyncRepo jobs.AsynqRepository
 }
 
 type TableRepos struct {
@@ -60,8 +61,9 @@ type CacheRepos struct {
 }
 
 type ThirdPartRepos struct {
-	AesCrypto bcrypt.BCrypto
-	JwtRepo   jwtRepo.JWTRepository
+	AesCrypto     bcrypt.BCrypto
+	JwtRepo       jwtRepo.JWTRepository
+	AliyunOssRepo repo.AliyunOSSRepository
 }
 
 type ShopifyRepos struct {
@@ -72,19 +74,20 @@ type ShopifyRepos struct {
 }
 
 // NewRepositories 创建 Repositories
-func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf *config.AppConfig) *Repositories {
+func NewRepositories(db *xorm.Engine, redisClient redis.UniversalClient, appConf *config.AppConfig, opts ...Option) *Repositories {
 	tableRepos := NewTableRepos(db, redisClient)
 	cacheRepos := NewCacheRepos(redisClient, tableRepos.UserRepo)
 	thirdPartRepos := NewThirdPartRepos(appConf)
 	shopifyRepos := NewShopifyRepos(&appConf.Shopify)
-
 	r := &Repositories{
 		TableRepos:     tableRepos,
 		CacheRepos:     cacheRepos,
 		ThirdPartRepos: thirdPartRepos,
 		ShopifyRepos:   shopifyRepos,
 	}
-
+	for _, opt := range opts {
+		opt(r)
+	}
 	return r
 }
 
@@ -133,7 +136,6 @@ func NewThirdPartRepos(appConf *config.AppConfig) ThirdPartRepos {
 		jwt.WithRefreshExpiration(appConf.JWT.RefreshExpiration),
 	)
 	jwtRepository := jwtauth.NewJWTRepository(appConf.JWT.SecretKey, jwtManager, aesCrypto)
-
 	return ThirdPartRepos{
 		JwtRepo:   jwtRepository,
 		AesCrypto: aesCrypto,

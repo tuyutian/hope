@@ -20,7 +20,7 @@ func NewOrderRepository(db *xorm.Engine) orderRepo.OrderRepository {
 }
 
 // DelOrder 软删除订单
-func (o *orderRepoImpl) DelOrder(ctx context.Context, userID int64, orderId string) error {
+func (o *orderRepoImpl) DelOrder(ctx context.Context, userID int64, orderId int64) error {
 	_, err := o.db.Context(ctx).Where("user_id = ? and order_id = ?", userID, orderId).
 		Update(&orderEntity.UserOrder{IsDel: 1})
 	if err != nil {

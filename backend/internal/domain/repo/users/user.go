@@ -9,9 +9,9 @@ import (
 
 type UserRepository interface {
 	// FirstName 根据店铺名称查找用户
-	FirstName(ctx context.Context, name string) (*users.User, error)
-	// FirstNameByUid 根据店铺名称获取用户ID
-	FirstNameByUid(ctx context.Context, name string) (int64, error)
+	FirstName(ctx context.Context, shop string) (*users.User, error)
+	// GetUserIDByShop 根据店铺名称获取用户ID
+	GetUserIDByShop(ctx context.Context, appId string, shop string) (int64, error)
 	// Get 根据 id 获取 users.User
 	Get(ctx context.Context, id int64, columns ...string) (*users.User, error)
 	// CreateUser 创建用户

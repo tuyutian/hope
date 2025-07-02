@@ -44,3 +44,17 @@ func (ctrl *BaseHandler) Error(ctx *gin.Context, code int, message string, data 
 
 	ctrl.ajaxReturn(ctx, code, message, data)
 }
+
+// Fail returns code,data,message if ctrl response error.
+func (ctrl *BaseHandler) Fail(ctx *gin.Context, code int, message string, data interface{}) {
+	if code <= 0 {
+		code = returnCode.BadRequest
+	}
+
+	ctx.JSON(code, gin.H{
+		"code":     code,
+		"message":  message,
+		"data":     data,
+		"req_time": time.Now().Unix(),
+	})
+}

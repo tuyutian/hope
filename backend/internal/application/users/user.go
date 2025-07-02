@@ -2,7 +2,10 @@ package users
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -12,6 +15,7 @@ import (
 	"backend/internal/domain/entity/users"
 	"backend/internal/domain/repo"
 	appRepo "backend/internal/domain/repo/apps"
+	"backend/internal/domain/repo/jobs"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/infras/shopify_graphql"
@@ -24,23 +28,29 @@ import (
 )
 
 type UserService struct {
-	appRepo         appRepo.AppRepository
-	userRepo        userRepo.UserRepository
-	cacheRepo       repo.CacheRepository
-	userCache       userRepo.UserCacheRepository
-	shopifyRepo     shopifyRepo.ShopifyRepository
-	appAuthRepo     userRepo.AppAuthRepository
-	shopGraphqlRepo shopifyRepo.ShopGraphqlRepository
+	appRepo            appRepo.AppRepository
+	userRepo           userRepo.UserRepository
+	cacheRepo          repo.CacheRepository
+	userCache          userRepo.UserCacheRepository
+	shopifyRepo        shopifyRepo.ShopifyRepository
+	appAuthRepo        userRepo.AppAuthRepository
+	shopGraphqlRepo    shopifyRepo.ShopGraphqlRepository
+	productGraphqlRepo shopifyRepo.ProductGraphqlRepository
+	asynqRepo          jobs.AsynqRepository
 }
 
 func NewUserService(repos *providers.Repositories) *UserService {
-	return &UserService{userRepo: repos.UserRepo,
-		appRepo:         repos.AppRepo,
-		cacheRepo:       repos.CacheRepo,
-		userCache:       repos.UserCacheRepo,
-		shopifyRepo:     repos.ShopifyRepo,
-		appAuthRepo:     repos.AppAuthRepo,
-		shopGraphqlRepo: repos.ShopGraphqlRepo}
+	return &UserService{
+		userRepo:           repos.UserRepo,
+		appRepo:            repos.AppRepo,
+		cacheRepo:          repos.CacheRepo,
+		userCache:          repos.UserCacheRepo,
+		shopifyRepo:        repos.ShopifyRepo,
+		appAuthRepo:        repos.AppAuthRepo,
+		productGraphqlRepo: repos.ProductGraphqlRepo,
+		shopGraphqlRepo:    repos.ShopGraphqlRepo,
+		asynqRepo:          repos.AsyncRepo,
+	}
 }
 
 func (u *UserService) GetLoginUserFromID(ctx context.Context, id int64) (*users.User, error) {
@@ -62,6 +72,12 @@ func (u *UserService) GetLoginAdminFromID(ctx context.Context, id int64) (interf
 func (u *UserService) GetClaims(ctx context.Context) *jwt.BizClaims {
 	claims, _ := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 	return claims
+}
+
+// GetShopifyClient 从 context 中获取 client
+func (u *UserService) GetShopifyClient(ctx context.Context) *shopify_graphql.GraphqlClient {
+	client, _ := ctx.Value(ctxkeys.ShopifyGraphqlClient).(*shopify_graphql.GraphqlClient)
+	return client
 }
 
 func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token) (*users.User, error) {
@@ -159,4 +175,199 @@ func (u *UserService) getUser(ctx context.Context, id int64) (*users.User, error
 		return nil, message.ErrInvalidAccount
 	}
 	return user, nil
+}
+
+func (u *UserService) Uninstall(ctx context.Context, appId string, shop string) error {
+	user, err := u.userRepo.GetActiveUserByShop(ctx, appId, shop)
+
+	// 如果未安装
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return nil
+	}
+
+	err = u.userRepo.UpdateIsDel(ctx, user.ID)
+	if err != nil {
+		logger.Error(ctx, "uninstall db异常", "Err:", err.Error())
+		return err
+	}
+
+	// 卸载 关闭购物车 清空状态 删除shopify产品
+	_, err = u.asynqRepo.DelProductTask(ctx, user.ID, 0, 1)
+
+	return nil
+}
+
+func (u *UserService) UpdateUserStep(ctx context.Context, stepKey int) error {
+	claims := u.GetClaims(ctx)
+	user, err := u.getUser(ctx, claims.UserID)
+
+	if err != nil {
+		logger.Error(ctx, "update-step db异常", "Err:", err.Error())
+		return err
+	}
+	// TODO 替换成 step设置
+	mockStepStr := "{\"step_1\":false,\"step_2\":false,\"step_3\":false,\"step_4\":false\"}"
+
+	if user != nil {
+		// 2. 解析 Steps 字段
+		var steps map[string]bool
+		if mockStepStr != "" {
+			steps = map[string]bool{
+				"step_1": false,
+				"step_2": false,
+				"step_3": false,
+				"step_4": false,
+			}
+		} else {
+			err = json.Unmarshal([]byte(mockStepStr), &steps)
+			if err != nil {
+				logger.Error(ctx, "update-step json异常", "Err:", err.Error())
+				return err
+			}
+		}
+		// 3. 更新对应的 step 为 true
+		steps["step_"+strconv.Itoa(stepKey)] = true
+
+		// 4. 再把 steps 转成字符串，保存回数据库
+		updatedSteps, err := json.Marshal(steps)
+		if err != nil {
+			logger.Error(ctx, "update-step json(2)异常", "Err:", err.Error())
+			return err
+		}
+
+		err = u.userRepo.UpdateStep(ctx, user.ID, string(updatedSteps))
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (u *UserService) GetUserStep(ctx context.Context, userID int64) (map[string]bool, error) {
+	user, err := u.getUser(ctx, userID)
+
+	if err != nil {
+		logger.Error(ctx, "get-step db异常", "Err:", err.Error())
+		return nil, err
+	}
+
+	if user != nil {
+		var steps map[string]bool
+
+		// TODO 替换成 step设置
+		mockStepStr := "{\"step_1\":false,\"step_2\":false,\"step_3\":false,\"step_4\":false\"}"
+
+		err = json.Unmarshal([]byte(mockStepStr), &steps)
+
+		if err != nil {
+			logger.Error(ctx, "get-step json异常", "Err:", err.Error())
+			return nil, err
+		}
+
+		return steps, nil
+	}
+
+	return nil, nil
+}
+
+type CollectionOption struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+type UserConfigResponse struct {
+	MoneySymbol string             `json:"money_symbol"`
+	Collection  []CollectionOption `json:"collections"`
+}
+type Collection struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}
+
+func (u *UserService) GetUserInfo(ctx context.Context, userID int64) (*UserConfigResponse, error) {
+	user, err := u.getUser(ctx, userID)
+
+	if err != nil {
+		logger.Error(ctx, "get-user-info db异常", "Err:", err.Error())
+		return nil, err
+	}
+
+	// 转换 collections 为 label 和 value 格式
+	var collectionOptions []CollectionOption
+
+	collections, err := u.productGraphqlRepo.GetCollectionList(ctx)
+	if collections != nil && len(collections) > 0 {
+		var collections []Collection
+		for _, collection := range collections {
+			collectionOptions = append(collectionOptions, CollectionOption{
+				Label: collection.Title, // Title 作为 label
+				Value: collection.ID,    // ID 作为 value
+			})
+		}
+	} else {
+		collectionOptions = []CollectionOption{}
+	}
+
+	return &UserConfigResponse{
+		MoneySymbol: user.MoneyFormat,
+		Collection:  collectionOptions,
+	}, nil
+}
+
+func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, planDisplayName string) error {
+	user, err := u.userRepo.FirstName(ctx, shop)
+
+	if err != nil {
+		logger.Error(ctx, "sync-user-info db异常", "Err:", err.Error())
+		return err
+	}
+
+	if user == nil || user.IsDel != 1 {
+		return nil
+	}
+
+	// 检测是不是关店了
+	if planDisplayName == "Frozen" || planDisplayName == "Cancelled" {
+		err = u.userRepo.UpdateIsClose(ctx, user.ID, planDisplayName)
+		if err != nil {
+			return err
+		}
+
+		// 卸载 关闭购物车 清空状态 删除shopify产品
+		_, err := u.asynqRepo.DelProductTask(ctx, user.ID, 0, 1)
+
+		if err != nil {
+			logger.Error(ctx, "关店 del_product_queue 推送队列失败:", err.Error())
+			return err
+		}
+
+		return nil
+	}
+
+	u.shopGraphqlRepo.WithClient(u.GetShopifyClient(ctx))
+
+	// 拿到Token 需要去获取用户基本信息
+	shopInfo, err := u.shopGraphqlRepo.GetShopInfo(ctx) // 通过 client 调用方法
+
+	if err != nil {
+		return fmt.Errorf("获取店铺信息异常: %w", err)
+	}
+
+	var userModel users.User
+	userModel.ID = user.ID
+	userModel.City = shopInfo.BillingAddress.City
+	userModel.CountryCode = shopInfo.BillingAddress.CountryCodeV2
+	userModel.CountryName = shopInfo.BillingAddress.Country
+	userModel.CurrencyCode = shopInfo.CurrencyCode
+	userModel.MoneyFormat = u.shopifyRepo.ExtractCurrencySymbol(shopInfo.CurrencyFormats.MoneyFormat)
+	userModel.PlanDisplayName = shopInfo.Plan.DisplayName
+
+	_ = u.userRepo.Update(ctx, &userModel)
+
+	return nil
 }

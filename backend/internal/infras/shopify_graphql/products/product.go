@@ -8,6 +8,7 @@ import (
 	productEntity "backend/internal/domain/entity/shopifys"
 	"backend/internal/domain/repo/shopifys"
 	"backend/internal/infras/shopify_graphql"
+	"backend/pkg/utils"
 )
 
 var _ shopifys.ProductGraphqlRepository = (*productGraphqlRepoImpl)(nil)
@@ -509,4 +510,78 @@ func (c *productGraphqlRepoImpl) UpdateVariants(ctx context.Context, productId i
 		return fmt.Errorf("error creating product: %v", response.ProductVariantsBulkUpdate.UserErrors[0].Message)
 	}
 	return nil
+}
+
+func (c *productGraphqlRepoImpl) GetCollectionList(ctx context.Context) ([]map[string]interface{}, error) {
+	query := `
+		query collections($first: Int!, $after: String) {
+			collections(first: $first, after: $after) {
+				edges {
+					node {
+						id
+						title
+					}
+				}
+				pageInfo {
+					hasNextPage
+					endCursor
+				}
+			}
+		}
+	`
+
+	first := 100
+	var after *string
+	hasNextPage := true
+
+	var collections []map[string]interface{}
+
+	// 返回查询结果
+	for hasNextPage {
+		variables := map[string]interface{}{
+			"first": first,
+		}
+
+		if after != nil {
+			variables["after"] = *after
+		}
+
+		// 初始化返回的数据结构
+		var response struct {
+			Collections struct {
+				Edges []struct {
+					Node struct {
+						ID    string `json:"id"`
+						Title string `json:"title"`
+					} `json:"node"`
+				} `json:"edges"`
+				PageInfo struct {
+					HasNextPage bool   `json:"hasNextPage"`
+					EndCursor   string `json:"endCursor"`
+				} `json:"pageInfo"`
+			} `json:"collections"`
+			Errors []struct {
+				Message string `json:"message"`
+			} `json:"errors"`
+		}
+		err := c.Client.Query(ctx, query, variables, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, edge := range response.Collections.Edges {
+			collections = append(collections, map[string]interface{}{
+				"id":    utils.GetIdFromShopifyGraphqlId(edge.Node.ID),
+				"title": edge.Node.Title,
+			})
+		}
+
+		hasNextPage = response.Collections.PageInfo.HasNextPage
+		if hasNextPage {
+			after = &response.Collections.PageInfo.EndCursor
+		}
+	}
+
+	// 返回查询结果
+	return collections, nil
 }

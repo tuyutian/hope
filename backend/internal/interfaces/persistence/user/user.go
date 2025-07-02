@@ -36,8 +36,8 @@ func (u *userRepoImpl) FirstName(ctx context.Context, name string) (*users.User,
 	return &user, nil
 }
 
-// FirstNameByUid 根据店铺名称获取用户ID
-func (u *userRepoImpl) FirstNameByUid(ctx context.Context, name string) (int64, error) {
+// GetUserIDByShop 根据店铺名称获取用户ID
+func (u *userRepoImpl) GetUserIDByShop(ctx context.Context, appId string, name string) (int64, error) {
 	var user users.User
 	has, err := u.db.Context(ctx).Where("name = ?", name).Cols("id").Get(&user)
 

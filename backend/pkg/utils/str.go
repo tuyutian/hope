@@ -2,7 +2,10 @@
 package utils
 
 import (
+	"crypto/hmac"
 	"crypto/md5"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -85,4 +88,38 @@ func PaseTimeToStamp(timeStr string) int64 {
 	}
 	// 返回 Unix 时间戳（秒级）
 	return t.Unix()
+}
+
+func GetIdFromShopifyGraphqlId(gid string) int64 {
+	if gid == "" {
+		return 0
+	}
+
+	var idStr string
+	if strings.HasPrefix(gid, "gid://shopify/") {
+		parts := strings.Split(gid, "/")
+		if len(parts) > 0 {
+			idStr = parts[len(parts)-1]
+		}
+	} else {
+		idStr = gid
+	}
+
+	// 将字符串转换为 int64
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return 0 // 转换失败时返回 0
+	}
+
+	return id
+}
+
+func VerifyWebhook(data []byte, hmacHeader string, shopifySecret string) bool {
+	// 计算 HMAC 值
+	hash := hmac.New(sha256.New, []byte(shopifySecret))
+	hash.Write(data)
+	expectedHMAC := base64.StdEncoding.EncodeToString(hash.Sum(nil))
+
+	// 比较计算得到的 HMAC 和请求头中的 HMAC 是否一致
+	return hmac.Equal([]byte(hmacHeader), []byte(expectedHMAC))
 }

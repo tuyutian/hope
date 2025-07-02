@@ -4,7 +4,6 @@ import "backend/internal/infras/shopify_graphql"
 
 type ShopifyRepository interface {
 	ExtractCurrencySymbol(moneyFormat string) string
-	GetIdFromShopifyGraphqlId(id string) int64
 	GetWebhookUrl() string
 }
 

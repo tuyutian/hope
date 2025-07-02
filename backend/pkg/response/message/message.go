@@ -10,4 +10,6 @@ var (
 	ErrorNeedLogin    = errors.New("用户未登录")
 	// ErrInvalidAccount 无效账户
 	ErrInvalidAccount = errors.New("invalid account")
+	ErrUploadFailed   = errors.New("file upload failed")
+	ErrorUnauthorized = errors.New("unauthorized")
 )

@@ -20,6 +20,10 @@ type OrderHandler struct {
 	response.BaseHandler
 }
 
+func NewOrderHandler(orderService *orders.OrderService) *OrderHandler {
+	return &OrderHandler{orderService: orderService}
+}
+
 func (h *OrderHandler) Dashboard(ctx *gin.Context) {
 
 	days, err := strconv.Atoi(ctx.Query("days"))

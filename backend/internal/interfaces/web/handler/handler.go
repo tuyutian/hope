@@ -1,19 +1,30 @@
 package handler
 
 import (
-	"backend/internal/application/orders"
+	"backend/internal/application"
+	"backend/internal/providers"
 )
 
 // Handlers 控制器
 type Handlers struct {
-	OrderHandler *OrderHandler
+	OrderHandler   *OrderHandler
+	CommonHandler  *CommonHandler
+	UserHandler    *UserHandler
+	SettingHandler *SettingHandler
+	WebhookHandler *WebHookHandler
 }
 
-func InitHandlers(orderService *orders.OrderService) *Handlers {
-	OrderHandler := &OrderHandler{
-		orderService: orderService,
-	}
+func InitHandlers(services *application.Services, repos *providers.Repositories) *Handlers {
+	orderHandler := NewOrderHandler(services.OrderService)
+	commonHandler := NewCommonHandler(repos.AliyunOssRepo)
+	userHandler := NewUserHandler(services.UserService)
+	settingHandler := NewSettingHandler(services)
+	webhookHandler := NewWebHookHandler(services)
 	return &Handlers{
-		OrderHandler,
+		orderHandler,
+		commonHandler,
+		userHandler,
+		settingHandler,
+		webhookHandler,
 	}
 }
