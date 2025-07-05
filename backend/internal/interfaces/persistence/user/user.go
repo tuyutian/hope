@@ -187,7 +187,7 @@ func (u *userRepoImpl) GetByShop(ctx context.Context, appId string, shop string)
 // GetActiveUserByShop 获取用户正常店铺
 func (u *userRepoImpl) GetActiveUserByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
 	var user users.User
-	has, err := u.db.Context(ctx).Where("shop = ? and is_del = 0", shop).Get(&user)
+	has, err := u.db.Context(ctx).Where(" app_id = ? and shop = ? and is_del = 0", appId, shop).Get(&user)
 	if err != nil {
 		return nil, err
 	}

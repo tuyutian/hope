@@ -67,7 +67,13 @@ func main() {
 	router := gin.New()
 	// 注册路由规则
 	routers.InitRouters(router, handlers, middlewares)
-
+	router.GET("/test/token", func(c *gin.Context) {
+		token := services.UserService.GenerateTestToken(c.Request.Context(), 1)
+		c.JSON(200, gin.H{
+			"message": "hello world",
+			"token":   token,
+		})
+	})
 	// http server设置
 	server := &http.Server{
 		Handler:           router,

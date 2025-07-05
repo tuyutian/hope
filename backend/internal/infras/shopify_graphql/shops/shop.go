@@ -59,10 +59,6 @@ func (c *shopGraphqlRepoImpl) GetShopInfo(ctx context.Context) (*shopifyEntity.S
 				contactEmail
 				customerAccounts
 				ianaTimezone
-				marketingEventsApp {
-					id
-					title
-				}
 				metafields(first: 10) {
 					edges {
 						node {

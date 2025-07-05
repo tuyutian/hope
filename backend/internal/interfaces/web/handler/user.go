@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/users"
@@ -48,7 +50,7 @@ func (u *UserHandler) SetUserStep(ctx *gin.Context) {
 
 func (u *UserHandler) GetStep(ctx *gin.Context) {
 	ctxWithTrace := ctx.Request.Context()
-	uid := u.userService.GetClaims(ctx).UserID
+	uid := u.userService.GetClaims(ctxWithTrace).UserID
 	resp, err := u.userService.GetUserStep(ctxWithTrace, uid)
 	if err != nil {
 		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
@@ -60,9 +62,22 @@ func (u *UserHandler) GetStep(ctx *gin.Context) {
 func (u *UserHandler) GetUserConf(ctx *gin.Context) {
 	ctxWithTrace := ctx.Request.Context()
 
-	uid := u.userService.GetClaims(ctx).UserID
+	uid := u.userService.GetClaims(ctxWithTrace).UserID
 
-	resp, err := u.userService.GetUserInfo(ctxWithTrace, uid)
+	resp, err := u.userService.GetUserConf(ctxWithTrace, uid)
+	if err != nil {
+		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
+		return
+	}
+
+	u.Success(ctx, "", resp)
+}
+
+func (u *UserHandler) GetSessionData(ctx *gin.Context) {
+	ctxWithTrace := ctx.Request.Context()
+	uid := u.userService.GetClaims(ctxWithTrace).UserID
+	fmt.Println(uid)
+	resp, err := u.userService.GetSessionData(ctxWithTrace, uid)
 	if err != nil {
 		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
 		return

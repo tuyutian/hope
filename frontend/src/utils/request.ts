@@ -1,12 +1,17 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-
 import { CancelTypesEnum, IExtParam } from './request.d'
 import qs from 'qs'
 import { useShopifyBridge } from '@/hooks/useShopifyBridge.ts'
-import useUserStore from "@/stores/userStore.ts";
-import {useMessageStore} from "@/stores/messageStore.ts";
+import { getUserState } from "@/stores/userStore.ts"
+import { getMessageState } from "@/stores/messageStore.ts"
 
 // 返回res.data的interface
+export type IResponse = {
+  code: number | string;
+  data: any;
+  message: string;
+}
+
 const axiosInstance: AxiosInstance = axios.create({
   timeout: import.meta.env.VITE_REQUEST_TIME_OUT,
   baseURL: import.meta.env.VITE_API_URL,
@@ -20,7 +25,9 @@ const axiosInstance: AxiosInstance = axios.create({
 // axios实例拦截响应
 axiosInstance.interceptors.response.use(
   response => {
-    const toastMessage = useMessageStore(state => state.toastMessage)
+    // 使用非 hook 方式获取状态
+    const { toastMessage } = getMessageState()
+    
     // 关闭加载
     removePending(response.config)
 
@@ -49,7 +56,10 @@ axiosInstance.interceptors.response.use(
     ) {
       open('/unauthorized', '_self')
     }
-    const toastMessage = useMessageStore(state => state.toastMessage)
+    
+    // 使用非 hook 方式获取状态
+    const { toastMessage } = getMessageState()
+    
     if (response) {
       // 请求已发出，但是不在2xx的范围
       if (import.meta.env.DEV) {
@@ -80,8 +90,11 @@ axiosInstance.interceptors.request.use(
 
     removePending(config, extParam) // 在请求开始前，对之前的请求做检查取消操作
     addPending(config, extParam) // 将当前请求添加到 pending 中
-    const {authToken,userToken} = useUserStore(state => ({authToken:state.authToken,userToken: state.token}))
+    
+    // 使用非 hook 方式获取用户状态
+    const { authToken, token: userToken } = getUserState()
     const appBridge = useShopifyBridge()
+    
     if (config.headers && authToken && authToken.length > 32) {
       config.headers.Authorization = `Bearer ${authToken}`
       return config
@@ -94,7 +107,7 @@ axiosInstance.interceptors.request.use(
       if (config.headers) config.headers.Authorization = `Bearer ${userToken}`
       return config
     }
-    return appBridge.idToken().then(token => {
+    return appBridge.idToken().then((token: string) => {
       config.headers.Authorization = `Bearer ${token}`
       return config
     })
@@ -104,6 +117,7 @@ axiosInstance.interceptors.request.use(
     return error
   }
 )
+
 // 声明一个 Map 用于存储每个请求的标识 和 取消函数
 const pending = new Map()
 
@@ -157,7 +171,6 @@ const removePending = (config: AxiosRequestConfig, extParam?: IExtParam) => {
  */
 export const clearPending = () => {
   // 路由切换前清空掉之前的请求
-  // 可能会造成一些问题，暂时去除。2021-07-01 13:50
   for (const [url, cancel] of pending) {
     cancel(url)
   }

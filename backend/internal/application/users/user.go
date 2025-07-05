@@ -13,9 +13,11 @@ import (
 
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	"backend/internal/domain/entity/users"
+	userEntity "backend/internal/domain/entity/users"
 	"backend/internal/domain/repo"
 	appRepo "backend/internal/domain/repo/apps"
 	"backend/internal/domain/repo/jobs"
+	jwtRepo "backend/internal/domain/repo/jwtauth"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/infras/shopify_graphql"
@@ -37,6 +39,7 @@ type UserService struct {
 	shopGraphqlRepo    shopifyRepo.ShopGraphqlRepository
 	productGraphqlRepo shopifyRepo.ProductGraphqlRepository
 	asynqRepo          jobs.AsynqRepository
+	jwtRepo            jwtRepo.JWTRepository
 }
 
 func NewUserService(repos *providers.Repositories) *UserService {
@@ -50,6 +53,7 @@ func NewUserService(repos *providers.Repositories) *UserService {
 		productGraphqlRepo: repos.ProductGraphqlRepo,
 		shopGraphqlRepo:    repos.ShopGraphqlRepo,
 		asynqRepo:          repos.AsyncRepo,
+		jwtRepo:            repos.JwtRepo,
 	}
 }
 
@@ -80,22 +84,23 @@ func (u *UserService) GetShopifyClient(ctx context.Context) *shopify_graphql.Gra
 	return client
 }
 
-func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token) (*users.User, error) {
+func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token, claims *jwt.BizClaims) (*users.User, error) {
 	appID := ctx.Value(ctxkeys.AppID).(string)
-	claims := u.GetClaims(ctx)
-
 	shopName, err := utils.GetShopName(claims.Dest)
 	if err != nil {
 		return nil, err
 	}
-	client := shopify_graphql.NewGraphqlClient(shopName, sessionToken.Token, nil)
+	client := shopify_graphql.NewGraphqlClient(shopName, sessionToken.Token)
 	u.shopGraphqlRepo.WithClient(client)
 	shop, err := u.shopGraphqlRepo.GetShopInfo(ctx)
 	if err != nil {
-		return nil, err
+		logger.Error(ctx, "shopify_graphql_repo.GetShopInfo", zap.Error(err))
 	}
 	// 恢复用户数据
 	user, _ := u.userRepo.GetByShop(ctx, appID, claims.Dest)
+	if user == nil {
+		user = &users.User{}
+	}
 	user.AppId = appID
 	user.AccessToken = sessionToken.Token
 	user.Shop = claims.Dest
@@ -147,7 +152,7 @@ func (u *UserService) getUser(ctx context.Context, id int64) (*users.User, error
 	user, err := u.userCache.Get(ctx, id)
 	// key 不存在, 查询数据库并更新缓存
 	if errors.Is(err, redis.Nil) {
-		user, err = u.userRepo.Get(ctx, id, "id", "username", "email")
+		user, err = u.userRepo.Get(ctx, id, "id", "shop", "app_id", "plans", "email", "name", "timezone", "access_token", "money_format", "is_del")
 		if err != nil {
 			return nil, err
 		}
@@ -289,7 +294,7 @@ type Collection struct {
 	Title string `json:"title"`
 }
 
-func (u *UserService) GetUserInfo(ctx context.Context, userID int64) (*UserConfigResponse, error) {
+func (u *UserService) GetUserConf(ctx context.Context, userID int64) (*UserConfigResponse, error) {
 	user, err := u.getUser(ctx, userID)
 
 	if err != nil {
@@ -299,7 +304,8 @@ func (u *UserService) GetUserInfo(ctx context.Context, userID int64) (*UserConfi
 
 	// 转换 collections 为 label 和 value 格式
 	var collectionOptions []CollectionOption
-
+	client := ctx.Value(ctxkeys.ShopifyGraphqlClient).(*shopify_graphql.GraphqlClient)
+	u.productGraphqlRepo.WithClient(client)
 	collections, err := u.productGraphqlRepo.GetCollectionList(ctx)
 	if collections != nil && len(collections) > 0 {
 		var collections []Collection
@@ -316,6 +322,26 @@ func (u *UserService) GetUserInfo(ctx context.Context, userID int64) (*UserConfi
 	return &UserConfigResponse{
 		MoneySymbol: user.MoneyFormat,
 		Collection:  collectionOptions,
+	}, nil
+}
+
+func (u *UserService) GetSessionData(ctx context.Context, userID int64) (*userEntity.SessionData, error) {
+	user, err := u.getUser(ctx, userID)
+
+	if err != nil {
+		logger.Error(ctx, "get-user-info db异常", "Err:", err.Error())
+		return nil, err
+	}
+
+	return &userEntity.SessionData{
+		Shop: user.Shop,
+		GuideStep: map[string]bool{
+			"enabled":            false,
+			"setting_protension": false,
+			"setup_widget":       false,
+			"how_work":           false,
+			"choose":             false,
+		},
 	}, nil
 }
 
@@ -370,4 +396,18 @@ func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, plan
 	_ = u.userRepo.Update(ctx, &userModel)
 
 	return nil
+}
+
+func (u *UserService) GenerateTestToken(ctx context.Context, id int64) string {
+	user, _ := u.getUser(ctx, id)
+	claims := jwt.BizClaims{
+		Dest:    user.Shop,
+		UserID:  user.ID,
+		AdminID: 0,
+		Jti:     utils.Uuid(),
+		Sid:     "",
+		Sig:     "",
+	}
+	t, _, _ := u.jwtRepo.GenerateToken(ctx, claims)
+	return t
 }

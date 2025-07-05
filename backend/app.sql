@@ -299,43 +299,8 @@ CREATE TABLE `user_setting`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户上传记录表';
 
--- App 定义表
-CREATE TABLE `app_definition`
-(
-    `id`           bigint   NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `app_id`       varchar(50)  NOT NULL COMMENT 'App唯一标识',
-    `name`         varchar(100) NOT NULL COMMENT 'App名称',
-    `description`  text         COMMENT 'App描述',
-    `icon_url`     varchar(255) NOT NULL DEFAULT '' COMMENT 'App图标',
-    `callback_url` varchar(255) NOT NULL DEFAULT '' COMMENT '回调URL',
-    `api_key`      varchar(100) NOT NULL COMMENT 'API Key',
-    `api_secret`   varchar(100) NOT NULL COMMENT 'API Secret',
-    `scopes`       text         NOT NULL COMMENT '授权域',
-    `status`       tinyint   NOT NULL DEFAULT 1 COMMENT '状态 1:启用 0:禁用',
-    `create_time`  bigint   NOT NULL COMMENT '创建时间',
-    `update_time`  bigint   NOT NULL COMMENT '修改时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_app_id` (`app_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';
 
--- App 配置表
-CREATE TABLE `app_config`
-(
-    `id`          bigint   NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `app_id`      varchar(50)  NOT NULL COMMENT 'App标识',
-    `config_key`  varchar(100) NOT NULL COMMENT '配置键',
-    `config_value`text         NOT NULL COMMENT '配置值',
-    `description` varchar(255) NOT NULL DEFAULT '' COMMENT '描述',
-    `create_time` bigint   NOT NULL COMMENT '创建时间',
-    `update_time` bigint   NOT NULL COMMENT '修改时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_app_key` (`app_id`, `config_key`),
-    KEY `idx_app_id` (`app_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci COMMENT ='App配置表';
+
 
 -- 用户对应用授权表
 CREATE TABLE `user_app_auth`
@@ -360,3 +325,42 @@ CREATE TABLE `user_app_auth`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户应用授权表';
+
+-- App 配置表
+CREATE TABLE `app_config`
+(
+    `id`          bigint   NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `app_id`      varchar(50)  NOT NULL COMMENT 'App标识',
+    `config_key`  varchar(100) NOT NULL COMMENT '配置键',
+    `config_value`text         NOT NULL COMMENT '配置值',
+    `description` varchar(255) NOT NULL DEFAULT '' COMMENT '描述',
+    `create_time` bigint   NOT NULL COMMENT '创建时间',
+    `update_time` bigint   NOT NULL COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_app_key` (`app_id`, `config_key`),
+    KEY `idx_app_id` (`app_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='App配置表';
+
+
+-- App 定义表
+CREATE TABLE `app_definition`
+(
+    `id`           bigint   NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `app_id`       varchar(50)  NOT NULL COMMENT 'App唯一标识',
+    `name`         varchar(100) NOT NULL COMMENT 'App名称',
+    `description`  text         COMMENT 'App描述',
+    `icon_url`     varchar(255) NOT NULL DEFAULT '' COMMENT 'App图标',
+    `callback_url` varchar(255) NOT NULL DEFAULT '' COMMENT '回调URL',
+    `api_key`      varchar(100) NOT NULL COMMENT 'API Key',
+    `api_secret`   varchar(100) NOT NULL COMMENT 'API Secret',
+    `scopes`       text         NOT NULL COMMENT '授权域',
+    `status`       tinyint   NOT NULL DEFAULT 1 COMMENT '状态 1:启用 0:禁用',
+    `create_time`  bigint   NOT NULL COMMENT '创建时间',
+    `update_time`  bigint   NOT NULL COMMENT '修改时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_app_id` (`app_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';

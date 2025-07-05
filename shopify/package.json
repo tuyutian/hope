@@ -13,7 +13,9 @@
     "deploy-test": "shopify app deploy  -c shopify.app.insurance-test.toml",
     "info": "shopify app info"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@shopify/cli": "^3.82.0"
+  },
   "trustedDependencies": [
     "@shopify/plugin-cloudflare"
   ],

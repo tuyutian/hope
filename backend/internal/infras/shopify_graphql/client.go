@@ -34,6 +34,7 @@ func NewGraphqlClient(shopName, accessToken string, opts ...GraphqlOption) *Grap
 	}
 	// apply any options
 	for _, opt := range opts {
+		fmt.Println(graphqlClient)
 		opt(graphqlClient)
 	}
 	return graphqlClient
@@ -41,8 +42,22 @@ func NewGraphqlClient(shopName, accessToken string, opts ...GraphqlOption) *Grap
 
 // 设置请求头
 func (c *GraphqlClient) setHeaders(req *graphql.Request) {
+	// 安全检查
+	if req == nil {
+		fmt.Println("Warning: graphql.Request is nil")
+		return
+	}
+
+	// 确保 Header 已初始化
+	if req.Header == nil {
+		req.Header = make(map[string][]string)
+	}
+
+	// 设置必要的请求头
 	req.Header.Set("X-Shopify-Access-Token", c.accessToken)
 	req.Header.Set("Content-Type", "application/json")
+
+	fmt.Printf("Headers set successfully: %+v\n", req.Header)
 }
 
 // Query 执行 GraphQL 查询
@@ -53,7 +68,6 @@ func (c *GraphqlClient) Query(ctx context.Context, query string, variables map[s
 	for key, value := range variables {
 		req.Var(key, value)
 	}
-
 	// 设置请求头
 	c.setHeaders(req)
 

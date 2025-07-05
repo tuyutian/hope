@@ -56,7 +56,10 @@ func (ware *RequestWare) Access() gin.HandlerFunc {
 			"request_agent", ua,
 			"request_ip", ip,
 		)
-
+		appId := c.Param("appId")
+		logger.Warn(ctx, "appid is:"+appId)
+		ctx = context.WithValue(ctx, ctxkeys.AppID, appId)
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 
 		code := c.Writer.Status()

@@ -34,6 +34,14 @@ func (j *jwtRepoImpl) Verify(ctx context.Context, token string) (*jwt.BizClaims,
 	return j.Parse(token)
 }
 
+func (j *jwtRepoImpl) GenerateToken(ctx context.Context, claims jwt.BizClaims) (string, string, error) {
+	token, refreshToken, err := j.manager.GenerateToken(claims)
+	if err != nil {
+		return "", "", err
+	}
+	return token, refreshToken, nil
+}
+
 // Parse 将jwt的claims字段，解密
 func (j *jwtRepoImpl) Parse(payload string) (*jwt.BizClaims, error) {
 	// 解析 token

@@ -250,7 +250,7 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	if err != nil {
 		return err
 	}
-	url := "https://" + claims.Dest + accessTokenRelPath
+	url := "https://" + claims.Dest + "/" + accessTokenRelPath
 	data := struct {
 		ClientId           string `json:"client_id"`
 		ClientSecret       string `json:"client_secret"`
@@ -268,11 +268,12 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	}
 	client := utils.NewHTTPClient()
 	sessionToken := new(shopifyEntity.Token)
+	logger.Warn(ctx, "url:"+url, data)
 	err = client.PostJSON(ctx, url, &data, &sessionToken)
 	if err != nil {
 		return err
 	}
-	user, err = auth.sessionStore(ctx, sessionToken)
+	user, err = auth.sessionStore(ctx, sessionToken, claims)
 	if err != nil {
 		return err
 	}
@@ -284,8 +285,8 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 }
 
 // sessionStore   session 授权部分
-func (auth *AuthWare) sessionStore(ctx context.Context, token *shopifyEntity.Token) (*userEntity.User, error) {
-	user, err := auth.userService.AuthFromSession(ctx, token)
+func (auth *AuthWare) sessionStore(ctx context.Context, token *shopifyEntity.Token, claims *jwt.BizClaims) (*userEntity.User, error) {
+	user, err := auth.userService.AuthFromSession(ctx, token, claims)
 	if err != nil {
 		return nil, err
 	}

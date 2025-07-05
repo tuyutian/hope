@@ -1,5 +1,6 @@
-import {Message} from "~/types";
+import {Message} from "@/types/notify.ts";
 import {useMessageStore} from "@/stores/messageStore.ts";
+import {Toast} from "@shopify/polaris";
 
 export const GlobalToast = function () {
   const message = useMessageStore(state => state.message);
@@ -18,7 +19,7 @@ export const GlobalToast = function () {
     <>
       {message.map((toast: Message) =>
         toast.content !== "" ? (
-          <ATost
+          <Toast
             key={toast.id}
             content={toast.content}
             error={toast.error}
@@ -33,4 +34,4 @@ export const GlobalToast = function () {
   );
 }
 
-export default Toast;
+export default GlobalToast;

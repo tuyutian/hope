@@ -43,7 +43,7 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 
 	// 路由找不到的情况
 	router.NoRoute(requestWare.NotFoundHandler())
-	api := router.Group("api/v1") // 定义路由组
+	api := router.Group("/:appId/api/v1") // 定义路由组
 	RegisterCommonRouter(api, handlers.CommonHandler, middlewares.AuthWare)
 	RegisterPluginRouter(api, handlers.SettingHandler)
 	RegisterSettingRouter(api, handlers.SettingHandler, middlewares)

@@ -12,6 +12,7 @@ func RegisterUserRouter(r *gin.RouterGroup, handler *handler.UserHandler, m *Mid
 	userGroup.Use(m.AuthWare.CheckLogin(), m.ShopifyGraphqlWare.ShopifyGraphqlClient())
 	userGroup.GET("step", handler.GetStep)
 	userGroup.POST("step", handler.SetUserStep)
-	userGroup.GET("info", handler.GetUserConf)
+	userGroup.GET("conf", handler.GetUserConf)
+	userGroup.GET("session", handler.GetSessionData)
 
 }

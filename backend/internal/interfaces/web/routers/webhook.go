@@ -8,20 +8,20 @@ import (
 
 func RegisterWebhookRouter(r *gin.RouterGroup, handler *handler.WebHookHandler) {
 	//publicRouter := parent.Group("category")
-	privateRouter := r.Group("webhook/:appId")
-	privateRouter.POST("/uninstall", handler.Uninstall)
-	privateRouter.POST("/shop/update", handler.ShopUpdate)
+	webhookGroup := r.Group("webhook")
+	/*webhookGroup.POST("/uninstall", handler.Uninstall)
+	webhookGroup.POST("/shop/update", handler.ShopUpdate)
 
-	privateRouter.POST("/order-fulfilled", handler.OrderUpdate)
-	privateRouter.POST("/order-paid", handler.OrderUpdate)
-	privateRouter.POST("/order-partially_fulfilled", handler.OrderUpdate)
-	privateRouter.POST("/order-updated", handler.OrderUpdate)
-	privateRouter.POST("/order-delete", handler.OrderDel)
+	webhookGroup.POST("/order-fulfilled", handler.OrderUpdate)
+	webhookGroup.POST("/order-paid", handler.OrderUpdate)
+	webhookGroup.POST("/order-partially_fulfilled", handler.OrderUpdate)
+	webhookGroup.POST("/order-updated", handler.OrderUpdate)
+	webhookGroup.POST("/order-delete", handler.OrderDel)
 
-	privateRouter.POST("/product-update", handler.ProductUpdate)
-	privateRouter.POST("/product-delete", handler.ProductDel)
+	webhookGroup.POST("/product-update", handler.ProductUpdate)
+	webhookGroup.POST("/product-delete", handler.ProductDel)
 
-	privateRouter.POST("/customer-data_request", handler.Customers)
-	privateRouter.POST("/customer-redact", handler.Customers)
-	privateRouter.POST("/shop-redact", handler.Customers)
+	webhookGroup.POST("/customer-data_request", handler.Customers)
+	webhookGroup.POST("/customer-redact", handler.Customers)*/
+	webhookGroup.POST("/shopify", handler.Customers)
 }
