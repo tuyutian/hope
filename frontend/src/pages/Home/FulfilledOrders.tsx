@@ -14,7 +14,7 @@ import {CalendarIcon, ChevronDownIcon, ChevronUpIcon,} from "@shopify/polaris-ic
 import intl from "@/lib/i18n";
 import Tooltips from "./Tooltips";
 import ReactECharts from "echarts-for-react";
-import echarts from "echarts/lib/echarts";
+import * as echarts from "echarts/core";
 import "echarts/lib/chart/lines";
 import "echarts/lib/component/tooltip";
 import "echarts/lib/component/title";

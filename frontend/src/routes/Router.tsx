@@ -1,5 +1,6 @@
 import {createBrowserRouter, RouteObject, RouterProvider} from "react-router";
 import React, {lazy, Suspense} from "react";
+import classNames from 'classnames'
 
 // 布局组件
 const Layout = lazy(() => import("@/layouts/MainLayout"));
@@ -9,9 +10,18 @@ const Home = lazy(() => import("@/pages/Home"));
 const Order = lazy(() => import("@/pages/Order"));
 const Cart = lazy(() => import("@/pages/Cart"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
-
+const Billing = lazy(() => import("@/pages/Billing"));
 // 加载指示器组件
-const LoadingFallback = () => <div className="loading-spinner">加载中...</div>;
+export const LoadingFallback = () => {
+  return <div
+        className="flex items-center justify-center absolute top-0 bg-white bg-opacity-90 w-full h-full"
+        style={{
+          zIndex: 98,
+        }}
+      >
+        <s-spinner accessibilityLabel="Loading" size="large-100" />
+      </div>
+}
 
 // 路由配置对象
 const routes: RouteObject[] = [
@@ -32,7 +42,7 @@ const routes: RouteObject[] = [
         ),
       },
       {
-        path: "order",
+        path: "orders",
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Order />
@@ -44,6 +54,15 @@ const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Cart />
+          </Suspense>
+        ),
+      },
+
+      {
+        path: "billing",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Billing />
           </Suspense>
         ),
       },
