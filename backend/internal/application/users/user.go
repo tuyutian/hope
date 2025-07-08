@@ -283,7 +283,7 @@ func (u *UserService) GetUserStep(ctx context.Context, userID int64) (map[string
 
 type CollectionOption struct {
 	Label string `json:"label"`
-	Value string `json:"value"`
+	Value int64  `json:"value"`
 }
 type UserConfigResponse struct {
 	MoneySymbol string             `json:"money_symbol"`
@@ -308,7 +308,6 @@ func (u *UserService) GetUserConf(ctx context.Context, userID int64) (*UserConfi
 	u.productGraphqlRepo.WithClient(client)
 	collections, err := u.productGraphqlRepo.GetCollectionList(ctx)
 	if collections != nil && len(collections) > 0 {
-		var collections []Collection
 		for _, collection := range collections {
 			collectionOptions = append(collectionOptions, CollectionOption{
 				Label: collection.Title, // Title 作为 label

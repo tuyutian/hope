@@ -1,7 +1,5 @@
 import {
-    TextField,
     IndexTable,
-    LegacyCard,
     IndexFilters,
     useSetIndexFiltersMode,
     useIndexResourceState,
@@ -90,7 +88,7 @@ export default function Order() {
                 query: debouncedQuery,
             });
 
-            if (res?.code === 200) {
+            if (res?.code === 0) {
                 const list = res.data.list.map(item => ({
                     id: item.id,
                     order_name: item.order_name,

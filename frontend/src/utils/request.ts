@@ -31,7 +31,7 @@ axiosInstance.interceptors.response.use(
     // 关闭加载
     removePending(response.config)
 
-    if (response.status === 200) {
+    if (response.status === 0) {
       return response.data
     } else {
       toastMessage({

@@ -34,7 +34,6 @@ func NewGraphqlClient(shopName, accessToken string, opts ...GraphqlOption) *Grap
 	}
 	// apply any options
 	for _, opt := range opts {
-		fmt.Println(graphqlClient)
 		opt(graphqlClient)
 	}
 	return graphqlClient
@@ -57,7 +56,6 @@ func (c *GraphqlClient) setHeaders(req *graphql.Request) {
 	req.Header.Set("X-Shopify-Access-Token", c.accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	fmt.Printf("Headers set successfully: %+v\n", req.Header)
 }
 
 // Query 执行 GraphQL 查询

@@ -512,7 +512,10 @@ func (c *productGraphqlRepoImpl) UpdateVariants(ctx context.Context, productId i
 	return nil
 }
 
-func (c *productGraphqlRepoImpl) GetCollectionList(ctx context.Context) ([]map[string]interface{}, error) {
+func (c *productGraphqlRepoImpl) GetCollectionList(ctx context.Context) ([]struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+}, error) {
 	query := `
 		query collections($first: Int!, $after: String) {
 			collections(first: $first, after: $after) {
@@ -534,7 +537,10 @@ func (c *productGraphqlRepoImpl) GetCollectionList(ctx context.Context) ([]map[s
 	var after *string
 	hasNextPage := true
 
-	var collections []map[string]interface{}
+	var collections []struct {
+		ID    int64  `json:"id"`
+		Title string `json:"title"`
+	}
 
 	// 返回查询结果
 	for hasNextPage {
@@ -570,9 +576,12 @@ func (c *productGraphqlRepoImpl) GetCollectionList(ctx context.Context) ([]map[s
 		}
 
 		for _, edge := range response.Collections.Edges {
-			collections = append(collections, map[string]interface{}{
-				"id":    utils.GetIdFromShopifyGraphqlId(edge.Node.ID),
-				"title": edge.Node.Title,
+			collections = append(collections, struct {
+				ID    int64  `json:"id"`
+				Title string `json:"title"`
+			}{
+				ID:    utils.GetIdFromShopifyGraphqlId(edge.Node.ID),
+				Title: edge.Node.Title,
 			})
 		}
 

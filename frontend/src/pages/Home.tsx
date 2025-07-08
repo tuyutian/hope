@@ -10,7 +10,7 @@ const DashboardClass = () => {
 
   return (
     <s-page>
-      <s-heading><Text fontWeight="bold" as="h1" variant="headingLg">👋 Hi, Welcome to Goodcare Protection
+      <s-heading><Text fontWeight="bold" as="h1" variant="headingLg">👋 Hi, Welcome to goodcare protection
       </Text></s-heading>
       <s-stack gap="base">
         <s-box>
@@ -63,7 +63,7 @@ const DashboardClass = () => {
               <Collapsible open id="test1">
 
                 <Text as="p" variant="bodyMd" tone="subdued">Absolutely, just get in touch on live chat and we can help
-                  you instantly. Or you can export your customers' existing point balances and easily import them into
+                  you instantly. Or you can export your customers&#39; existing point balances and easily import them into
                   Loloyal with a simple CSV file.</Text>
               </Collapsible>
             </BlockStack>

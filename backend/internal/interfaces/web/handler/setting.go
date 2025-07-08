@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,8 @@ import (
 	productEntity "backend/internal/domain/entity/products"
 	settingEntity "backend/internal/domain/entity/settings"
 	"backend/pkg/response"
+	"backend/pkg/response/code"
+	"backend/pkg/response/message"
 	"backend/pkg/utils"
 )
 
@@ -47,7 +50,8 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&settingToggleReq)
 
 	if err != nil {
-		utils.CallWilding(err.Error())
+		fmt.Println(err.Error())
+		s.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return
 	}
 

@@ -32,6 +32,7 @@ func NewProductService(
 		jobProductRepo:  repos.JobProductRepo, // 添加初始化
 		userRepo:        repos.UserRepo,
 		cartSettingRepo: repos.CartSettingRepo,
+		asynqRepo:       repos.AsyncRepo,
 	}
 }
 

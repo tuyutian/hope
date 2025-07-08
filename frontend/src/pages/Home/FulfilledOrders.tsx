@@ -118,7 +118,7 @@ export default function FulfilledOrders(props) {
       days: value,
     };
     const res = await rqGetDashboard(params);
-    if (res.code === 200) {
+    if (res.code === 0) {
       setOrderData((prevValue) => ({
         ...prevValue,
         orderStaticsTable: res.data.order_statistics_table,

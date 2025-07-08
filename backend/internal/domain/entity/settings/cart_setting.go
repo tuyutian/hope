@@ -1,11 +1,11 @@
 package settings
 
 type SettingConfigReq struct {
-	UserID              int64            `json:"user_id"`
+	UserID              int64            `json:"user_id,omitempty"`
 	PlanTitle           string           `json:"planTitle" binding:"required"`
-	IconVisibility      int              `json:"iconVisibility,omitempty" binding:"required,oneof=0 1"`
-	InsuranceVisibility int              `json:"insuranceVisibility,omitempty" binding:"required,oneof=0 1"`
-	SelectButton        int              `json:"selectButton,omitempty" binding:"required,oneof=0 1"`
+	IconVisibility      int              `json:"iconVisibility,omitempty" binding:"oneof=0 1"`
+	InsuranceVisibility int              `json:"insuranceVisibility,omitempty" binding:"oneof=0 1"`
+	SelectButton        int              `json:"selectButton,omitempty" binding:"oneof=0 1"`
 	AddonTitle          string           `json:"addonTitle,omitempty" binding:"required,max=50"`
 	EnabledDescription  string           `json:"enabledDescription" binding:"required,max=200"`
 	DisabledDescription string           `json:"disabledDescription" binding:"required,max=200"`
@@ -13,7 +13,7 @@ type SettingConfigReq struct {
 	FooterUrl           string           `json:"footerUrl"`
 	OptInColor          string           `json:"optInColor" binding:"required,max=50"`
 	OptOutColor         string           `json:"optOutColor" binding:"required,max=50"`
-	PricingType         int              `json:"pricingType,omitempty" binding:"required,oneof=0 1"`
+	PricingType         int              `json:"pricingType,omitempty" binding:"oneof=0 1"`
 	PriceSelect         []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
 	TiersSelect         []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
 	RestValuePrice      string           `json:"restValuePrice" binding:"required"`

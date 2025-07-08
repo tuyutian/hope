@@ -439,9 +439,6 @@ func (c *shopGraphqlRepoImpl) GetPublicationList(ctx context.Context) (string, e
 		}
 		`
 	// 初始化返回的数据结构
-	//var response map[string]interface{}
-	//fmt.Printf("Raw Response: %+v\n", response)
-	// 初始化返回的数据结构
 	var response struct {
 		Publications struct {
 			Edges []struct {

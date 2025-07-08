@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/users"
@@ -69,14 +67,12 @@ func (u *UserHandler) GetUserConf(ctx *gin.Context) {
 		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
 		return
 	}
-
 	u.Success(ctx, "", resp)
 }
 
 func (u *UserHandler) GetSessionData(ctx *gin.Context) {
 	ctxWithTrace := ctx.Request.Context()
 	uid := u.userService.GetClaims(ctxWithTrace).UserID
-	fmt.Println(uid)
 	resp, err := u.userService.GetSessionData(ctxWithTrace, uid)
 	if err != nil {
 		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")

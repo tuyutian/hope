@@ -6,6 +6,7 @@ import (
 
 	"backend/internal/domain/repo"
 	"backend/internal/domain/repo/apps"
+	"backend/internal/domain/repo/billings"
 	"backend/internal/domain/repo/carts"
 	"backend/internal/domain/repo/jobs"
 	jwtRepo "backend/internal/domain/repo/jwtauth"
@@ -18,10 +19,12 @@ import (
 	"backend/internal/infras/config"
 	"backend/internal/infras/jwtauth"
 	"backend/internal/infras/shopify"
+	shopifyBillingRepo "backend/internal/infras/shopify_graphql/billings"
 	shopifyOrderRepo "backend/internal/infras/shopify_graphql/orders"
 	shopifyProductRepo "backend/internal/infras/shopify_graphql/products"
 	shopifyShopRepo "backend/internal/infras/shopify_graphql/shops"
 	"backend/internal/interfaces/persistence/app"
+	"backend/internal/interfaces/persistence/billing"
 	"backend/internal/interfaces/persistence/cart"
 	"backend/internal/interfaces/persistence/job"
 	"backend/internal/interfaces/persistence/order"
@@ -42,17 +45,18 @@ type Repositories struct {
 }
 
 type TableRepos struct {
-	OrderSummaryRepo orders.OrderSummaryRepository
-	UserRepo         users.UserRepository
-	AppAuthRepo      users.AppAuthRepository
-	OrderInfoRep     orders.OrderInfoRepository
-	ProductRepo      products.ProductRepository
-	CartSettingRepo  carts.CartSettingRepository
-	VariantRepo      products.VariantRepository
-	OrderRepo        orders.OrderRepository
-	JobOrderRepo     jobs.OrderRepository
-	JobProductRepo   jobs.ProductRepository
-	AppRepo          apps.AppRepository
+	OrderSummaryRepo     orders.OrderSummaryRepository
+	UserRepo             users.UserRepository
+	AppAuthRepo          users.AppAuthRepository
+	OrderInfoRep         orders.OrderInfoRepository
+	ProductRepo          products.ProductRepository
+	CartSettingRepo      carts.CartSettingRepository
+	VariantRepo          products.VariantRepository
+	OrderRepo            orders.OrderRepository
+	JobOrderRepo         jobs.OrderRepository
+	JobProductRepo       jobs.ProductRepository
+	UserSubscriptionRepo billings.UserSubscriptionRepository
+	AppRepo              apps.AppRepository
 }
 
 type CacheRepos struct {
@@ -67,10 +71,12 @@ type ThirdPartRepos struct {
 }
 
 type ShopifyRepos struct {
-	ShopifyRepo        shopifys.ShopifyRepository
-	ProductGraphqlRepo shopifys.ProductGraphqlRepository
-	ShopGraphqlRepo    shopifys.ShopGraphqlRepository
-	OrderGraphqlRepo   shopifys.OrderGraphqlRepository
+	ShopifyRepo             shopifys.ShopifyRepository
+	ProductGraphqlRepo      shopifys.ProductGraphqlRepository
+	ShopGraphqlRepo         shopifys.ShopGraphqlRepository
+	OrderGraphqlRepo        shopifys.OrderGraphqlRepository
+	SubscriptionGraphqlRepo shopifys.SubscriptionGraphqlRepository
+	UsageChargeGraphqlRepo  shopifys.UsageChargeGraphqlRepository
 }
 
 // NewRepositories 创建 Repositories
@@ -112,18 +118,20 @@ func NewTableRepos(db *xorm.Engine, redisClient redis.UniversalClient) TableRepo
 	orderSummaryRepo := order.NewOrderSummaryRepository(db)
 	appRepo := app.NewAppRepository(db, redisClient)
 	appAuthRepo := user.NewAppAuthRepository(db)
+	userSubscriptionRepo := billing.NewUserSubscriptionRepository(db)
 	return TableRepos{
-		UserRepo:         userRepo,
-		OrderRepo:        orderRepo,
-		JobOrderRepo:     jobOrderRepo,
-		OrderSummaryRepo: orderSummaryRepo,
-		JobProductRepo:   jobProductRepo,
-		OrderInfoRep:     orderInfoRepo,
-		ProductRepo:      productRepo,
-		VariantRepo:      variantRepo,
-		AppAuthRepo:      appAuthRepo,
-		CartSettingRepo:  cartSettingRepo,
-		AppRepo:          appRepo,
+		UserRepo:             userRepo,
+		OrderRepo:            orderRepo,
+		JobOrderRepo:         jobOrderRepo,
+		OrderSummaryRepo:     orderSummaryRepo,
+		JobProductRepo:       jobProductRepo,
+		OrderInfoRep:         orderInfoRepo,
+		ProductRepo:          productRepo,
+		VariantRepo:          variantRepo,
+		AppAuthRepo:          appAuthRepo,
+		CartSettingRepo:      cartSettingRepo,
+		AppRepo:              appRepo,
+		UserSubscriptionRepo: userSubscriptionRepo,
 	}
 }
 
@@ -147,10 +155,14 @@ func NewShopifyRepos(shopifyConf *config.Shopify) ShopifyRepos {
 	shopGraphqlRepo := shopifyShopRepo.NewShopGraphqlRepository()
 	productGraphqlRepo := shopifyProductRepo.NewProductGraphqlRepository()
 	orderGraphqlRepo := shopifyOrderRepo.NewOrderGraphqlRepository()
+	subscriptionGraphqlRepo := shopifyBillingRepo.NewSubscriptionGraphqlRepository()
+	usageChargeGraphqlRepo := shopifyBillingRepo.NewUsageChargeGraphqlRepository()
 	return ShopifyRepos{
-		ShopifyRepo:        shopifyRepos,
-		ProductGraphqlRepo: productGraphqlRepo,
-		ShopGraphqlRepo:    shopGraphqlRepo,
-		OrderGraphqlRepo:   orderGraphqlRepo,
+		ShopifyRepo:             shopifyRepos,
+		ProductGraphqlRepo:      productGraphqlRepo,
+		ShopGraphqlRepo:         shopGraphqlRepo,
+		OrderGraphqlRepo:        orderGraphqlRepo,
+		SubscriptionGraphqlRepo: subscriptionGraphqlRepo,
+		UsageChargeGraphqlRepo:  usageChargeGraphqlRepo,
 	}
 }

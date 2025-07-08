@@ -1,10 +1,10 @@
 package orders
 
 type QueryOrderEntity struct {
-	UserID   int64  `json:"user_id"`
-	Page     int    `form:"page" binding:"required,gte=1"` // gte=1 表示必须 ≥1
-	PageSize int    `form:"page_size" binding:"required,gte=1,lte=50"`
-	Type     int    `form:"type" binding:"required,oneof=0 1 2"`
+	UserID   int64  `json:"user_id,omitempty"`
+	Page     int    `form:"page,omitempty" binding:"required,gte=1"` // gte=1 表示必须 ≥1
+	PageSize int    `form:"page_size,omitempty" binding:"required,gte=1,lte=50"`
+	Type     int    `form:"type,omitempty" binding:"required,oneof=0 1 2"`
 	Query    string `form:"query" binding:"omitempty,max=20"`
 }
 
