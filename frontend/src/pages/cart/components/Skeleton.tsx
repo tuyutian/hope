@@ -1,4 +1,5 @@
 import {
+    Card,
     Layout,
     LegacyCard,
     SkeletonBodyText, SkeletonDisplayText,
@@ -12,21 +13,17 @@ const SkeletonScreen = ()  => {
         <SkeletonPage primaryAction>
         <Layout>
             <Layout.Section>
-                <LegacyCard sectioned>
+                <Card >
                     <SkeletonBodyText />
-                </LegacyCard>
-                <LegacyCard sectioned>
-                    <TextContainer>
+                </Card>
+                <Card >
                         <SkeletonDisplayText size="small" />
                         <SkeletonBodyText />
-                    </TextContainer>
-                </LegacyCard>
-                <LegacyCard sectioned>
-                    <TextContainer>
+                </Card>
+                <Card>
                         <SkeletonDisplayText size="small" />
                         <SkeletonBodyText />
-                    </TextContainer>
-                </LegacyCard>
+                </Card>
             </Layout.Section>
             <Layout.Section variant="oneThird">
                 <LegacyCard>

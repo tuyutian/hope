@@ -1,6 +1,5 @@
 import {createBrowserRouter, RouteObject, RouterProvider} from "react-router";
 import React, {lazy, Suspense} from "react";
-import classNames from 'classnames'
 
 // 布局组件
 const Layout = lazy(() => import("@/layouts/MainLayout"));
@@ -11,6 +10,7 @@ const Order = lazy(() => import("@/pages/Order"));
 const Cart = lazy(() => import("@/pages/Cart"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Billing = lazy(() => import("@/pages/Billing"));
+const BillingDetail = lazy(() => import("@/pages/billing/BillingDetail"));
 // 加载指示器组件
 export const LoadingFallback = () => {
   return <div
@@ -63,6 +63,14 @@ const routes: RouteObject[] = [
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <Billing />
+          </Suspense>
+        ),
+      },
+      {
+        path: "billing/detail",
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <BillingDetail />
           </Suspense>
         ),
       },

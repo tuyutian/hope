@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -25,8 +26,12 @@ func NewOrderHandler(orderService *orders.OrderService) *OrderHandler {
 }
 
 func (h *OrderHandler) Dashboard(ctx *gin.Context) {
-
-	days, err := strconv.Atoi(ctx.Query("days"))
+	reqCtx := ctx.Request.Context()
+	dayParam := strings.TrimSpace(ctx.Query("day"))
+	if dayParam == "" {
+		dayParam = "30"
+	}
+	days, err := strconv.Atoi(dayParam)
 	// 绑定并校验 query 参数
 	if err != nil {
 		// 绑定失败或校验失败
@@ -35,13 +40,9 @@ func (h *OrderHandler) Dashboard(ctx *gin.Context) {
 		return
 	}
 
-	userID, transfer := ctx.Value("id").(int64)
-	if !transfer {
-		h.Error(ctx, code.Unauthorized, message.ErrorBadRequest.Error(), nil)
-		return
-	}
+	userID := reqCtx.Value(ctxkeys.BizClaims).(*jwt.BizClaims).UserID
 
-	resp, err := h.orderService.Summary(ctx, userID, days)
+	resp, err := h.orderService.Summary(reqCtx, userID, days)
 	if err != nil {
 		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return

@@ -7,8 +7,8 @@ import {
     Badge,
     Page,
     Pagination,
-    SkeletonBodyText
-} from '@shopify/polaris';
+    SkeletonBodyText, Card
+} from "@shopify/polaris";
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { rqGetOrderList } from "@/api";
 import debounce from 'lodash.debounce';
@@ -200,7 +200,7 @@ export default function Order() {
     if (isLoading) {
         return (
             <Page title="Protection Orders">
-                <LegacyCard>
+                <Card>
                     <IndexTable
                         resourceName={resourceName}
                         itemCount={itemsPerPage}
@@ -215,14 +215,14 @@ export default function Order() {
                     >
                         {rowMarkup}
                     </IndexTable>
-                </LegacyCard>
+                </Card>
             </Page>
         );
     }
 
     return (
         <Page title="Protection Orders">
-            <LegacyCard>
+            <Card padding="0">
                 <IndexFilters
                     primaryAction={primaryAction}
                     onClearAll={handleFiltersClearAll}
@@ -279,7 +279,7 @@ export default function Order() {
                         disabled={isTabLoading}
                     />
                 </div>
-            </LegacyCard>
+            </Card>
         </Page>
     );
 }

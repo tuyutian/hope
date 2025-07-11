@@ -14,6 +14,7 @@ import (
 
 	"backend/pkg/ctxkeys"
 	"backend/pkg/logger"
+	"backend/pkg/response/code"
 	"backend/pkg/utils"
 )
 
@@ -137,6 +138,7 @@ func (ware *RequestWare) Recover() gin.HandlerFunc {
 func (ware *RequestWare) NotFoundHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.JSON(404, gin.H{
+			"code":    code.NotFound,
 			"message": "this page not found!",
 		})
 	}

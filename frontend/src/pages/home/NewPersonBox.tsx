@@ -2,7 +2,7 @@ import {BlockStack, Box, Button, Collapsible, InlineStack, Text,} from "@shopify
 import React, {useState} from "react";
 import intl from "@/lib/i18n";
 import GuideImage from "@/assets/images/dashborad/guide.png";
-import CheckCycle from "@/pages/Home/CheckCycle.tsx";
+import CheckCycle from "@/pages/home/CheckCycle.tsx";
 
 
 const NewPersonBox = ({setNewPerson, data}) => {

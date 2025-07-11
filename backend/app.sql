@@ -51,7 +51,7 @@ CREATE TABLE `user_subscription`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='用户订阅信息表';
 
--- 抽成收费记录表（简化版）
+-- 抽成收费记录表
 CREATE TABLE `commission_bill`
 (
     `id`                     bigint unsigned         NOT NULL AUTO_INCREMENT COMMENT 'ID',

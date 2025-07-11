@@ -50,18 +50,21 @@ func NewOrderService(repos *providers.Repositories) *OrderService {
 	}
 }
 
-func (o *OrderService) Summary(ctx *gin.Context, userId int64, days int) (interface{}, error) {
+func (o *OrderService) Summary(ctx context.Context, userId int64, days int) (interface{}, error) {
 
 	summary, err := o.orderSummaryRep.GetByDays(ctx, userId, days)
-
+	orderSummaryResp := &OrderSummaryResp{
+		OrderStatistics:      OrderStatistics{},
+		OrderStatisticsTable: make([]OrderStatisticsTable, len(summary)),
+	}
 	if err != nil {
 		logger.Error(ctx, "summary-db异常:"+err.Error())
-		return nil, err
+		return orderSummaryResp, err
 	}
 
-	// 如果没有记录，直接返回默认的统计数据
+	// 如果没有记录，返回带有空数组的统计数据
 	if len(summary) == 0 {
-		return &OrderSummaryResp{}, nil
+		return orderSummaryResp, nil
 	}
 
 	// 2. 加载美国时区
@@ -70,8 +73,6 @@ func (o *OrderService) Summary(ctx *gin.Context, userId int64, days int) (interf
 		logger.Error(ctx, "summary-加载时间异常:"+err.Error())
 		return nil, err
 	}
-
-	var orderSummaryResp OrderSummaryResp
 
 	for _, v := range summary {
 		// 将 v.Today (时间戳) 转换为 time.Time
@@ -94,7 +95,7 @@ func (o *OrderService) Summary(ctx *gin.Context, userId int64, days int) (interf
 	}
 	orderSummaryResp.OrderStatistics.Total = orderSummaryResp.OrderStatistics.Sales - orderSummaryResp.OrderStatistics.Refund
 
-	return &orderSummaryResp, nil
+	return orderSummaryResp, nil
 }
 
 type OrderListResp struct {

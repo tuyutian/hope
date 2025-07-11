@@ -1,9 +1,9 @@
 import {BlockStack, Box, Collapsible, Icon, InlineStack, Text,} from "@shopify/polaris";
 
-import NewPersonBox from "@/pages/Home/NewPersonBox";
-import FulfilledOrders from "@/pages/Home/FulfilledOrders";
-import AbilityBox from "@/pages/Home/AbilityBox";
-import "@/pages/Home/index.css";
+import NewPersonBox from "@/pages/home/NewPersonBox";
+import FulfilledOrders from "@/pages/home/FulfilledOrders";
+import AbilityBox from "@/pages/home/AbilityBox";
+import "@/pages/home/index.css";
 import {ChevronUpIcon} from "@shopify/polaris-icons";
 
 const DashboardClass = () => {

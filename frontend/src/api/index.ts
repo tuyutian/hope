@@ -1,5 +1,6 @@
 import { AxiosRequestConfig} from "axios";
 import request, {IResponse} from "~/utils/request";
+import {FilterParams} from "@/pages/Billing.tsx";
 
 /** 登录模块 */
 
@@ -46,3 +47,5 @@ export const GetSessionData= (): Promise<IResponse> => request.get("api/v1/user/
 export const rqGetOrderList = (params:any): Promise<IResponse> => request.get("api/v1/order/list", params); // 获取订单列表
 
 export const reqGetUserAuthInstall = (params:any): Promise<IResponse> => request.get("api/v1/auth/register", params);
+
+export const GetBillingData = (params:FilterParams): Promise<IResponse> => request.post("api/v1/billing/data",params);

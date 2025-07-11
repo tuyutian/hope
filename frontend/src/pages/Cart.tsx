@@ -1,68 +1,34 @@
 import {
-  Autocomplete,
+  Banner,
   BlockStack,
   Box,
-  Button,
   Card,
   ContextualSaveBar,
-  DataTable,
   Divider,
   Frame,
   InlineStack,
   Layout,
-  Link,
   Page,
   Select,
-  Tag,
   Text,
   TextField,
-  Thumbnail,
-  Toast,
 } from "@shopify/polaris";
-import {useCallback, useEffect, useRef, useState, useTransition} from "react";
+import {useCallback, useEffect, useState, useTransition} from "react";
 import {GetUserConf, rqGetCartSetting, rqPostUpdateCartSetting} from "@/api";
-import SkeletonScreen from "@/pages/Cart/Skeleton";
+import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import SketchPickerWithInput from "@/components/form/SketchPickerWithInput.tsx";
 import type {OptionDescriptor} from "@shopify/polaris/build/ts/src/types";
 
-// 自定义 Switch 组件
-interface SwitchProps {
-  onChange: (checked: boolean) => void;
-  checked: boolean;
-  onColor?: string;
-  offColor?: string;
-  uncheckedIcon?: React.ReactNode;
-  checkedIcon?: React.ReactNode | false;
-}
-
-const CustomSwitch: React.FC<SwitchProps> = ({
-                                               onChange,
-                                               checked,
-                                               onColor = "",
-                                               offColor = "",
-                                               uncheckedIcon,
-                                               checkedIcon
-                                             }) => (
-  <div
-    className={`inline-flex items-center justify-center min-w-8 w-8 h-5 rounded-md cursor-pointer transition-colors ${
-      checked ? "bg-[#303030]" : "bg-[#E3E3E3]"
-    }`}
-    style={{backgroundColor: checked ? onColor : offColor}}
-    onClick={() => onChange(!checked)}
-  >
-    <div
-      className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${
-        checked ? "translate-x-1.5" : "-translate-x-1.5"
-      }`}
-    >
-      {checked ? checkedIcon : uncheckedIcon}
-    </div>
-  </div>
-);
-
+import IconSelector from "@/pages/cart/components/IconSelector";
+import PricingTable from "@/pages/cart/components/PricingTable";
+import CollectionSelector from "@/pages/cart/components/CollectionSelector";
+import CartDemo from "@/pages/cart/components/CartDemo";
+import PublishWidget from "@/pages/cart/components/PublishWidget";
+import {getMessageState} from "@/stores/messageStore.ts";
 
 export default function ShippingProtectionSettings() {
-  // Existing state
+  const toastMessage = getMessageState().toastMessage;
+  // All existing state variables remain the same
   const [planTitle, setPlanTitle] = useState("Plan Title");
   const [iconVisibility, setIconVisibility] = useState("0");
   const [insuranceVisibility, setInsuranceVisibility] = useState("0");
@@ -76,12 +42,10 @@ export default function ShippingProtectionSettings() {
   const [toastError, setToastError] = useState(false);
   const [optInColor, setOptInColor] = useState("#fffff");
   const [optOutColor, setOptOutColor] = useState("#fffff");
-  const [editingColor, setEditingColor] = useState<string | null>(null);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
   const [toastActive, setToastActive] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // New state for Protection Pricing
+  // Protection Pricing state
   const [pricingType, setPricingType] = useState("0");
   const [pricingRule, setPricingRule] = useState("0");
   const [priceSelect, setPriceSelect] = useState([
@@ -130,6 +94,7 @@ export default function ShippingProtectionSettings() {
 
   const [isPending, startTransition] = useTransition();
 
+  // All existing handlers remain the same
   const handleIconClick = (id: number) => {
     setIcons(icons.map(icon => ({
       ...icon,
@@ -140,6 +105,7 @@ export default function ShippingProtectionSettings() {
 
   const selectedIcon = icons.find(icon => icon.selected);
 
+  // All existing validation and handler functions remain the same...
 
   // 验证函数
   const validateFields = () => {
@@ -150,15 +116,9 @@ export default function ShippingProtectionSettings() {
         // 检查每个Tier
         tiersSelect.forEach((tier, index) => {
           if (tier.min || tier.max || tier.percentage) {
-            if (!tier.min) {
-              newErrors[`tier_min_${index}`] = "Please fill in";
-            }
-            if (!tier.max) {
-              newErrors[`tier_max_${index}`] = "Please fill in";
-            }
-            if (!tier.percentage) {
-              newErrors[`tier_percentage_${index}`] = "Please fill in";
-            }
+            if (!tier.min) newErrors[`tier_min_${index}`] = "Please fill in";
+            if (!tier.max) newErrors[`tier_max_${index}`] = "Please fill in";
+            if (!tier.percentage) newErrors[`tier_percentage_${index}`] = "Please fill in";
           }
         });
       }
@@ -167,15 +127,9 @@ export default function ShippingProtectionSettings() {
         // 检查每个Price
         priceSelect.forEach((price, index) => {
           if (price.min || price.max || price.price) {
-            if (!price.min) {
-              newErrors[`price_min_${index}`] = "Please fill in";
-            }
-            if (!price.max) {
-              newErrors[`price_max_${index}`] = "Please fill in";
-            }
-            if (!price.price) {
-              newErrors[`price_price_${index}`] = "Please fill in";
-            }
+            if (!price.min) newErrors[`price_min_${index}`] = "Please fill in";
+            if (!price.max) newErrors[`price_max_${index}`] = "Please fill in";
+            if (!price.price) newErrors[`price_price_${index}`] = "Please fill in";
           }
         });
       }
@@ -199,37 +153,16 @@ export default function ShippingProtectionSettings() {
     handleOnDiscard();
   };
 
-  const removeTag = (valueToRemove: string, selected: string[], setSelected: (values: string[]) => void) => {
-    setSelected(selected.filter((val) => val !== valueToRemove));
+  const removeTag = (valueToRemove: string) => {
+    setSelectedCollections(prev => prev.filter((val) => val !== valueToRemove));
     handleOnDiscard();
   };
 
+  // All existing useEffect and API functions remain the same...
   useEffect(() => {
     void getUserInfoData();
     void getCartData();
-
-    // 可选的清理函数：如果需要清理操作，可以在这里进行
-    return () => {
-      // 清理逻辑 (如果需要)
-    };
   }, []);
-
-  // Existing handlers
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
-        setEditingColor(null);
-      }
-    };
-    if (editingColor) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [editingColor]);
 
   const getUserInfoData = async () => {
     const res = await GetUserConf();
@@ -240,7 +173,6 @@ export default function ShippingProtectionSettings() {
         label: string;
         value: number;
       }) => ({label: collection.label, value: String(collection.value)}));
-      console.log(collections);
       setCollectionOptions(collections);
     }
     if (data.money_symbol) setMoneySymbol(data.money_symbol);
@@ -252,6 +184,8 @@ export default function ShippingProtectionSettings() {
       const res = await rqGetCartSetting();
       if (res.code !== 0 || !res.data) return;
       const data = res.data;
+
+      // Set all state from API response (same as before)
       if (data.plan_title) setPlanTitle(data.plan_title);
       if (data.addon_title) setAddonTitle(data.addon_title);
       if (data.enabled_desc) setEnabledDescription(data.enabled_desc);
@@ -291,6 +225,7 @@ export default function ShippingProtectionSettings() {
 
   };
 
+  // All existing handler functions remain the same...
   // New handlers for Protection Pricing
   const handleAddTier = () => {
     if (tiersSelect.length < 20) {
@@ -324,8 +259,8 @@ export default function ShippingProtectionSettings() {
       disabledDescription,
       footerText,
       footerUrl,
-      optInColor: optInColor,
-      optOutColor: optOutColor,
+      optInColor,
+      optOutColor,
       pricingType: Number(pricingType),
       pricingRule: Number(pricingRule),
       priceSelect,
@@ -337,17 +272,12 @@ export default function ShippingProtectionSettings() {
       selectedCollections,
       icons
     };
+
     startTransition(async function () {
       try {
 
         const res = await rqPostUpdateCartSetting(payload);
-
-        setToastContent(
-          res?.code === 0
-            ? "Saved successfully"
-            : "Saved Fail"
-        );
-
+        setToastContent(res?.code === 0 ? "Saved successfully" : "Saved Fail");
         setToastError(res?.code !== 0);
         setToastActive(true);
 
@@ -362,28 +292,17 @@ export default function ShippingProtectionSettings() {
     });
     handleDiscard();
   }, [
-    planTitle,
-    iconVisibility,
-    insuranceVisibility,
-    selectButton,
-    addonTitle,
-    enabledDescription,
-    disabledDescription,
-    footerText,
-    footerUrl,
-    optInColor,
-    optOutColor,
-    pricingType,
-    pricingRule,
-    priceSelect,
-    tiersSelect,
-    restValuePrice,
-    allPriceValue,
-    allTiersValue,
-    productTypeInput,
-    selectedCollections,
-    icons,
+    planTitle, iconVisibility, insuranceVisibility, selectButton, addonTitle,
+    enabledDescription, disabledDescription, footerText, footerUrl, optInColor,
+    optOutColor, pricingType, pricingRule, priceSelect, tiersSelect, restValuePrice,
+    allPriceValue, allTiersValue, productTypeInput, selectedCollections, icons,
   ]);
+
+  useEffect(() => {
+    if (toastActive) {
+      toastMessage(Object.keys(errors).length ? "Please fix validation errors" : toastContent, 5000, toastError);
+    }
+  }, [errors, toastActive, toastContent, toastError]);
 
   const handleTierChange = (index: number, field: string, value: string, error: string) => {
     let validValue = value;
@@ -463,40 +382,6 @@ export default function ShippingProtectionSettings() {
     setInsuranceVisibility(value ? "1" : "0");
   };
 
-  // 右侧Demo的开关/复选框渲染
-  const renderSelectionControl = () => {
-    if (selectButton === "0") {
-      return (
-        <CustomSwitch
-          onChange={(nextChecked) => onChangeSwitch(nextChecked)}
-          checked={switchValue}
-          onColor={optInColor}
-          offColor={optOutColor}
-          uncheckedIcon={<div className="switchBtn" />}
-          checkedIcon={false}
-        />
-      );
-    } else {
-      return (
-        <label className="custom-checkbox">
-          <input
-            type="checkbox"
-            checked={checkboxInput}
-            onChange={handleCheckbox}
-          />
-          <span className="checkmark" style={{
-            backgroundColor: checkboxInput ? optInColor : optOutColor,
-            borderColor: checkboxInput ? optInColor : optOutColor,
-          }} />
-        </label>
-      );
-    }
-  };
-
-  if (isLoading) {
-    return <SkeletonScreen />;
-  }
-
   const handleDiscard = () => {
     setDirty(false);
   };
@@ -505,9 +390,13 @@ export default function ShippingProtectionSettings() {
     if (!dirty) setDirty(true);
   };
 
-  return (<Frame>
+  if (isLoading) {
+    return <SkeletonScreen />;
+  }
+
+  return (
+    <Frame>
       <div style={{position: "relative"}}>
-        {/* 当有未保存更改时显示 ContextualSaveBar */}
         {dirty && (
           <ContextualSaveBar
             message="Unsaved changes"
@@ -522,495 +411,267 @@ export default function ShippingProtectionSettings() {
           />
         )}
 
-        <Page title="Create Protection Plan (Cart Page)"
-              primaryAction={{content: "Save Changes", onAction: handleSave, loading: saveLoading}}>
-          <Layout>
-            <Layout.Section variant="oneHalf">
-              <Box>
-                <BlockStack gap="400">
-                  <Card padding="300">
-                    <InlineStack align="space-between" blockAlign="center" gap="200">
-                      <Text variant="headingSm" as="h6">Publish Widget</Text>
-                      <Box>
-                        <CustomSwitch
-                          onChange={(nextChecked) => onInsuranceVisibility(nextChecked)}
-                          checked={insuranceVisibility === "1"}
-                        />
-                      </Box>
-                    </InlineStack>
-                    <Text as="p">
-                      Please follow the 👉 <Link url="#">help docs</Link> to complete setup.
-                      If after publishing the widget, you find that the widget does not show up or work properly in
-                      store cart, please turn off this switch only. This way the widget will not have any effect in the
-                      cart, and then please contact us for a free expert adaptation.
-                    </Text>
-                  </Card>
+        <Page
+          title="Create Protection Plan (Cart Page)"
+          primaryAction={{content: "Save Changes", onAction: handleSave, loading: saveLoading}}
+        >
+          <BlockStack gap="400">
+            <Banner title="App embed is not enabled" tone="warning" secondaryAction={{
+              content: "Enable embed"
+            }}>
+              <Text as="p">
+                Shipping Protection widget were published, but the app embed does not appear to be enabled. Please
+                enable that to display the widget on your storefront cart.
+              </Text>
+            </Banner>
+            <Layout>
+              <Layout.Section variant="oneHalf">
+                <Box>
+                  <BlockStack gap="400">
+                    <PublishWidget
+                      insuranceVisibility={insuranceVisibility}
+                      onInsuranceVisibilityChange={onInsuranceVisibility}
+                    />
 
+                    <Card padding="400">
+                      <BlockStack gap="300">
+                        <Text variant="headingSm" as="h6">Widget Style</Text>
 
-                  <Card padding="400">
-                    <BlockStack gap="300">
-                      <Text variant="headingSm" as="h6">Widget Style</Text>
-
-                      <BlockStack gap="200">
-                        <Select
-                          label="Icon Visibility"
-                          options={[
-                            {label: "Show Icon", value: "1"},
-                            {label: "Hide Icon", value: "0"},
-                          ]}
-                          value={iconVisibility}
-                          onChange={(value) => {
-                            setIconVisibility(value);
-                            handleOnDiscard();
-                          }}
-                        />
-                      </BlockStack>
-
-                      <BlockStack gap="200">
-                        <Text as="h2" variant="bodyMd">Widget Icon</Text>
-                        <InlineStack wrap={false} gap="200">
-                          {icons.map((icon, index) => {
-                            const isSelected = icon.selected;
-                            return (
-                              <div
-                                key={index}
-                                onClick={() => handleIconClick(icon.id)}
-                                style={{
-                                  position: "relative",
-                                  padding: "8px",
-                                  borderRadius: "12px",
-                                  border: isSelected ? "2px solid #5c6ac4" : "1px solid #dfe3e8",
-                                  backgroundColor: isSelected ? "#f0f1f3" : "white",
-                                  cursor: "pointer",
-                                  //transition: 'all 0.1s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isSelected) e.currentTarget.style.borderColor = "#b4bcc4";
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isSelected) e.currentTarget.style.borderColor = "#dfe3e8";
-                                }}
-                              >
-                                <Thumbnail
-                                  source={icon.src}
-                                  alt="Icon"
-                                  size="medium"
-                                />
-                                {isSelected && (
-                                  <div style={{
-                                    position: "absolute",
-                                    top: "6px",
-                                    right: "6px",
-                                    backgroundColor: "#5c6ac4",
-                                    color: "white",
-                                    borderRadius: "50%",
-                                    width: "18px",
-                                    height: "18px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "12px",
-                                    fontWeight: "bold",
-                                  }}>
-                                    ✓
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </InlineStack>
-                      </BlockStack>
-
-                      <BlockStack gap="200">
-                        <Select
-                          options={[
-                            {label: "Switch", value: "0"},
-                            {label: "Checkbox", value: "1"},
-                          ]}
-                          value={selectButton}
-                          onChange={(value) => {
-                            handleOnDiscard();
-                            setSelectButton(value);
-                          }}
-                          label="Select Button"
-                        />
-                      </BlockStack>
-
-                      <InlineStack align="space-between" gap="300" wrap={false}>
-                        <Box>
-                          <div>Opt-in action button</div>
-                          <SketchPickerWithInput defaultColor={optInColor} onChange={setOptInColor} />
-
-                        </Box>
-                        <Box>
-                          <div>Opt-out action button</div>
-                          <SketchPickerWithInput defaultColor={optOutColor} onChange={setOptOutColor} />
-                        </Box>
-                      </InlineStack>
-                    </BlockStack>
-                  </Card>
-
-                  <Card padding="400">
-                    <BlockStack gap="200">
-                      <Text variant="headingSm" as="h6">Content</Text>
-                      <TextField
-                        autoComplete="off"
-                        label="Add-on title"
-                        value={addonTitle}
-                        onChange={handleFieldChange(setAddonTitle, "addonTitle")}
-                        error={errors.addonTitle}
-                        maxLength={50}
-                      />
-                      <TextField
-                        autoComplete="off"
-
-                        label="Enabled description"
-                        value={enabledDescription}
-                        onChange={handleFieldChange(setEnabledDescription, "enabledDescription")}
-                        multiline={4}
-                        maxLength={200}
-                        error={errors.enabledDescription}
-                      />
-                      <TextField
-                        autoComplete="off"
-                        label="Disabled description"
-                        value={disabledDescription}
-                        onChange={handleFieldChange(setDisabledDescription, "disabledDescription")}
-                        multiline={4}
-                        maxLength={200}
-                        error={errors.disabledDescription}
-                      />
-                      <TextField
-                        autoComplete="off"
-                        label="Footer link text"
-                        value={footerText}
-                        onChange={setFooterText}
-                        maxLength={50}
-                      />
-                      <TextField
-                        autoComplete="off"
-                        label="Footer link URL"
-                        value={footerUrl}
-                        onChange={setFooterUrl}
-                        maxLength={150}
-                      />
-                      <Text tone="subdued" variant="bodySm" as="span">Note: leave blank for no link</Text>
-                    </BlockStack>
-                  </Card>
-
-                  {/* Protection Pricing Card */}
-                  <Card padding="400">
-                    <BlockStack gap="400">
-                      <Text variant="headingSm" as="h6">Protection Pricing</Text>
-                      <BlockStack gap="200">
-                        <Select
-                          label="Pricing type"
-                          options={[
-                            {label: "Fixed", value: "0"},
-                            {label: "Pricing rule", value: "1"},
-                          ]}
-                          value={pricingType}
-                          onChange={(value) => {
-                            handleOnDiscard();
-                            setPricingType(value);
-                          }}
-                        />
-                      </BlockStack>
-
-
-                      <BlockStack gap="200">
-                        <Select
-                          label="Pricing rule"
-                          options={[
-                            {label: "App for all cart vale", value: "0"},
-                            {label: "Apply for different cart value range", value: "1"},
-                          ]}
-                          value={pricingRule}
-                          onChange={(value) => {
-                            handleOnDiscard();
-                            setPricingRule(value);
-                          }}
-                        />
-                      </BlockStack>
-
-                      {pricingRule === "1" ?
-                        pricingType === "1" ? (
-                          <>
-                            <DataTable
-                              columnContentTypes={["text", "text", "text", "text"]}
-                              headings={["Min Cart Value", "Max Cart Value", "Protection Price", ""]}
-                              rows={tiersSelect.map((tier, index) => [
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`min-${index}`}
-                                  value={tier.min}
-                                  onChange={(value) => handleTierChange(index, "min", value, `tier_min_${index}`)}
-                                  prefix={moneySymbol}
-                                  error={errors[`tier_min_${index}`]}
-                                />,
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`max-${index}`}
-                                  value={tier.max}
-                                  onChange={(value) => handleTierChange(index, "max", value, `tier_max_${index}`)}
-                                  prefix={moneySymbol}
-                                  error={errors[`tier_max_${index}`]}
-                                />,
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`percentage-${index}`}
-                                  value={tier.percentage}
-                                  onChange={(value) => handleTierChange(index, "percentage", value, `tier_percentage_${index}`)}
-                                  prefix="%"
-                                  error={errors[`tier_percentage_${index}`]}
-                                />,
-                                <Button
-                                  key={`delete-${index}`}
-                                  onClick={() => handleDeleteTier(index)}
-                                  variant="plain"
-                                  tone="critical"
-                                >
-                                  Delete
-                                </Button>,
-                              ])}
-                            />
-                            <Button onClick={handleAddTier}>Add Tier</Button>
-                          </>
-                        ) : (
-                          <>
-                            <DataTable
-                              columnContentTypes={["text", "text", "text", "text"]}
-                              headings={["Min Cart Value", "Max Cart Value", "Protection Price", ""]}
-                              rows={priceSelect.map((tier, index) => [
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`min-${index}`}
-                                  value={tier.min}
-                                  onChange={(value) => handlePriceChange(index, "min", value, `price_min_${index}`)}
-                                  prefix={moneySymbol}
-                                  error={errors[`price_min_${index}`]}
-                                />,
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`max-${index}`}
-                                  value={tier.max}
-                                  onChange={(value) => handlePriceChange(index, "max", value, `price_max_${index}`)}
-                                  prefix={moneySymbol}
-                                  error={errors[`price_max_${index}`]}
-                                />,
-                                <TextField
-                                  label=""
-                                  autoComplete="off"
-                                  key={`price-${index}`}
-                                  value={tier.price}
-                                  onChange={(value) => handlePriceChange(index, "price", value, `price_price_${index}`)}
-                                  prefix={moneySymbol}
-                                  error={errors[`price_price_${index}`]}
-                                />,
-                                <Button
-                                  key={`delete-${index}`}
-                                  onClick={() => handleDeletePrice(index)}
-                                  variant="plain"
-                                  tone="critical"
-                                >
-                                  Delete
-                                </Button>,
-                              ])}
-                            />
-                            <Button onClick={handleAddPrice}>Add Price</Button>
-                          </>
-                        )
-                        : <></>
-                      }
-                      {pricingRule === "1" ?
-                        <TextField
-                          autoComplete="off"
-                          label="Other Value Range"
-                          value={restValuePrice}
-                          onChange={(value) => {
-                            handleOnDiscard();
-                            setRestValuePrice(value);
-                          }}
-                          prefix="$"
-                        />
-                        :
-                        <TextField
-                          label=""
-                          autoComplete="off"
-                          value={pricingType === "1" ? allTiersValue : allPriceValue}
-                          onChange={(value) => {
-                            handleOnDiscard();
-                            if (pricingType === "1") {
-                              setAllTiersValue(value);
-                            } else {
-                              setAllPriceValue(value);
-                            }
-                          }}
-                          prefix={pricingType === "1" ? "%" : moneySymbol}
-                        />
-                      }
-
-
-                      <Divider />
-
-                    </BlockStack>
-                  </Card>
-
-                  <Card padding="400">
-                    <BlockStack gap="200">
-
-                      <TextField
-                        autoComplete="off"
-                        label="Product Types"
-                        value={productTypeInput}
-                        onChange={setProductTypeInput}
-                        maxLength={50}
-                      />
-                      <Text as="p" variant="bodySm">Collections</Text>
-                      <Autocomplete
-                        options={collectionOptions.filter(opt => !selectedCollections.includes(opt.value))}
-                        selected={[]}
-                        onSelect={(selectedValue) => {
-                          const value = selectedValue[0];
-                          setSelectedCollections([...new Set([...selectedCollections, value])]);
-                          setCollectionInput("");
-                        }}
-                        textField={
-                          <Autocomplete.TextField
-                            autoComplete="off"
-                            label=""
-                            value={collectionInput}
-                            onChange={setCollectionInput}
-                            onBlur={() => setCollectionInput("")}
-                            placeholder="Choose from list"
+                        <BlockStack gap="200">
+                          <Select
+                            label="Icon Visibility"
+                            options={[
+                              {label: "Show Icon", value: "1"},
+                              {label: "Hide Icon", value: "0"},
+                            ]}
+                            value={iconVisibility}
+                            onChange={(value) => {
+                              setIconVisibility(value);
+                              handleOnDiscard();
+                            }}
                           />
-                        }
-                      />
-                      <InlineStack gap="100" wrap>
-                        {selectedCollections.map((value) => {
-                          const label = collectionOptions.find((o) => o.value === value)?.label || value;
-                          return (
-                            <Tag key={value}
-                                 onRemove={() => removeTag(value, selectedCollections, setSelectedCollections)}>
-                              {label}
-                            </Tag>
-                          );
-                        })}
-                      </InlineStack>
-                    </BlockStack>
-                  </Card>
+                        </BlockStack>
 
-                </BlockStack>
-              </Box>
-            </Layout.Section>
-            <Layout.Section variant="oneHalf">
+                        <BlockStack gap="200">
+                          <IconSelector
+                            icons={icons}
+                            onIconClick={handleIconClick}
+                          />
+                        </BlockStack>
 
+                        <BlockStack gap="200">
+                          <Select
+                            options={[
+                              {label: "Switch", value: "0"},
+                              {label: "Checkbox", value: "1"},
+                            ]}
+                            value={selectButton}
+                            onChange={(value) => {
+                              handleOnDiscard();
+                              setSelectButton(value);
+                            }}
+                            label="Select Button"
+                          />
+                        </BlockStack>
 
-              {/* Right Side - Demo Preview */}
-              <Box>
-                <Card padding="0">
-                  <Box background="bg-fill-tertiary" padding="400" borderStartStartRadius="100"
-                       borderStartEndRadius="100">
-                    <InlineStack
-                      gap="400"
-                      align="space-between"
-                    >
-                      <Text as="h6" variant="bodyMd" fontWeight="semibold">
-                        Cart Page Demo
-                      </Text>
+                        <InlineStack align="space-between" gap="300" wrap={false}>
+                          <Box>
+                            <div>Opt-in action button</div>
+                            <SketchPickerWithInput defaultColor={optInColor} onChange={setOptInColor} />
 
-                      <Button variant="tertiary">View in store</Button>
-                    </InlineStack>
-                  </Box>
-                  <Box padding="400">
-                    <BlockStack gap="300">
-                      {/* Mock Products */}
-                      {[1, 2].map((item, idx) => (
-                        <Box key={idx} padding="300" background="bg-fill-secondary">
-                          <InlineStack gap="300" align="start" key={idx}>
-                            <Thumbnail
-                              source="https://img.icons8.com/plasticine/100/cat-footprint.png"
-                              alt="Cat Slippers"
-                              size="medium"
-                            />
-                            <BlockStack>
-                              <Text as="p" variant="bodyMd" fontWeight="medium">Cute Cat Slippers</Text>
-                              <Text as="span">$10.00</Text>
-                            </BlockStack>
-                          </InlineStack>
-                        </Box>
-                      ))}
-
-                      {/* 保险勾选项 */}
-                      <Card
-                        padding="300"
-                      >
-                        <InlineStack wrap={false} gap="300" blockAlign="start">
-                          {iconVisibility === "1" && selectedIcon ? <img
-                            src={selectedIcon.src}
-                            alt="Protection"
-                            style={{flexShrink: 0, width: "66px", height: "66px"}}
-                          /> : <div />}
-                          <BlockStack gap="150">
-                            <InlineStack blockAlign="start" wrap={false} align="space-between">
-                              <BlockStack align="start">
-                                <Box>
-                                  <Text as="span" variant="bodyMd" fontWeight="semibold">
-                                    {addonTitle || "Shipping Protection"}
-                                  </Text>
-                                  <Text tone="subdued" as="span">
-                                    (2.00 USD)
-                                  </Text>
-                                </Box>
-                                <Text as="p" tone="subdued" variant="bodySm">
-                                  {(selectButton === "0" && switchValue) || (selectButton === "1" && checkboxInput) ? enabledDescription : disabledDescription}
-                                </Text>
-                                {/* 底部链接 */}
-                                {footerText && (
-                                  <Box>
-                                    <Text variant="bodySm" as="span">
-                                      <a title={footerUrl || ""} style={{
-                                        color: "#0070f3",
-                                        textDecoration: "none",
-                                        cursor: "pointer"
-                                      }} onClick={(e) => e.preventDefault()}>
-                                        {footerText}
-                                      </a>
-                                    </Text>
-                                  </Box>
-                                )}
-                              </BlockStack>
-                              {renderSelectionControl()}
-                            </InlineStack>
-                          </BlockStack>
-
+                          </Box>
+                          <Box>
+                            <div>Opt-out action button</div>
+                            <SketchPickerWithInput defaultColor={optOutColor} onChange={setOptOutColor} />
+                          </Box>
                         </InlineStack>
+                      </BlockStack>
+                    </Card>
+
+                    <Card padding="400">
+                      <BlockStack gap="200">
+                        <Text variant="headingSm" as="h6">Content</Text>
+                        <TextField
+                          autoComplete="off"
+                          label="Add-on title"
+                          value={addonTitle}
+                          onChange={handleFieldChange(setAddonTitle, "addonTitle")}
+                          error={errors.addonTitle}
+                          maxLength={50}
+                        />
+                        <TextField
+                          autoComplete="off"
+
+                          label="Enabled description"
+                          value={enabledDescription}
+                          onChange={handleFieldChange(setEnabledDescription, "enabledDescription")}
+                          multiline={4}
+                          maxLength={200}
+                          error={errors.enabledDescription}
+                        />
+                        <TextField
+                          autoComplete="off"
+                          label="Disabled description"
+                          value={disabledDescription}
+                          onChange={handleFieldChange(setDisabledDescription, "disabledDescription")}
+                          multiline={4}
+                          maxLength={200}
+                          error={errors.disabledDescription}
+                        />
+                        <TextField
+                          autoComplete="off"
+                          label="Footer link text"
+                          value={footerText}
+                          onChange={setFooterText}
+                          maxLength={50}
+                        />
+                        <TextField
+                          autoComplete="off"
+                          label="Footer link URL"
+                          value={footerUrl}
+                          onChange={setFooterUrl}
+                          maxLength={150}
+                        />
+                        <Text tone="subdued" variant="bodySm" as="span">Note: leave blank for no link</Text>
+                      </BlockStack>
+                    </Card>
+
+                    {/* Protection Pricing Card */}
+                    <Card padding="400">
+                      <BlockStack gap="400">
+                        <Text variant="headingSm" as="h6">Protection Pricing</Text>
+                        <BlockStack gap="200">
+                          <Select
+                            label="Pricing type"
+                            options={[
+                              {label: "Fixed", value: "0"},
+                              {label: "Pricing rule", value: "1"},
+                            ]}
+                            value={pricingType}
+                            onChange={(value) => {
+                              handleOnDiscard();
+                              setPricingType(value);
+                            }}
+                          />
+                        </BlockStack>
 
 
-                      </Card>
+                        <BlockStack gap="200">
+                          <Select
+                            label="Pricing rule"
+                            options={[
+                              {label: "App for all cart vale", value: "0"},
+                              {label: "Apply for different cart value range", value: "1"},
+                            ]}
+                            value={pricingRule}
+                            onChange={(value) => {
+                              handleOnDiscard();
+                              setPricingRule(value);
+                            }}
+                          />
+                        </BlockStack>
 
-                      {/* Checkout 按钮 */}
-                      <Button fullWidth size="large">
-                        Checkout {switchValue || checkboxInput === true ? "22.00 USD" : "20.00 USD"}
-                      </Button>
-                    </BlockStack>
-                  </Box>
-                </Card>
-              </Box>
-            </Layout.Section>
-          </Layout>
-          {toastActive && (
-            <Toast
-              content={Object.keys(errors).length ? "Please fix validation errors" : toastContent}
-              onDismiss={() => setToastActive(false)}
-              error={Object.keys(errors).length > 0 || toastError}
-            />
-          )}
+                        {pricingRule === "1" && (
+                          <PricingTable
+                            pricingType={pricingType}
+                            priceSelect={priceSelect}
+                            tiersSelect={tiersSelect}
+                            moneySymbol={moneySymbol}
+                            errors={errors}
+                            onPriceChange={handlePriceChange}
+                            onTierChange={handleTierChange}
+                            onDeletePrice={handleDeletePrice}
+                            onDeleteTier={handleDeleteTier}
+                            onAddPrice={handleAddPrice}
+                            onAddTier={handleAddTier}
+                          />
+                        )}
+
+                        {pricingRule === "1" ? (
+                          <TextField
+                            autoComplete="off"
+                            label="Other Value Range"
+                            value={restValuePrice}
+                            onChange={(value) => {
+                              handleOnDiscard();
+                              setRestValuePrice(value);
+                            }}
+                            prefix="$"
+                          />
+                        ) : (
+                          <TextField
+                            label=""
+                            autoComplete="off"
+                            value={pricingType === "1" ? allTiersValue : allPriceValue}
+                            onChange={(value) => {
+                              handleOnDiscard();
+                              if (pricingType === "1") {
+                                setAllTiersValue(value);
+                              } else {
+                                setAllPriceValue(value);
+                              }
+                            }}
+                            prefix={pricingType === "1" ? "%" : moneySymbol}
+                          />
+                        )}
+
+
+                        <Divider />
+
+                      </BlockStack>
+                    </Card>
+
+                    <Card padding="400">
+                      <BlockStack gap="200">
+
+                        <TextField
+                          autoComplete="off"
+                          label="Product Types"
+                          value={productTypeInput}
+                          onChange={setProductTypeInput}
+                          maxLength={50}
+                        />
+                        <CollectionSelector
+                          collectionOptions={collectionOptions}
+                          selectedCollections={selectedCollections}
+                          collectionInput={collectionInput}
+                          onCollectionInputChange={setCollectionInput}
+                          onCollectionSelect={(value) => {
+                            setSelectedCollections([...new Set([...selectedCollections, value])]);
+                            setCollectionInput("");
+                          }}
+                          onRemoveCollection={removeTag}
+                        />
+                      </BlockStack>
+                    </Card>
+
+                  </BlockStack>
+                </Box>
+              </Layout.Section>
+
+              <Layout.Section variant="oneHalf">
+                <Box>
+                  <CartDemo
+                    iconVisibility={iconVisibility}
+                    selectedIcon={selectedIcon}
+                    addonTitle={addonTitle}
+                    enabledDescription={enabledDescription}
+                    disabledDescription={disabledDescription}
+                    footerText={footerText}
+                    footerUrl={footerUrl}
+                    selectButton={selectButton}
+                    switchValue={switchValue}
+                    checkboxInput={checkboxInput}
+                    optInColor={optInColor}
+                    optOutColor={optOutColor}
+                    onSwitchChange={onChangeSwitch}
+                    onCheckboxChange={handleCheckbox}
+                  />
+                </Box>
+              </Layout.Section>
+            </Layout>
+          </BlockStack>
+
         </Page>
 
       </div>

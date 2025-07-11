@@ -7,6 +7,8 @@ import Router from "./routes/Router.tsx";
 import "@shopify/polaris/build/esm/styles.css";
 import {PolarisProvider} from "@/components/providers/PolarisProvider.tsx";
 import {ShopifyAuthContext} from "@/layouts/ShopifyAuthContext.tsx";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+const queryClient = new QueryClient()
 
 function App() {
   const shopify = useShopifyBridge();
@@ -58,11 +60,14 @@ function App() {
   }, [authToken, token, shop, useAuthToken, useAdminToken, updateAuthToken, updateUserToken, shopify]);
 
   return (
+    // Provide the client to your App
+    <QueryClientProvider client={queryClient}>
     <PolarisProvider>
       <ShopifyAuthContext>
         <Router />
       </ShopifyAuthContext>
     </PolarisProvider>
+    </QueryClientProvider>
   );
 }
 
