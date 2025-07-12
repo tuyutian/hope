@@ -7,14 +7,9 @@ import {GetBillingData} from "@/api";
 import type {NonEmptyArray} from "@shopify/polaris/build/ts/src/types";
 import {IndexTableHeading} from "@shopify/polaris/build/ts/src/components/IndexTable/IndexTable";
 import {IResponse} from "@/utils/request.ts";
+import {FilterParams} from "@/types/billing.ts";
 
-export interface FilterParams {
-  sort: string;
-  page: number;
-  pageSize: number;
-  minTime: string;
-  maxTime: string;
-}
+
 
 type TableData = {
   list: { id: number, order_name: string, charged_at: string, charge_status: number, amount: number }[]
@@ -25,7 +20,7 @@ export default function BillingTable() {
   const [filters, setFilters] = useState<FilterParams>({
     sort: "desc",
     page: 1,
-    pageSize: 10,
+    size: 10,
     minTime: "",
     maxTime: ""
   });
@@ -61,13 +56,15 @@ export default function BillingTable() {
     if (error) {
       toastMessage(error.message, 5000, true);
     }
-    return <EmptyState
-      heading="Request data failed"
-      image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-      fullWidth
-    >
-      <p>Please contact us to fix this error!</p>
-    </EmptyState>;
+    return <Card>
+      <EmptyState
+        heading="Request data failed"
+        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+        fullWidth
+      >
+        <p>Please contact us to fix this error!</p>
+      </EmptyState>
+    </Card>;
   }
 
   if (isLoading) {
@@ -82,14 +79,14 @@ export default function BillingTable() {
   };
 
   const handleNextPage = () => {
-    const totalPages = Math.ceil((data?.total || 0) / filters.pageSize);
+    const totalPages = Math.ceil((data?.total || 0) / filters.size);
     if (filters.page < totalPages) {
       setFilters(prev => ({...prev, page: prev.page + 1}));
     }
   };
 
   // 计算分页状态
-  const totalPages = Math.ceil((data?.total || 0) / filters.pageSize);
+  const totalPages = Math.ceil((data?.total || 0) / filters.size);
   const hasPrevious = filters.page > 1;
   const hasNext = filters.page < totalPages;
   const headers: NonEmptyArray<IndexTableHeading> = [

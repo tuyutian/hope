@@ -3,18 +3,12 @@ import {BlockStack, Box, Card, EmptyState, IndexTable, InlineStack, Page, Pagina
 import {getMessageState} from "@/stores/messageStore.ts";
 import {useState} from "react";
 import {useQuery} from "@tanstack/react-query";
-import {GetBillingData} from "@/api";
+import { GetBillingDetailData} from "@/api";
 import type {NonEmptyArray} from "@shopify/polaris/build/ts/src/types";
 import {IndexTableHeading} from "@shopify/polaris/build/ts/src/components/IndexTable/IndexTable";
 import {IResponse} from "@/utils/request.ts";
+import {FilterParams} from "@/types/billing.ts";
 
-export interface FilterParams {
-  sort: string;
-  page: number;
-  pageSize: number;
-  minTime: string;
-  maxTime: string;
-}
 
 type TableData = {
   list: {
@@ -32,7 +26,7 @@ export default function BillingDetail() {
   const [filters, setFilters] = useState<FilterParams>({
     sort: "desc",
     page: 1,
-    pageSize: 10,
+    size: 10,
     minTime: "",
     maxTime: ""
   });
@@ -43,10 +37,10 @@ export default function BillingDetail() {
     isLoading,
     isFetching,
   } = useQuery<IResponse, Error, TableData>({
-    queryKey: ["billing-table", filters],
+    queryKey: ["billing-detail-table", filters],
     queryFn: async () => {
       try {
-        return await GetBillingData(filters);
+        return await GetBillingDetailData(filters);
       } catch (error) {
         console.log(error);
         return {
@@ -89,14 +83,14 @@ export default function BillingDetail() {
   };
 
   const handleNextPage = () => {
-    const totalPages = Math.ceil((data?.total || 0) / filters.pageSize);
+    const totalPages = Math.ceil((data?.total || 0) / filters.size);
     if (filters.page < totalPages) {
       setFilters(prev => ({...prev, page: prev.page + 1}));
     }
   };
 
   // 计算分页状态
-  const totalPages = Math.ceil((data?.total || 0) / filters.pageSize);
+  const totalPages = Math.ceil((data?.total || 0) / filters.size);
   const hasPrevious = filters.page > 1;
   const hasNext = filters.page < totalPages;
   const headers: NonEmptyArray<IndexTableHeading> = [
@@ -157,18 +151,19 @@ export default function BillingDetail() {
           loading={isFetching}
           headings={headers}
           selectable={false}
-        >
-          {rowMarkup}
-        </IndexTable>
-        {(data.list.length || 0) <= 0 && <EmptyState
+          emptyState={<EmptyState
             heading="You currently have no new policy"
             image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
             fullWidth
-        >
+          >
             <p>
-                Set up your insurance plugin, embed it in your store and start increasing your revenue.
+              Set up your insurance plugin, embed it in your store and start increasing your revenue.
             </p>
-        </EmptyState>}
+          </EmptyState>}
+        >
+          {rowMarkup}
+        </IndexTable>
+
         {/* 只有在有数据时才显示分页 */}
         {(data?.total || 0) > 0 && (
           <InlineStack align="center">

@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
-	billingEntity "backend/internal/domain/entity/billings"
-	"backend/internal/domain/repo/billings"
+	billingEntity "backend/internal/domain/entity/users"
+	"backend/internal/domain/repo/users"
 
 	"github.com/shopspring/decimal"
 	"xorm.io/xorm"
 )
 
-var _ billings.UserSubscriptionRepository = (*userSubscriptionRepoImpl)(nil)
+var _ users.UserSubscriptionRepository = (*userSubscriptionRepoImpl)(nil)
 
 type userSubscriptionRepoImpl struct {
 	db *xorm.Engine
 }
 
-func NewUserSubscriptionRepository(db *xorm.Engine) billings.UserSubscriptionRepository {
+func NewUserSubscriptionRepository(db *xorm.Engine) users.UserSubscriptionRepository {
 	return &userSubscriptionRepoImpl{db: db}
 }
 
@@ -66,7 +66,7 @@ func (u *userSubscriptionRepoImpl) UpdateSubscriptionBalance(ctx context.Context
 }
 
 // GetSubscriptionByLineItemID 根据LineItemID获取订阅
-func (u *userSubscriptionRepoImpl) GetSubscriptionByLineItemID(ctx context.Context, lineItemID string) (*billingEntity.UserSubscription, error) {
+func (u *userSubscriptionRepoImpl) GetSubscriptionByLineItemID(ctx context.Context, lineItemID int64) (*billingEntity.UserSubscription, error) {
 	subscription := &billingEntity.UserSubscription{}
 	has, err := u.db.Where("subscription_line_item_id = ?", lineItemID).Get(subscription)
 	if err != nil {

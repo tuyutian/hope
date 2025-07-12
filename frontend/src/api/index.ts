@@ -1,6 +1,6 @@
 import { AxiosRequestConfig} from "axios";
 import request, {IResponse} from "~/utils/request";
-import {FilterParams} from "@/pages/Billing.tsx";
+import {FilterParams} from "@/types/billing.ts";
 
 /** 登录模块 */
 
@@ -34,7 +34,7 @@ export const ckeditorConfig = {
   //   }
 };
 export const rqPostLogin = (params: any): Promise<IResponse> => request.post("api/v1/auth/login", params); // 登录
-export const rqGetDashboard = (params: AxiosRequestConfig<any> | undefined): Promise<IResponse> => request.get("api/v1/order/dashboard", params); // 查询订单统计
+export const rqGetDashboard = (days:string): Promise<IResponse> => request.get(`api/v1/order/dashboard?days=${days}`); // 查询订单统计
 
 export const rqGetCartSetting = (params?:any): Promise<IResponse> => request.get("api/v1/setting/cart", params); // 查询购物车配置
 
@@ -48,4 +48,11 @@ export const rqGetOrderList = (params:any): Promise<IResponse> => request.get("a
 
 export const reqGetUserAuthInstall = (params:any): Promise<IResponse> => request.get("api/v1/auth/register", params);
 
-export const GetBillingData = (params:FilterParams): Promise<IResponse> => request.post("api/v1/billing/data",params);
+export const GetBillingData = (params:FilterParams): Promise<IResponse> => request.post("api/v1/billing/list",params);
+export const GetBillingDetailData = (params:FilterParams): Promise<IResponse> => request.post("api/v1/billing/details",params);
+export const GetCurrentPeriod = (): Promise<IResponse> => request.get("api/v1/billing/current");
+
+export const UpdateDashboardGuide= (name:string,open:boolean): Promise<IResponse> => request.post('api/v1/user/step',{
+  'name':name,
+  'open':open,
+})

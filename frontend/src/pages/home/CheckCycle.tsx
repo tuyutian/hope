@@ -1,22 +1,38 @@
-import React, {useState} from "react";
+import React, {useState, useTransition} from "react";
 import {Spinner} from "@shopify/polaris";
+import {UpdateDashboardGuide} from "@/api";
+import {useAuth} from "@/stores/context.ts";
+import {UserGuide} from "@/types/user.ts";
 
-export default function CheckCycle() {
-  const [clickLoading, setClickLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [atChange, setAtChange] = useState(false);
+type Props = {
+  name: string
+  check: boolean
+}
+
+export default function CheckCycle({name, check}: Props) {
+  const [done, setDone] = useState(check);
+  const {user, setUser} = useAuth();
+  const [clickLoading, startTransition] = useTransition();
   const changeStatus = function (status: boolean) {
-    setDone(status);
+    startTransition(async () => {
+      const res = await UpdateDashboardGuide(name, status);
+      if (res.code === 0) {
+        startTransition(() => {
+          setDone(status);
+          user.userGuide[name as keyof UserGuide] = status;
+          setUser({...user});
+        });
+      }
+    });
+
   };
   return clickLoading ? <div className="flex items-center justify-center w-6 h-6 cursor-default">
     <Spinner accessibilityLabel="Small spinner example" size="small" />
   </div> : <>
     {done ? (
       <div
-        className={`transition-transform w-5 h-5 m-[2px] transform ${atChange ? "cursor-not-allowed" : "cursor-pointer"}`}
-        onClick={e => {
-          e.stopPropagation();
-          if (atChange) return;
+        className="transition-transform w-5 h-5 m-[2px] transform cursor-pointer"
+        onClick={() => {
           changeStatus(!done);
         }}
       >
@@ -29,13 +45,10 @@ export default function CheckCycle() {
       </div>
     ) : (
       <div
-        className={`w-5 min-w-5 h-5 m-[2px] rounded-[30px] border-2 border-dashed hover:border-solid ${
-          atChange ? "cursor-not-allowed" : "cursor-pointer"
-        } active:bg-slate-50`}
+        className="w-5 min-w-5 h-5 m-[2px] rounded-[30px] border-2 border-dashed hover:border-solid cursor-pointer active:bg-slate-50"
         style={{borderColor: "#8A8A8A"}}
         onClick={e => {
           e.stopPropagation();
-          if (atChange) return;
           changeStatus(!done);
         }}
       />

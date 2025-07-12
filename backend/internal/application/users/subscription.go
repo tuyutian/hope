@@ -7,15 +7,16 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	billingEntity "backend/internal/domain/entity/billings"
 	shopifyEntity "backend/internal/domain/entity/shopifys"
-	"backend/internal/domain/repo/billings"
+	billingEntity "backend/internal/domain/entity/users"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
+	"backend/internal/domain/repo/users"
 	"backend/internal/providers"
+	"backend/pkg/utils"
 )
 
 type SubscriptionService struct {
-	userSubscriptionRepo    billings.UserSubscriptionRepository
+	userSubscriptionRepo    users.UserSubscriptionRepository
 	subscriptionGraphqlRepo shopifyRepo.SubscriptionGraphqlRepository
 	usageChargeGraphqlRepo  shopifyRepo.UsageChargeGraphqlRepository
 }
@@ -74,10 +75,10 @@ func (s *SubscriptionService) CreateUsageSubscription(
 	userSubscription := &billingEntity.UserSubscription{
 		UserID:                 userID,
 		ShopDomain:             shopDomain,
-		SubscriptionID:         subscription.ID,
+		SubscriptionID:         utils.GetIdFromShopifyGraphqlId(subscription.ID),
 		SubscriptionName:       subscription.Name,
 		SubscriptionStatus:     subscription.Status,
-		SubscriptionLineItemID: subscription.LineItems[0].ID,
+		SubscriptionLineItemID: utils.GetIdFromShopifyGraphqlId(subscription.LineItems[0].ID),
 		PricingType:            billingEntity.PricingTypeRecurring,
 		CappedAmount:           cappedAmount,
 		Currency:               currency,
@@ -141,10 +142,10 @@ func (s *SubscriptionService) CreateRecurringSubscription(
 	userSubscription := &billingEntity.UserSubscription{
 		UserID:                 userID,
 		ShopDomain:             shopDomain,
-		SubscriptionID:         subscription.ID,
+		SubscriptionID:         utils.GetIdFromShopifyGraphqlId(subscription.ID),
 		SubscriptionName:       subscription.Name,
 		SubscriptionStatus:     subscription.Status,
-		SubscriptionLineItemID: subscription.LineItems[0].ID,
+		SubscriptionLineItemID: utils.GetIdFromShopifyGraphqlId(subscription.LineItems[0].ID),
 		PricingType:            billingEntity.PricingTypeRecurring,
 		CappedAmount:           price, // 对于循环订阅，这里存储价格
 		Currency:               currency,

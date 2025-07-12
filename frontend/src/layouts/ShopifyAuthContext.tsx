@@ -50,7 +50,7 @@ export function ShopifyAuthContext({ children }: ShopifyAuthContextProps) {
 
 
   return (
-    <AuthContext value={user}>
+    <AuthContext value={{user:user,setUser:setUser}}>
       {children}
     </AuthContext>
   );

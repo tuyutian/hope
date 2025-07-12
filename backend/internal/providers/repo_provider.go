@@ -45,18 +45,21 @@ type Repositories struct {
 }
 
 type TableRepos struct {
-	OrderSummaryRepo     orders.OrderSummaryRepository
-	UserRepo             users.UserRepository
-	AppAuthRepo          users.AppAuthRepository
-	OrderInfoRep         orders.OrderInfoRepository
-	ProductRepo          products.ProductRepository
-	CartSettingRepo      carts.CartSettingRepository
-	VariantRepo          products.VariantRepository
-	OrderRepo            orders.OrderRepository
-	JobOrderRepo         jobs.OrderRepository
-	JobProductRepo       jobs.ProductRepository
-	UserSubscriptionRepo billings.UserSubscriptionRepository
-	AppRepo              apps.AppRepository
+	OrderSummaryRepo         orders.OrderSummaryRepository
+	UserRepo                 users.UserRepository
+	AppAuthRepo              apps.AppAuthRepository
+	OrderInfoRep             orders.OrderInfoRepository
+	ProductRepo              products.ProductRepository
+	CartSettingRepo          carts.CartSettingRepository
+	VariantRepo              products.VariantRepository
+	OrderRepo                orders.OrderRepository
+	JobOrderRepo             jobs.OrderRepository
+	JobProductRepo           jobs.ProductRepository
+	UserSubscriptionRepo     users.UserSubscriptionRepository
+	AppRepo                  apps.AppRepository
+	CommissionBillRepo       billings.CommissionBillRepository
+	BillingPeriodSummaryRepo billings.BillingPeriodSummaryRepository
+	UserSettingRepo          users.UserSettingRepository
 }
 
 type CacheRepos struct {
@@ -119,19 +122,25 @@ func NewTableRepos(db *xorm.Engine, redisClient redis.UniversalClient) TableRepo
 	appRepo := app.NewAppRepository(db, redisClient)
 	appAuthRepo := user.NewAppAuthRepository(db)
 	userSubscriptionRepo := billing.NewUserSubscriptionRepository(db)
+	commissionBillRepo := billing.NewCommissionBillRepository(db)
+	billingPeriodSummaryRepo := billing.NewBillingPeriodSummaryRepo(db)
+	userSettingRepo := user.NewUserSettingRepository(db)
 	return TableRepos{
-		UserRepo:             userRepo,
-		OrderRepo:            orderRepo,
-		JobOrderRepo:         jobOrderRepo,
-		OrderSummaryRepo:     orderSummaryRepo,
-		JobProductRepo:       jobProductRepo,
-		OrderInfoRep:         orderInfoRepo,
-		ProductRepo:          productRepo,
-		VariantRepo:          variantRepo,
-		AppAuthRepo:          appAuthRepo,
-		CartSettingRepo:      cartSettingRepo,
-		AppRepo:              appRepo,
-		UserSubscriptionRepo: userSubscriptionRepo,
+		UserRepo:                 userRepo,
+		OrderRepo:                orderRepo,
+		JobOrderRepo:             jobOrderRepo,
+		OrderSummaryRepo:         orderSummaryRepo,
+		JobProductRepo:           jobProductRepo,
+		OrderInfoRep:             orderInfoRepo,
+		ProductRepo:              productRepo,
+		VariantRepo:              variantRepo,
+		AppAuthRepo:              appAuthRepo,
+		CartSettingRepo:          cartSettingRepo,
+		AppRepo:                  appRepo,
+		UserSubscriptionRepo:     userSubscriptionRepo,
+		CommissionBillRepo:       commissionBillRepo,
+		BillingPeriodSummaryRepo: billingPeriodSummaryRepo,
+		UserSettingRepo:          userSettingRepo,
 	}
 }
 

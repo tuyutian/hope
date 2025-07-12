@@ -49,3 +49,10 @@ type UserCacheRepository interface {
 	// GetByShop Get 从缓存中根据 id 获取 users.User
 	GetByShop(ctx context.Context, appId string, shop string) (*users.User, error)
 }
+
+type UserSettingRepository interface {
+	// Get 获取设置
+	Get(ctx context.Context, userID int64, name string) (string, error)
+	// Set 设置配置
+	Set(ctx context.Context, userID int64, name string, value string) error
+}

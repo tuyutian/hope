@@ -1,7 +1,7 @@
 import {CalloutCard,} from "@shopify/polaris";
 import React, {useMemo} from "react";
 
-const AbilityBox = ({data, setPageData, toastFun}) => {
+const AbilityBox = () => {
   const abilityList = {
     level1: [
       {

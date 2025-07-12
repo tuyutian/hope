@@ -12,6 +12,7 @@ type Handlers struct {
 	UserHandler    *UserHandler
 	SettingHandler *SettingHandler
 	WebhookHandler *WebHookHandler
+	BillingHandler *BillingHandler
 }
 
 func InitHandlers(services *application.Services, repos *providers.Repositories) *Handlers {
@@ -20,11 +21,13 @@ func InitHandlers(services *application.Services, repos *providers.Repositories)
 	userHandler := NewUserHandler(services.UserService)
 	settingHandler := NewSettingHandler(services)
 	webhookHandler := NewWebHookHandler(services)
+	billingHandler := NewBillingHandler(services)
 	return &Handlers{
 		orderHandler,
 		commonHandler,
 		userHandler,
 		settingHandler,
 		webhookHandler,
+		billingHandler,
 	}
 }

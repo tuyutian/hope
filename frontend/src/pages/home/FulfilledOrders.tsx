@@ -113,11 +113,8 @@ export default function FulfilledOrders(props) {
     ],
   });
 
-  const getOrderData = async (value) => {
-    const params = {
-      days: value,
-    };
-    const res = await rqGetDashboard(params);
+  const getOrderData = async (value:string) => {
+    const res = await rqGetDashboard(value);
     if (res.code === 0) {
       setOrderData((prevValue) => ({
         ...prevValue,

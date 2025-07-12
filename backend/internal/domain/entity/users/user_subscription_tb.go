@@ -1,4 +1,4 @@
-package billings
+package users
 
 import (
 	"github.com/shopspring/decimal"
@@ -9,10 +9,10 @@ type UserSubscription struct {
 	ID                     int64           `xorm:"pk autoincr 'id'" json:"id"`
 	UserID                 int64           `xorm:"not null 'user_id'" json:"user_id"`
 	ShopDomain             string          `xorm:"varchar(100) not null default '' 'shop_domain'" json:"shop_domain"`
-	SubscriptionID         string          `xorm:"varchar(100) not null default '' 'subscription_id'" json:"subscription_id"`
+	SubscriptionID         int64           `xorm:"not null default 0 'subscription_id'" json:"subscription_id"`
 	SubscriptionName       string          `xorm:"varchar(100) not null default '' 'subscription_name'" json:"subscription_name"`
 	SubscriptionStatus     string          `xorm:"varchar(20) not null default '' 'subscription_status'" json:"subscription_status"`
-	SubscriptionLineItemID string          `xorm:"varchar(100) not null default '' 'subscription_line_item_id'" json:"subscription_line_item_id"`
+	SubscriptionLineItemID int64           `xorm:"not null default 0 'subscription_line_item_id'" json:"subscription_line_item_id"`
 	PricingType            string          `xorm:"varchar(20) not null default '' 'pricing_type'" json:"pricing_type"`
 	CappedAmount           decimal.Decimal `xorm:"decimal(12,2) not null default 0.00 'capped_amount'" json:"capped_amount"`
 	Currency               string          `xorm:"varchar(10) not null default '' 'currency'" json:"currency"`
@@ -24,7 +24,7 @@ type UserSubscription struct {
 	TestSubscription       bool            `xorm:"tinyint not null default 0 'test_subscription'" json:"test_subscription"`
 	AppInstallationID      string          `xorm:"varchar(100) not null default '' 'app_installation_id'" json:"app_installation_id"`
 	LastSyncTime           int64           `xorm:"not null default 0 'last_sync_time'" json:"last_sync_time"`
-	CreateTime             int64           `xorm:"updated not null 'create_time'" json:"create_time"`
+	CreateTime             int64           `xorm:"created not null 'create_time'" json:"create_time"`
 	UpdateTime             int64           `xorm:"updated not null 'update_time'" json:"update_time"`
 }
 

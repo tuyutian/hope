@@ -1,4 +1,4 @@
-package users
+package apps
 
 const (
 	UserAppAuthTable = "user_app_auth"

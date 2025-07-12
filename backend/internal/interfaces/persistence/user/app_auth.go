@@ -5,17 +5,17 @@ import (
 
 	"xorm.io/xorm"
 
-	userEntity "backend/internal/domain/entity/users"
-	"backend/internal/domain/repo/users"
+	userEntity "backend/internal/domain/entity/apps"
+	"backend/internal/domain/repo/apps"
 )
 
-var _ users.AppAuthRepository = (*appAuthRepoImpl)(nil)
+var _ apps.AppAuthRepository = (*appAuthRepoImpl)(nil)
 
 type appAuthRepoImpl struct {
 	db *xorm.Engine
 }
 
-func NewAppAuthRepository(db *xorm.Engine) users.AppAuthRepository {
+func NewAppAuthRepository(db *xorm.Engine) apps.AppAuthRepository {
 	return &appAuthRepoImpl{
 		db: db,
 	}

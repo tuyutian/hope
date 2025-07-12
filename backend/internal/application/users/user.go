@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -34,8 +33,9 @@ type UserService struct {
 	userRepo           userRepo.UserRepository
 	cacheRepo          repo.CacheRepository
 	userCache          userRepo.UserCacheRepository
+	userSettingRepo    userRepo.UserSettingRepository
 	shopifyRepo        shopifyRepo.ShopifyRepository
-	appAuthRepo        userRepo.AppAuthRepository
+	appAuthRepo        appRepo.AppAuthRepository
 	shopGraphqlRepo    shopifyRepo.ShopGraphqlRepository
 	productGraphqlRepo shopifyRepo.ProductGraphqlRepository
 	asynqRepo          jobs.AsynqRepository
@@ -54,6 +54,7 @@ func NewUserService(repos *providers.Repositories) *UserService {
 		shopGraphqlRepo:    repos.ShopGraphqlRepo,
 		asynqRepo:          repos.AsyncRepo,
 		jwtRepo:            repos.JwtRepo,
+		userSettingRepo:    repos.UserSettingRepo,
 	}
 }
 
@@ -206,79 +207,25 @@ func (u *UserService) Uninstall(ctx context.Context, appId string, shop string) 
 	return nil
 }
 
-func (u *UserService) UpdateUserStep(ctx context.Context, stepKey int) error {
+func (u *UserService) UpdateUserStep(ctx context.Context, step userEntity.UpdateStep) error {
 	claims := u.GetClaims(ctx)
-	user, err := u.getUser(ctx, claims.UserID)
+	var steps map[string]bool
+	userID := claims.UserID
+	stepSettingStr, err := u.userSettingRepo.Get(ctx, userID, userEntity.DashboardGuideStep)
 
+	if stepSettingStr != "" {
+		err = json.Unmarshal([]byte(stepSettingStr), &steps)
+	} else {
+		steps = userEntity.DefaultDashboardGuideStep
+	}
+	steps[step.Name] = step.Open
+	// 4. 再把 steps 转成字符串，保存回数据库
+	updatedSteps, err := json.Marshal(steps)
 	if err != nil {
-		logger.Error(ctx, "update-step db异常", "Err:", err.Error())
+		logger.Error(ctx, "update-step json(2)异常", "Err:", err.Error())
 		return err
 	}
-	// TODO 替换成 step设置
-	mockStepStr := "{\"step_1\":false,\"step_2\":false,\"step_3\":false,\"step_4\":false\"}"
-
-	if user != nil {
-		// 2. 解析 Steps 字段
-		var steps map[string]bool
-		if mockStepStr != "" {
-			steps = map[string]bool{
-				"step_1": false,
-				"step_2": false,
-				"step_3": false,
-				"step_4": false,
-			}
-		} else {
-			err = json.Unmarshal([]byte(mockStepStr), &steps)
-			if err != nil {
-				logger.Error(ctx, "update-step json异常", "Err:", err.Error())
-				return err
-			}
-		}
-		// 3. 更新对应的 step 为 true
-		steps["step_"+strconv.Itoa(stepKey)] = true
-
-		// 4. 再把 steps 转成字符串，保存回数据库
-		updatedSteps, err := json.Marshal(steps)
-		if err != nil {
-			logger.Error(ctx, "update-step json(2)异常", "Err:", err.Error())
-			return err
-		}
-
-		err = u.userRepo.UpdateStep(ctx, user.ID, string(updatedSteps))
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (u *UserService) GetUserStep(ctx context.Context, userID int64) (map[string]bool, error) {
-	user, err := u.getUser(ctx, userID)
-
-	if err != nil {
-		logger.Error(ctx, "get-step db异常", "Err:", err.Error())
-		return nil, err
-	}
-
-	if user != nil {
-		var steps map[string]bool
-
-		// TODO 替换成 step设置
-		mockStepStr := "{\"step_1\":false,\"step_2\":false,\"step_3\":false,\"step_4\":false\"}"
-
-		err = json.Unmarshal([]byte(mockStepStr), &steps)
-
-		if err != nil {
-			logger.Error(ctx, "get-step json异常", "Err:", err.Error())
-			return nil, err
-		}
-
-		return steps, nil
-	}
-
-	return nil, nil
+	return u.userSettingRepo.Set(ctx, userID, userEntity.DashboardGuideStep, string(updatedSteps))
 }
 
 type CollectionOption struct {
@@ -331,16 +278,16 @@ func (u *UserService) GetSessionData(ctx context.Context, userID int64) (*userEn
 		logger.Error(ctx, "get-user-info db异常", "Err:", err.Error())
 		return nil, err
 	}
-
+	var steps map[string]bool
+	stepSettingStr, _ := u.userSettingRepo.Get(ctx, userID, userEntity.DashboardGuideStep)
+	if stepSettingStr != "" {
+		err = json.Unmarshal([]byte(stepSettingStr), &steps)
+	} else {
+		steps = userEntity.DefaultDashboardGuideStep
+	}
 	return &userEntity.SessionData{
-		Shop: user.Shop,
-		GuideStep: map[string]bool{
-			"enabled":            false,
-			"setting_protension": false,
-			"setup_widget":       false,
-			"how_work":           false,
-			"choose":             false,
-		},
+		Shop:      user.Shop,
+		GuideStep: steps,
 	}, nil
 }
 

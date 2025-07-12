@@ -5,9 +5,9 @@ import FulfilledOrders from "@/pages/home/FulfilledOrders";
 import AbilityBox from "@/pages/home/AbilityBox";
 import "@/pages/home/index.css";
 import {ChevronUpIcon} from "@shopify/polaris-icons";
+import {getUserState} from "@/stores/userStore.ts";
 
-const DashboardClass = () => {
-
+const Home = () => {
   return (
     <s-page>
       <s-heading><Text fontWeight="bold" as="h1" variant="headingLg">👋 Hi, Welcome to goodcare protection
@@ -18,7 +18,7 @@ const DashboardClass = () => {
         </s-box>
 
         <s-box>
-          <NewPersonBox />
+            <NewPersonBox />
         </s-box>
 
         <s-box>
@@ -50,7 +50,7 @@ const DashboardClass = () => {
                   apps.</Text>
               </Collapsible>
             </BlockStack>
-              
+
             <BlockStack gap="200">
               <InlineStack blockAlign="center" align="space-between">
                 <Text as="h3" variant="headingXs">
@@ -63,7 +63,8 @@ const DashboardClass = () => {
               <Collapsible open id="test1">
 
                 <Text as="p" variant="bodyMd" tone="subdued">Absolutely, just get in touch on live chat and we can help
-                  you instantly. Or you can export your customers&#39; existing point balances and easily import them into
+                  you instantly. Or you can export your customers&#39; existing point balances and easily import them
+                  into
                   Loloyal with a simple CSV file.</Text>
               </Collapsible>
             </BlockStack>
@@ -120,21 +121,21 @@ const DashboardClass = () => {
           </div>
         </s-section>
         <s-section heading="Need any help?">
-            <InlineStack blockAlign="center" align="space-between">
-              <Box>
-                Email
-              </Box>
-              <Box>
-                Live chat
-              </Box>
-              <Box>
-                Help center
-              </Box>
-            </InlineStack>
+          <InlineStack blockAlign="center" align="space-between">
+            <Box>
+              Email
+            </Box>
+            <Box>
+              Live chat
+            </Box>
+            <Box>
+              Help center
+            </Box>
+          </InlineStack>
         </s-section>
       </s-stack>
     </s-page>
   );
 };
 
-export default DashboardClass;
+export default Home;

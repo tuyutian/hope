@@ -11,14 +11,16 @@ import (
 )
 
 type Services struct {
-	UserService        *users.UserService
-	OrderService       *orders.OrderService
-	OrderJobService    *jobs.OrderService
-	UserJobService     *jobs.UserService
-	ProductJobService  *jobs.ProductService
-	CartSettingService *settings.CartSettingService
-	ProductService     *products.ProductService
-	AppService         *apps.AppService
+	UserService         *users.UserService
+	OrderService        *orders.OrderService
+	OrderJobService     *jobs.OrderService
+	UserJobService      *jobs.UserService
+	ProductJobService   *jobs.ProductService
+	CartSettingService  *settings.CartSettingService
+	ProductService      *products.ProductService
+	AppService          *apps.AppService
+	SubscriptionService *users.SubscriptionService
+	BillingService      *users.BillingService
 }
 
 func NewServices(repos *providers.Repositories) *Services {
@@ -30,5 +32,18 @@ func NewServices(repos *providers.Repositories) *Services {
 	cartSettingService := settings.NewCartSettingService(repos)
 	productService := products.NewProductService(repos)
 	appService := apps.NewAppService(repos)
-	return &Services{UserService: userService, OrderService: orderService, OrderJobService: orderJobService, ProductJobService: productJobService, UserJobService: userJobService, CartSettingService: cartSettingService, ProductService: productService, AppService: appService}
+	subscriptionService := users.NewSubscriptionService(repos)
+	billingService := users.NewBillingService(repos)
+	return &Services{
+		SubscriptionService: subscriptionService,
+		UserService:         userService,
+		OrderService:        orderService,
+		OrderJobService:     orderJobService,
+		ProductJobService:   productJobService,
+		UserJobService:      userJobService,
+		CartSettingService:  cartSettingService,
+		ProductService:      productService,
+		AppService:          appService,
+		BillingService:      billingService,
+	}
 }

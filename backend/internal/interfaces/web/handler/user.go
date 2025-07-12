@@ -4,8 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/users"
-	"backend/pkg/ctxkeys"
-	"backend/pkg/jwt"
+	userEntity "backend/internal/domain/entity/users"
 	"backend/pkg/response"
 	"backend/pkg/response/code"
 	"backend/pkg/response/message"
@@ -20,41 +19,21 @@ func NewUserHandler(userService *users.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
-type UserStepRequest struct {
-	UserID  int64 `json:"user_id"`
-	StepKey int   `form:"step_key" binding:"required,oneof=1 2 3 4"`
-}
+func (u *UserHandler) SetUserStep(c *gin.Context) {
+	ctx := c.Request.Context()
 
-func (u *UserHandler) SetUserStep(ctx *gin.Context) {
-	ctxWithTrace := ctx.Request.Context()
+	var userStepReq userEntity.UpdateStep
 
-	var userStepReq UserStepRequest
-
-	if err := ctx.ShouldBindQuery(&userStepReq); err != nil {
-		u.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), "")
+	if err := c.ShouldBindJSON(&userStepReq); err != nil {
+		u.Error(c, code.BadRequest, message.ErrorBadRequest.Error(), "")
 		return
 	}
-	claims := ctx.Value(ctxkeys.BizClaims).(jwt.BizClaims)
-	userID := claims.UserID
-	userStepReq.UserID = userID
-
-	err := u.userService.UpdateUserStep(ctxWithTrace, userStepReq.StepKey)
+	err := u.userService.UpdateUserStep(ctx, userStepReq)
 	if err != nil {
-		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
+		u.Error(c, code.ServerOperationFailed, err.Error(), "")
 		return
 	}
-	u.Success(ctx, "", nil)
-}
-
-func (u *UserHandler) GetStep(ctx *gin.Context) {
-	ctxWithTrace := ctx.Request.Context()
-	uid := u.userService.GetClaims(ctxWithTrace).UserID
-	resp, err := u.userService.GetUserStep(ctxWithTrace, uid)
-	if err != nil {
-		u.Error(ctx, code.ServerOperationFailed, err.Error(), "")
-		return
-	}
-	u.Success(ctx, "", resp)
+	u.Success(c, "", nil)
 }
 
 func (u *UserHandler) GetUserConf(ctx *gin.Context) {

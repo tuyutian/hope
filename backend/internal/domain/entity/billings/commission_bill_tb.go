@@ -22,7 +22,7 @@ type CommissionBill struct {
 	ChargeStatus         int             `json:"charge_status" xorm:"tinyint notnull default 0 'charge_status' comment('扣费状态：0-待提交, 1-已提交, 2-提交失败')"`
 	ErrorMessage         string          `json:"error_message" xorm:"text 'error_message' comment('错误信息')"`
 	ChargedAt            int64           `json:"charged_at" xorm:"notnull default 0 'charged_at' comment('扣费时间')"`
-	CreateTime           int64           `json:"create_time" xorm:"updated notnull 'create_time' comment('创建时间')"`
+	CreateTime           int64           `json:"create_time" xorm:"created notnull 'create_time' comment('创建时间')"`
 	UpdateTime           int64           `json:"update_time" xorm:"updated notnull 'update_time' comment('修改时间')"`
 }
 
