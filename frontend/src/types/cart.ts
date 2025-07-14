@@ -57,7 +57,6 @@ export interface CartSettingsHook {
   moneySymbol: string;
   errors: Record<string, string>;
   isLoading: boolean;
-  saveLoading: boolean;
   dirty: boolean;
   setWidgetSettings: (setter: (prev: WidgetSettings) => WidgetSettings) => void;
   setPricingSettings: (setter: (prev: PricingSettings) => PricingSettings) => void;
@@ -88,9 +87,9 @@ export interface PricingCardProps {
   moneySymbol: string;
   errors: Record<string, string>;
   onSettingsChange: (value: Partial<PricingSettings>) => void;
-  onPricingChange: (index: number, field: string, value: string, type: 'price' | 'tier') => void;
-  onAddItem: (type: 'price' | 'tier') => void;
-  onDeleteItem: (index: number, type: 'price' | 'tier') => void;
+  onPricingChange: (index: number, field: string, value: string, type: "price" | "tier") => void;
+  onAddItem: (type: "price" | "tier") => void;
+  onDeleteItem: (index: number, type: "price" | "tier") => void;
 }
 
 export interface ProductCardProps {

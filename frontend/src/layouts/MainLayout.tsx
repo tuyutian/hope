@@ -1,9 +1,9 @@
-import {Outlet, useLocation, useNavigate} from "react-router";
-import {useShopifyBridge} from "@/hooks/useShopifyBridge";
-import {useEffect, useState} from "react";
-import {NavMenu} from "@shopify/app-bridge-react";
+import { Outlet, useLocation, useNavigate } from "react-router";
+import { useShopifyBridge } from "@/hooks/useShopifyBridge";
+import { useEffect, useState } from "react";
+import { NavMenu } from "@shopify/app-bridge-react";
 import i18n from "@/lib/i18n.ts";
-import {TabProps, Tabs} from "@shopify/polaris";
+import { Frame, TabProps, Tabs } from "@shopify/polaris";
 
 const links = [
   {
@@ -21,15 +21,15 @@ const links = [
   {
     name: i18n.get("Billing") as string,
     url: "/billing",
-  }
+  },
 ];
 
 const MainLayout = () => {
   const appBridge = useShopifyBridge();
-  const {pathname, search, hash} = useLocation();
+  const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState(links.findIndex((link) => link.url === pathname) || 0);
-  const tabs: TabProps[] = links.map((link) => {
+  const [selected, setSelected] = useState(links.findIndex(link => link.url === pathname) || 0);
+  const tabs: TabProps[] = links.map(link => {
     return {
       id: link.url,
       content: link.name,
@@ -52,36 +52,49 @@ const MainLayout = () => {
   const handleNavigate = (event: React.MouseEvent, path: string) => {
     event.preventDefault();
 
-    navigate({pathname: path})
+    navigate({ pathname: path });
   };
   return (
-    <div >
+    <Frame>
       <s-heading>
-        {appBridge ? (<NavMenu>
-          <a href="/" onClick={(e)=>{ handleNavigate(e,""); }} rel="home">
-            Home
-          </a>
-          {Object.values(links).map((link,index) => {
-            return link.url !=="/" &&<a key={index} href={link.url} onClick={(e)=>{ handleNavigate(e,link.url); }}>
-              {link.name}
+        {appBridge ? (
+          <NavMenu>
+            <a
+              href="/"
+              onClick={e => {
+                handleNavigate(e, "");
+              }}
+              rel="home"
+            >
+              Home
             </a>
-          })}
-
-        </NavMenu>) : <div>
-          <Tabs
-            tabs={tabs}
-            selected={selected}
-            onSelect={handleTabChange}
-            disclosureText="More views"
-          />
-        </div>}
+            {Object.values(links).map((link, index) => {
+              return (
+                link.url !== "/" && (
+                  <a
+                    key={index}
+                    href={link.url}
+                    onClick={e => {
+                      handleNavigate(e, link.url);
+                    }}
+                  >
+                    {link.name}
+                  </a>
+                )
+              );
+            })}
+          </NavMenu>
+        ) : (
+          <div>
+            <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange} disclosureText="More views" />
+          </div>
+        )}
       </s-heading>
 
       <div className="pb-10">
         <Outlet />
       </div>
-
-    </div>
+    </Frame>
   );
 };
 

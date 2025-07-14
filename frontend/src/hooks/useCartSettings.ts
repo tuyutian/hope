@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { GetUserConf, rqGetCartSetting, rqPostUpdateCartSetting } from "@/api";
 import type { WidgetSettings, PricingSettings, ProductSettings, CartSettingsHook } from "@/types/cart";
 import { getMessageState } from "@/stores/messageStore";
@@ -6,6 +6,13 @@ import type { OptionDescriptor } from "@shopify/polaris/build/ts/src/types";
 
 export function useCartSettings(): CartSettingsHook {
   const toastMessage = getMessageState().toastMessage;
+
+  // 添加 ref 来存储初始数据
+  const initialDataRef = useRef<{
+    widgetSettings: WidgetSettings;
+    pricingSettings: PricingSettings;
+    productSettings: ProductSettings;
+  } | null>(null);
 
   const [widgetSettings, setWidgetSettings] = useState<WidgetSettings>({
     planTitle: "Plan Title",
@@ -53,8 +60,82 @@ export function useCartSettings(): CartSettingsHook {
   const [moneySymbol, setMoneySymbol] = useState("$");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [saveLoading, setSaveLoading] = useState(false);
   const [dirty, setDirty] = useState(false);
+
+  // 深拷贝函数
+  const deepClone = <T>(obj: T): T => {
+    if (obj === null || typeof obj !== "object") return obj;
+    if (obj instanceof Date) return new Date(obj.getTime()) as T;
+    if (obj instanceof Array) return obj.map(item => deepClone(item)) as T;
+    if (typeof obj === "object") {
+      const cloned = {} as T;
+      for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          cloned[key] = deepClone(obj[key]);
+        }
+      }
+      return cloned;
+    }
+    return obj;
+  };
+
+  // 深度比较函数
+  const deepEqual = (obj1: any, obj2: any): boolean => {
+    if (obj1 === obj2) return true;
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== typeof obj2) return false;
+
+    if (typeof obj1 !== "object") return obj1 === obj2;
+
+    if (Array.isArray(obj1) !== Array.isArray(obj2)) return false;
+
+    if (Array.isArray(obj1)) {
+      if (obj1.length !== obj2.length) return false;
+      for (let i = 0; i < obj1.length; i++) {
+        if (!deepEqual(obj1[i], obj2[i])) return false;
+      }
+      return true;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    if (keys1.length !== keys2.length) return false;
+
+    for (const key of keys1) {
+      if (!keys2.includes(key)) return false;
+      if (!deepEqual(obj1[key], obj2[key])) return false;
+    }
+
+    return true;
+  };
+
+  // 检查是否有变化
+  const checkForChanges = useCallback(() => {
+    if (!initialDataRef.current) return false;
+
+    const hasWidgetChanges = !deepEqual(widgetSettings, initialDataRef.current.widgetSettings);
+    const hasPricingChanges = !deepEqual(pricingSettings, initialDataRef.current.pricingSettings);
+    const hasProductChanges = !deepEqual(productSettings, initialDataRef.current.productSettings);
+
+    return hasWidgetChanges || hasPricingChanges || hasProductChanges;
+  }, [widgetSettings, pricingSettings, productSettings]);
+
+  // 更新dirty状态
+  const updateDirtyState = useCallback(() => {
+    const hasChanges = checkForChanges();
+    if (dirty !== hasChanges) {
+      setDirty(hasChanges);
+    }
+  }, [dirty, checkForChanges]);
+
+  // 保存初始数据的函数
+  const saveInitialData = useCallback(() => {
+    initialDataRef.current = {
+      widgetSettings: deepClone(widgetSettings),
+      pricingSettings: deepClone(pricingSettings),
+      productSettings: deepClone(productSettings),
+    };
+  }, [widgetSettings, pricingSettings, productSettings]);
 
   const loadInitialData = useCallback(async () => {
     try {
@@ -170,7 +251,6 @@ export function useCartSettings(): CartSettingsHook {
       return;
     }
 
-    setSaveLoading(true);
     try {
       const payload = {
         planTitle: widgetSettings.planTitle,
@@ -201,22 +281,47 @@ export function useCartSettings(): CartSettingsHook {
 
       if (res?.code === 0) {
         setDirty(false);
+        // 保存成功后，更新初始数据
+        saveInitialData();
       }
     } catch (error) {
       console.error("Error saving settings:", error);
       toastMessage("Service Error", 5000, true);
-    } finally {
-      setSaveLoading(false);
     }
-  }, [widgetSettings, pricingSettings, productSettings, toastMessage, validateFields]);
+  }, [widgetSettings, pricingSettings, productSettings, toastMessage, validateFields, saveInitialData]);
 
+  // 移除原来的 markDirty 函数，改用自动检测
   const markDirty = useCallback(() => {
-    if (!dirty) setDirty(true);
-  }, [dirty]);
+    // 这个函数现在是空的，因为我们使用自动检测
+    // 保留它是为了保持API兼容性
+  }, []);
 
   const discardChanges = useCallback(() => {
-    setDirty(false);
+    if (initialDataRef.current) {
+      // 还原到初始数据
+      setWidgetSettings(deepClone(initialDataRef.current.widgetSettings));
+      setPricingSettings(deepClone(initialDataRef.current.pricingSettings));
+      setProductSettings(deepClone(initialDataRef.current.productSettings));
+
+      // 清除错误和重置dirty状态
+      setErrors({});
+      setDirty(false);
+    }
   }, []);
+
+  // 在数据加载完成后保存初始数据
+  useEffect(() => {
+    if (!isLoading && initialDataRef.current === null) {
+      saveInitialData();
+    }
+  }, [isLoading, saveInitialData]);
+
+  // 监听数据变化，自动更新dirty状态
+  useEffect(() => {
+    if (initialDataRef.current) {
+      updateDirtyState();
+    }
+  }, [widgetSettings, pricingSettings, productSettings, updateDirtyState]);
 
   useEffect(() => {
     void loadInitialData();
@@ -231,7 +336,6 @@ export function useCartSettings(): CartSettingsHook {
     moneySymbol,
     errors,
     isLoading,
-    saveLoading,
     dirty,
 
     // 更新函数
