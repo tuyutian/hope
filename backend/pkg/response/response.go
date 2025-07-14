@@ -1,6 +1,7 @@
 package response
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -41,7 +42,7 @@ func (ctrl *BaseHandler) Error(ctx *gin.Context, code int, message string, data 
 	if code <= 0 {
 		code = returnCode.BadRequest
 	}
-
+	fmt.Println(ctx.Request.URL.Path, code, message, data)
 	ctrl.ajaxReturn(ctx, code, message, data)
 }
 

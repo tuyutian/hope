@@ -1,285 +1,119 @@
+import { Page, Card } from "@shopify/polaris";
+import { useEffect } from 'react';
 import {
-    IndexTable,
-    IndexFilters,
-    useSetIndexFiltersMode,
-    useIndexResourceState,
-    Text,
-    Badge,
-    Page,
-    Pagination,
-    SkeletonBodyText, Card
-} from "@shopify/polaris";
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { rqGetOrderList } from "@/api";
-import debounce from 'lodash.debounce';
-import {formatTimestampToUSDate} from "@/utils/tools.ts";
+  OrderFilters,
+  OrderTable,
+  OrderPagination,
+  OrderErrorBoundary,
+  OrderLoadingState,
+} from "@/pages/order/components";
+import { useOrderPageLogic } from "@/hooks/order/useOrderPageLogic";
 
 export default function Order() {
-    const itemStrings = ['All', 'Paid', 'Refund'];
-    const tabs = itemStrings.map((item, index) => ({
-        content: item,
-        index,
-        onAction: () => {},
-        id: `${item}-${index}`,
-        isLocked: index === 0,
-    }));
+  const {
+    // 数据
+    orders,
+    total,
+    totalPages,
+    
+    // 状态
+    isInitialLoading,
+    isTableLoading,
+    isRefreshing,
+    isPageChanging,
+    isError,
+    error,
+    
+    // 过滤器
+    filters,
+    
+    // 操作
+    handleTabSelect,
+    handlePrimaryAction,
+    handlePreviousPage,
+    handleNextPage,
+    prefetchNextPage,
+    
+    // 常量
+    ITEMS_PER_PAGE,
+  } = useOrderPageLogic();
 
-    const [selected, setSelected] = useState(0);
-    const { mode, setMode } = useSetIndexFiltersMode();
+  // 预加载下一页
+  useEffect(() => {
+    prefetchNextPage();
+  }, [prefetchNextPage]);
 
-    const [orders, setOrders] = useState([]);
-    const [totalCount, setTotalCount] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 20;
+  // 初始加载状态
+  if (isInitialLoading) {
+    return <OrderLoadingState itemsPerPage={ITEMS_PER_PAGE} />;
+  }
 
-    const [queryValue, setQueryValue] = useState('');
-    const [debouncedQuery, setDebouncedQuery] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isTabLoading, setIsTabLoading] = useState(false);
+  // 错误状态
+  if (isError && error) {
+    return <OrderErrorBoundary error={error} />;
+  }
 
-    const handleFiltersQueryChange = useCallback((value) => {
-        const trimmedValue = value.slice(0, 20);
-        setQueryValue(trimmedValue);
-        debouncedQueryUpdate(trimmedValue);
-    }, []);
-
-    const debouncedQueryUpdate = useMemo(
-        () => debounce((val) => setDebouncedQuery(val), 500),
-        []
-    );
-
-    useEffect(() => {
-        return () => {
-            debouncedQueryUpdate.cancel();
-        };
-    }, [debouncedQueryUpdate]);
-
-    const handleQueryValueRemove = useCallback(() => {
-        setQueryValue('');
-        setDebouncedQuery('');
-    }, []);
-
-    const handleFiltersClearAll = useCallback(() => {
-        handleQueryValueRemove();
-        setSelected(0);
-    }, [handleQueryValueRemove]);
-
-    const getBadgeStatus = (status) => {
-        switch (status) {
-            case 'PAID':
-                return 'success';
-            case 'PARTIALLY_PAID':
-                return 'attention';
-            case 'PARTIALLY_REFUNDED':
-            case 'REFUNDED':
-                return 'warning';
-            case 'UNPAID':
-            default:
-                return 'critical';
-        }
-    };
-
-    const getOrderData = async () => {
-        try {
-            const res = await rqGetOrderList({
-                page: currentPage,
-                page_size: itemsPerPage,
-                type: itemStrings[selected],
-                query: debouncedQuery,
-            });
-
-            if (res?.code === 0) {
-                const list = res.data.list.map(item => ({
-                    id: item.id,
-                    order_name: item.order_name,
-                    order: <Text as="span" variant="bodyMd" fontWeight="semibold">{item.order_name}</Text>,
-                    date: item.order_completion_at > 0 ? formatTimestampToUSDate(item.order_completion_at) : "-",
-                    item: item.sku_num,
-                    paymentStatus: <Badge tone={getBadgeStatus(item.financial_status)}>
-                        {item.financial_status.replace(/_/g, ' ')}
-                    </Badge>,
-                    total: `${item.total_price_amount} ${item.currency}`,
-                    protectionFee: `${item.insurance_amount} ${item.currency}`,
-                }));
-
-                setOrders(list);
-                setTotalCount(res.data.count);
-            }
-        } finally {
-            setIsLoading(false);
-            setIsTabLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        setIsLoading(true);
-        getOrderData();
-    }, []);
-
-    useEffect(() => {
-        if (isTabLoading) {
-            getOrderData();
-        }
-    }, [isTabLoading]);
-
-    useEffect(() => {
-        if (currentPage !== 1) {
-            setIsLoading(true);
-            getOrderData();
-        }
-    }, [currentPage]);
-
-    const onHandleCancel = () => {
-        setQueryValue('');
-        setDebouncedQuery('');
-        getOrderData();
-    };
-
-    const primaryAction = {
-        type: 'save',
-        onAction: async () => {
-            setIsLoading(true);
-            setCurrentPage(1);
-            await getOrderData();
-        },
-        disabled: false,
-        loading: false,
-    };
-
-    const resourceName = {
-        singular: 'order',
-        plural: 'orders',
-    };
-
-    const { selectedResources, allResourcesSelected, handleSelectionChange } = useIndexResourceState(orders);
-
-    const rowMarkup = isLoading ? (
-        Array(itemsPerPage).fill(0).map((_, index) => (
-            <IndexTable.Row key={`skeleton-${index}`}>
-                {Array(6).fill(0).map((_, cellIndex) => (
-                    <IndexTable.Cell key={`skeleton-cell-${cellIndex}`}>
-                        <SkeletonBodyText lines={1} />
-                    </IndexTable.Cell>
-                ))}
-            </IndexTable.Row>
-        ))
-    ) : (
-        orders.map(
-            ({ id, order_name, date, item, paymentStatus, total, protectionFee }, index) => (
-                <IndexTable.Row
-                    id={id}
-                    key={id}
-                    selected={selectedResources.includes(id)}
-                    position={index}
-                >
-                    <IndexTable.Cell>
-                        <Text as="span" alignment="center">{order_name}</Text>
-                    </IndexTable.Cell>
-                    <IndexTable.Cell>
-                        <Text as="span" alignment="center">{date}</Text>
-                    </IndexTable.Cell>
-                    <IndexTable.Cell>
-                        <Text as="span" alignment="center" numeric>{item}</Text>
-                    </IndexTable.Cell>
-                    <IndexTable.Cell>
-                        <Text as="span" alignment="center" numeric>{paymentStatus}</Text>
-                    </IndexTable.Cell>
-                    <IndexTable.Cell alignment="center">
-                        <Text as="span" alignment="center" numeric>{total}</Text>
-                    </IndexTable.Cell>
-                    <IndexTable.Cell>
-                        <Text as="span" alignment="center" numeric>{protectionFee}</Text>
-                    </IndexTable.Cell>
-                </IndexTable.Row>
-            )
-        )
-    );
-
-    const totalPages = Math.ceil(totalCount / itemsPerPage);
-
-    if (isLoading) {
-        return (
-            <Page title="Protection Orders">
-                <Card>
-                    <IndexTable
-                        resourceName={resourceName}
-                        itemCount={itemsPerPage}
-                        headings={[
-                            { title: 'Order', alignment: 'center' },
-                            { title: 'Date', alignment: 'center' },
-                            { title: 'Items', alignment: 'center' },
-                            { title: 'Payment status', alignment: 'center' },
-                            { title: 'Total', alignment: 'center' },
-                            { title: 'Protection Fee', alignment: 'center' },
-                        ]}
-                    >
-                        {rowMarkup}
-                    </IndexTable>
-                </Card>
-            </Page>
-        );
-    }
-
-    return (
-        <Page title="Protection Orders">
-            <Card padding="0">
-                <IndexFilters
-                    primaryAction={primaryAction}
-                    onClearAll={handleFiltersClearAll}
-                    mode={mode}
-                    setMode={setMode}
-                    queryValue={queryValue}
-                    queryPlaceholder="Search orders"
-                    onQueryChange={handleFiltersQueryChange}
-                    onQueryClear={handleQueryValueRemove}
-                    tabs={tabs}
-                    selected={selected}
-                    onSelect={(index) => {
-                        setIsTabLoading(true);
-                        setCurrentPage(1);
-                        setSelected(index);
-                    }}
-                    cancelAction={{
-                        onAction: onHandleCancel,
-                        disabled: false,
-                        loading: false,
-                    }}
-                    hideFilters
-                    hideQueryField={false}
-                    disabled={isTabLoading}
-                    canCreateNewView={false}
-                />
-                <IndexTable
-                    resourceName={resourceName}
-                    itemCount={orders.length}
-                    selectedItemsCount={allResourcesSelected ? 'All' : selectedResources.length}
-                    onSelectionChange={handleSelectionChange}
-                    headings={[
-                        { title: 'Order', alignment: 'center' },
-                        { title: 'Date', alignment: 'center' },
-                        { title: 'Items', alignment: 'center' },
-                        { title: 'Payment status', alignment: 'center' },
-                        { title: 'Total', alignment: 'center' },
-                        { title: 'Protection Fee', alignment: 'center' },
-                    ]}
-                    loading={false} // Explicitly set to false to hide loading banner
-                    hasMoreItems
-                >
-                    {rowMarkup}
-                </IndexTable>
-                <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text variant="bodySm" as="p">
-                        Total: {totalCount} orders | Page {currentPage} of {totalPages}
-                    </Text>
-                    <Pagination
-                        hasPrevious={currentPage > 1}
-                        onPrevious={() => setCurrentPage(currentPage - 1)}
-                        hasNext={currentPage < totalPages}
-                        onNext={() => setCurrentPage(currentPage + 1)}
-                        disabled={isTabLoading}
-                    />
-                </div>
-            </Card>
-        </Page>
-    );
+  return (
+    <Page title="Protection Orders">
+      <Card padding="0">
+        <OrderFilters
+          // 基础筛选
+          queryValue={filters.queryValue}
+          onQueryChange={filters.setQueryValue}
+          onQueryClear={filters.clearQuery}
+          onClearAll={filters.clearAllFilters}
+          onCancel={filters.clearQuery}
+          selected={filters.selectedTab}
+          onSelect={handleTabSelect}
+          isTabLoading={isTableLoading}
+          onPrimaryAction={handlePrimaryAction}
+          
+          // 时间范围筛选
+          timeRange={filters.timeRange}
+          customStartDate={filters.customStartDate}
+          customEndDate={filters.customEndDate}
+          onTimeRangeChange={filters.setTimeRange}
+          
+          // 状态筛选
+          paymentStatus={filters.paymentStatus}
+          fulfillmentStatus={filters.fulfillmentStatus}
+          onPaymentStatusChange={filters.setPaymentStatus}
+          onFulfillmentStatusChange={filters.setFulfillmentStatus}
+          
+          // 排序
+          sortBy={filters.sortBy}
+          sortDirection={filters.sortDirection}
+          onSortChange={filters.setSortOptions}
+        />
+        
+        <OrderTable
+          orders={orders}
+          isLoading={isTableLoading}
+          isFetching={isRefreshing}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+        
+        {/* 页面切换时的加载提示 */}
+        {isPageChanging && (
+          <div style={{ 
+            padding: '0.5rem', 
+            textAlign: 'center', 
+            backgroundColor: '#f6f6f7',
+            borderTop: '1px solid #e1e3e5'
+          }}>
+            <small>正在加载...</small>
+          </div>
+        )}
+        
+        <OrderPagination
+          total={total}
+          currentPage={filters.currentPage}
+          totalPages={totalPages}
+          onPrevious={handlePreviousPage}
+          onNext={handleNextPage}
+          disabled={isTableLoading}
+        />
+      </Card>
+    </Page>
+  );
 }

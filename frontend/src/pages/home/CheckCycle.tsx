@@ -2,16 +2,18 @@ import React, {useState, useTransition} from "react";
 import {Spinner} from "@shopify/polaris";
 import {UpdateDashboardGuide} from "@/api";
 import {useAuth} from "@/stores/context.ts";
+import {getUserState} from "@/stores/userStore.ts";
 import {UserGuide} from "@/types/user.ts";
 
 type Props = {
-  name: string
+  name: keyof UserGuide
   check: boolean
 }
 
 export default function CheckCycle({name, check}: Props) {
   const [done, setDone] = useState(check);
   const {user, setUser} = useAuth();
+  const {toggleUserGuideStep} = getUserState();
   const [clickLoading, startTransition] = useTransition();
   const changeStatus = function (status: boolean) {
     startTransition(async () => {
@@ -19,7 +21,7 @@ export default function CheckCycle({name, check}: Props) {
       if (res.code === 0) {
         startTransition(() => {
           setDone(status);
-          user.userGuide[name as keyof UserGuide] = status;
+          toggleUserGuideStep(name, status);
           setUser({...user});
         });
       }

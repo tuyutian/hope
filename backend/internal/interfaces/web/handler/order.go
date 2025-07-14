@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -51,23 +52,26 @@ func (h *OrderHandler) Dashboard(ctx *gin.Context) {
 	h.Success(ctx, "", resp)
 }
 
-func (h *OrderHandler) OrderList(ctx *gin.Context) {
-
+func (h *OrderHandler) OrderList(c *gin.Context) {
 	var orderListParams orderEntity.QueryOrderEntity
-
-	// 绑定并校验 query 参数
-	if err := ctx.ShouldBindQuery(&orderListParams); err != nil {
-		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
+	ctx := c.Request.Context()
+	// 直接绑定，不要先读取原始数据
+	if err := c.ShouldBindJSON(&orderListParams); err != nil {
+		fmt.Println("绑定错误:", err.Error())
+		h.Error(c, code.BadRequest, "参数错误："+err.Error(), nil)
 		return
 	}
-	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 
+	fmt.Printf("绑定成功: %+v\n", orderListParams)
+
+	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 	orderListParams.UserID = claims.UserID
 
 	resp, err := h.orderService.OrderList(ctx, orderListParams)
 	if err != nil {
-		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
+		fmt.Println("服务错误:", err.Error())
+		h.Error(c, code.BadRequest, message.ErrorBadRequest.Error(), nil)
 		return
 	}
-	h.Success(ctx, "", resp)
+	h.Success(c, "", resp)
 }

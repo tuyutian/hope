@@ -9,6 +9,6 @@ import (
 func RegisterOrderRouter(r *gin.RouterGroup, h *handler.OrderHandler, m *Middleware) {
 	orderGroup := r.Group("/order", m.AuthWare.CheckLogin(), m.ShopifyGraphqlWare.ShopifyGraphqlClient())
 
-	orderGroup.GET("/list", h.OrderList)
+	orderGroup.POST("/list", h.OrderList)
 	orderGroup.GET("/dashboard", h.Dashboard)
 }

@@ -32,9 +32,31 @@ func (u *userSettingRepoImpl) Get(ctx context.Context, userID int64, name string
 }
 
 func (u *userSettingRepoImpl) Set(ctx context.Context, userID int64, name string, value string) error {
-	_, err := u.db.Context(ctx).Table(&users.UserSetting{}).Where("user_id = ? and name = ?", userID, name).Update(&users.UserSetting{Value: value})
-	if err != nil {
+	session := u.db.NewSession()
+	defer session.Close()
+
+	if err := session.Begin(); err != nil {
 		return err
 	}
-	return nil
+
+	setting := &users.UserSetting{
+		UserId: userID,
+		Name:   name,
+		Value:  value,
+	}
+
+	affected, err := session.Where("user_id = ? AND name = ?", userID, name).Update(setting)
+	if err != nil {
+		session.Rollback()
+		return err
+	}
+
+	if affected == 0 {
+		if _, err := session.Insert(setting); err != nil {
+			session.Rollback()
+			return err
+		}
+	}
+
+	return session.Commit()
 }

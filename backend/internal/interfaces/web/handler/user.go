@@ -35,6 +35,22 @@ func (u *UserHandler) SetUserStep(c *gin.Context) {
 	}
 	u.Success(c, "", nil)
 }
+func (u *UserHandler) UpdateUserSetting(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var userSetting userEntity.UpdateSetting
+
+	if err := c.ShouldBindJSON(&userSetting); err != nil {
+		u.Error(c, code.BadRequest, message.ErrorBadRequest.Error(), "")
+		return
+	}
+	err := u.userService.UpdateUserSetting(ctx, userSetting)
+	if err != nil {
+		u.Error(c, code.ServerOperationFailed, err.Error(), "")
+		return
+	}
+	u.Success(c, "", nil)
+}
 
 func (u *UserHandler) GetUserConf(ctx *gin.Context) {
 	ctxWithTrace := ctx.Request.Context()

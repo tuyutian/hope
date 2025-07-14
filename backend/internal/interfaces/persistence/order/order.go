@@ -34,9 +34,9 @@ func (o *orderRepoImpl) List(ctx context.Context, req orderEntity.QueryOrderEnti
 	var orders []*orderEntity.UserOrder // 直接查询到指针切片，避免二次转换
 
 	// 计算偏移量
-	offset := (req.Page - 1) * req.PageSize
+	offset := (req.Page - 1) * req.Size
 
-	session := o.db.Where("user_id = ? AND is_del = 0", req.UserID)
+	session := o.db.Table(&orderEntity.UserOrder{}).Where("user_id = ? AND is_del = 0", req.UserID)
 
 	// 1. 根据 Type 筛选状态
 	switch req.Type {
@@ -55,7 +55,7 @@ func (o *orderRepoImpl) List(ctx context.Context, req orderEntity.QueryOrderEnti
 	// 3. 分页 & 排序
 	err := session.
 		Desc("id").
-		Limit(req.PageSize, offset).
+		Limit(req.Size, offset).
 		Find(&orders)
 
 	if err != nil {

@@ -1,6 +1,6 @@
-import { AxiosRequestConfig} from "axios";
 import request, {IResponse} from "~/utils/request";
 import {FilterParams} from "@/types/billing.ts";
+import {OrderListParams, OrderListResponse} from "@/types/order.ts";
 
 /** 登录模块 */
 
@@ -44,7 +44,7 @@ export const GetUserConf = (): Promise<IResponse> => request.get("api/v1/user/co
 
 export const GetSessionData= (): Promise<IResponse> => request.get("api/v1/user/session"); // 查询用户配置
 
-export const rqGetOrderList = (params:any): Promise<IResponse> => request.get("api/v1/order/list", params); // 获取订单列表
+export const OrderList = (params:OrderListParams): Promise<OrderListResponse> => request.post("api/v1/order/list", params); // 获取订单列表
 
 export const reqGetUserAuthInstall = (params:any): Promise<IResponse> => request.get("api/v1/auth/register", params);
 
@@ -55,4 +55,8 @@ export const GetCurrentPeriod = (): Promise<IResponse> => request.get("api/v1/bi
 export const UpdateDashboardGuide= (name:string,open:boolean): Promise<IResponse> => request.post('api/v1/user/step',{
   'name':name,
   'open':open,
+})
+export const UpdateUserSetting= (name:string,val:string): Promise<IResponse> => request.post('api/v1/user/setting',{
+  'name':name,
+  'value':val,
 })

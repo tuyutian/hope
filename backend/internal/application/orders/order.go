@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	"backend/internal/domain/entity/jobs"
 	orderEntity "backend/internal/domain/entity/orders"
 	jobRepo "backend/internal/domain/repo/jobs"
@@ -98,14 +96,12 @@ func (o *OrderService) Summary(ctx context.Context, userId int64, days int) (int
 	return orderSummaryResp, nil
 }
 
-type OrderListResp struct {
-	Orders []*orderEntity.UserOrder `json:"orders"`
-	Count  int64                    `json:"count"`
-}
-
-func (o *OrderService) OrderList(ctx *gin.Context, req orderEntity.QueryOrderEntity) (OrderListResp, error) {
+func (o *OrderService) OrderList(ctx context.Context, req orderEntity.QueryOrderEntity) (*orderEntity.OrderResponse, error) {
 	userOrders, count, err := o.orderRepo.List(ctx, req)
-	return OrderListResp{Orders: userOrders, Count: count}, err
+	if userOrders == nil {
+		userOrders = make([]*orderEntity.UserOrder, 0)
+	}
+	return &orderEntity.OrderResponse{List: userOrders, Total: count}, err
 }
 
 // OrderSync 处理订单同步 WebHook

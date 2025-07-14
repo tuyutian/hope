@@ -285,9 +285,11 @@ func (u *UserService) GetSessionData(ctx context.Context, userID int64) (*userEn
 	} else {
 		steps = userEntity.DefaultDashboardGuideStep
 	}
+	guideHide, _ := u.userSettingRepo.Get(ctx, userID, userEntity.DashboardGuideHide)
 	return &userEntity.SessionData{
 		Shop:      user.Shop,
 		GuideStep: steps,
+		GuideShow: len(guideHide) == 0 || guideHide == "0",
 	}, nil
 }
 
@@ -356,4 +358,10 @@ func (u *UserService) GenerateTestToken(ctx context.Context, id int64) string {
 	}
 	t, _, _ := u.jwtRepo.GenerateToken(ctx, claims)
 	return t
+}
+
+func (u *UserService) UpdateUserSetting(ctx context.Context, setting userEntity.UpdateSetting) error {
+	claims := u.GetClaims(ctx)
+	userID := claims.UserID
+	return u.userSettingRepo.Set(ctx, userID, setting.Name, setting.Value)
 }

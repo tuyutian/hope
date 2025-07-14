@@ -18,7 +18,7 @@ import * as echarts from "echarts/core";
 import "echarts/lib/chart/lines";
 import "echarts/lib/component/tooltip";
 import "echarts/lib/component/title";
-import {rqGetDashboard} from "@/api/index.js";
+import {rqGetDashboard} from "@/api";
 
 export default function FulfilledOrders(props) {
   const Data = {

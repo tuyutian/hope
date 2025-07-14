@@ -1,6 +1,5 @@
 export type User = {
   shop :string
-  userGuide: UserGuide
 }
 export type UserGuide = {
   enabled:boolean
@@ -11,11 +10,5 @@ export type UserGuide = {
 }
 export const DefaultUser:User = {
   shop: "",
-  userGuide: {
-    "enabled": false,
-    "setting_protension":false,
-    "setup_widget":false,
-    "how_work":false,
-    "choose":false,
-  },
+
 }

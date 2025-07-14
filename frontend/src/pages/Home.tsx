@@ -5,9 +5,10 @@ import FulfilledOrders from "@/pages/home/FulfilledOrders";
 import AbilityBox from "@/pages/home/AbilityBox";
 import "@/pages/home/index.css";
 import {ChevronUpIcon} from "@shopify/polaris-icons";
-import {getUserState} from "@/stores/userStore.ts";
+import {userStore} from "@/stores/userStore.ts";
 
 const Home = () => {
+  const guideShow = userStore(state => state.guideShow);
   return (
     <s-page>
       <s-heading><Text fontWeight="bold" as="h1" variant="headingLg">👋 Hi, Welcome to goodcare protection
@@ -17,9 +18,7 @@ const Home = () => {
           <FulfilledOrders />
         </s-box>
 
-        <s-box>
-            <NewPersonBox />
-        </s-box>
+        {guideShow && <NewPersonBox />}
 
         <s-box>
           <AbilityBox />

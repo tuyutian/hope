@@ -49,14 +49,24 @@ const MainLayout = () => {
     // 跳转后，返回页面顶部
     window.scrollTo(0, 0);
   }, [pathname]);
+  const handleNavigate = (event: React.MouseEvent, path: string) => {
+    event.preventDefault();
 
+    navigate({pathname: path})
+  };
   return (
     <div >
       <s-heading>
         {appBridge ? (<NavMenu>
-          <a href="/cart">{i18n.get("Protection Page") as string}</a>
-          <a href="/orders">{i18n.get("Orders") as string}</a>
-          <a href="/billing">{i18n.get("Billing") as string}</a>
+          <a href="/" onClick={(e)=>{ handleNavigate(e,""); }} rel="home">
+            Home
+          </a>
+          {Object.values(links).map((link,index) => {
+            return link.url !=="/" &&<a key={index} href={link.url} onClick={(e)=>{ handleNavigate(e,link.url); }}>
+              {link.name}
+            </a>
+          })}
+
         </NavMenu>) : <div>
           <Tabs
             tabs={tabs}

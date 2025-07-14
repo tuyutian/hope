@@ -13,5 +13,6 @@ func RegisterUserRouter(r *gin.RouterGroup, handler *handler.UserHandler, m *Mid
 	userGroup.POST("step", handler.SetUserStep)
 	userGroup.GET("conf", handler.GetUserConf)
 	userGroup.GET("session", handler.GetSessionData)
+	userGroup.POST("setting", handler.UpdateUserSetting)
 
 }

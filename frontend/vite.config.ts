@@ -38,10 +38,6 @@ export default defineConfig({
     server: {
         host: "0.0.0.0",
         port: 9527,
-        // 添加 HMR 相关配置
-        hmr: {
-            port: 9528, // 指定 HMR 端口
-        },
         allowedHosts: [
             "s.sunshine-boy.click",
             "api.sunshine-boy.click",
