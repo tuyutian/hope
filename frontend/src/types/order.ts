@@ -94,3 +94,4 @@ export interface OrderFilters {
   sortBy?: SortOption;
   sortDirection?: SortDirection;
 }
+

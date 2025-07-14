@@ -1,6 +1,7 @@
 import request, {IResponse} from "~/utils/request";
 import {FilterParams} from "@/types/billing.ts";
 import {OrderListParams, OrderListResponse} from "@/types/order.ts";
+import {DashboardResponse} from "@/types/home.ts";
 
 /** 登录模块 */
 
@@ -34,7 +35,7 @@ export const ckeditorConfig = {
   //   }
 };
 export const rqPostLogin = (params: any): Promise<IResponse> => request.post("api/v1/auth/login", params); // 登录
-export const rqGetDashboard = (days:string): Promise<IResponse> => request.get(`api/v1/order/dashboard?days=${days}`); // 查询订单统计
+export const rqGetDashboard = (days:string): Promise<DashboardResponse> => request.get(`api/v1/order/dashboard?days=${days}`); // 查询订单统计
 
 export const rqGetCartSetting = (params?:any): Promise<IResponse> => request.get("api/v1/setting/cart", params); // 查询购物车配置
 

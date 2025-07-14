@@ -5,7 +5,7 @@ import { hexToRgb } from "~/utils/tools";
 
 interface Props {
     defaultColor: string,
-    onChange: CallableFunction
+    onChange: (color:string)=>void
     popoverStyle?: React.CSSProperties
 }
 

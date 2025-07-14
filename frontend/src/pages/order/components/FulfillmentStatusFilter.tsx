@@ -1,6 +1,6 @@
 import { ChoiceList } from '@shopify/polaris';
 import { useCallback } from 'react';
-import { FULFILLMENT_STATUS } from '@/types/order';
+import { FULFILLMENT_STATUS } from '@/constants/orderFilters';
 import type { FulfillmentStatus } from '@/types/order';
 
 interface FulfillmentStatusFilterProps {

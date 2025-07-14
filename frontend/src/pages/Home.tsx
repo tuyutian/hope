@@ -1,8 +1,7 @@
 import {BlockStack, Box, Collapsible, Icon, InlineStack, Text,} from "@shopify/polaris";
 
 import NewPersonBox from "@/pages/home/NewPersonBox";
-import FulfilledOrders from "@/pages/home/FulfilledOrders";
-import AbilityBox from "@/pages/home/AbilityBox";
+import FulfilledOrders from "@/pages/home/components/FulfilledOrders.tsx";
 import "@/pages/home/index.css";
 import {ChevronUpIcon} from "@shopify/polaris-icons";
 import {userStore} from "@/stores/userStore.ts";
@@ -20,9 +19,6 @@ const Home = () => {
 
         {guideShow && <NewPersonBox />}
 
-        <s-box>
-          <AbilityBox />
-        </s-box>
         <s-section padding="none" heading="">
           <div className="p-4">
             <Text as="h3" variant="headingSm">
