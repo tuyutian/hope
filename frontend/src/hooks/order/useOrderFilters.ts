@@ -1,12 +1,12 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useSearchParams} from "react-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import debounce from "lodash.debounce";
-import {getDateRange} from "@/utils/dateUtils";
-import type {FulfillmentStatus, PaymentStatus, SortDirection, SortOption, TimeRange} from "@/types/order";
-import {TIME_RANGES} from '@/constants/orderFilters.ts';
+import { getDateRange } from "@/utils/dateUtils";
+import type { FulfillmentStatus, PaymentStatus, SortDirection, SortOption, TimeRange } from "@/types/order";
+import { SORT_DIRECTION, SORT_OPTIONS, TIME_RANGES } from "@/constants/orderFilters.ts";
 
 export const ORDER_FILTER_TYPES = [0, 1, 2] as const;
-export type OrderFilterType = typeof ORDER_FILTER_TYPES[number];
+export type OrderFilterType = (typeof ORDER_FILTER_TYPES)[number];
 
 interface UseOrderFiltersReturn {
   // 基础状态
@@ -21,8 +21,8 @@ interface UseOrderFiltersReturn {
   customEndDate?: string;
   paymentStatus?: PaymentStatus;
   fulfillmentStatus?: FulfillmentStatus;
-  sortBy?: SortOption;
-  sortDirection?: SortDirection;
+  sortBy: SortOption;
+  sortDirection: SortDirection;
 
   // 操作函数
   setSelectedTab: (index: number) => void;
@@ -31,7 +31,7 @@ interface UseOrderFiltersReturn {
   setTimeRange: (range: TimeRange, startDate?: string, endDate?: string) => void;
   setPaymentStatus: (status?: PaymentStatus) => void;
   setFulfillmentStatus: (status?: FulfillmentStatus) => void;
-  setSortOptions: (sortBy?: SortOption, sortDirection?: SortDirection) => void;
+  setSortOptions: (sortBy: SortOption, sortDirection: SortDirection) => void;
   clearQuery: () => void;
   clearAllFilters: () => void;
 
@@ -91,21 +91,18 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
     return (searchParams.get("fulfillmentStatus") as FulfillmentStatus) || undefined;
   });
 
-  const [sortBy, setSortByState] = useState<SortOption | undefined>(() => {
-    return (searchParams.get("sortBy") as SortOption) || undefined;
+  const [sortBy, setSortByState] = useState<SortOption>(() => {
+    return (searchParams.get("sortBy") as SortOption) || SORT_OPTIONS.ORDER_NUMBER;
   });
 
-  const [sortDirection, setSortDirectionState] = useState<SortDirection | undefined>(() => {
-    return (searchParams.get("sortDirection") as SortDirection) || undefined;
+  const [sortDirection, setSortDirectionState] = useState<SortDirection>(() => {
+    return (searchParams.get("sortDirection") as SortDirection) || SORT_DIRECTION.DESC;
   });
 
   const [debouncedQuery, setDebouncedQuery] = useState(queryValue);
 
   // 防抖处理搜索
-  const debouncedQueryUpdate = useMemo(
-    () => debounce((val: string) => setDebouncedQuery(val), 500),
-    []
-  );
+  const debouncedQueryUpdate = useMemo(() => debounce((val: string) => setDebouncedQuery(val), 500), []);
 
   // 同步状态到URL
   useEffect(() => {
@@ -122,10 +119,19 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
     if (sortBy) params.set("sortBy", sortBy);
     if (sortDirection) params.set("sortDirection", sortDirection);
 
-    setSearchParams(params, {replace: true});
+    setSearchParams(params, { replace: true });
   }, [
-    selectedTab, currentPage, queryValue, timeRange, customStartDate, customEndDate,
-    paymentStatus, fulfillmentStatus, sortBy, sortDirection, setSearchParams
+    selectedTab,
+    currentPage,
+    queryValue,
+    timeRange,
+    customStartDate,
+    customEndDate,
+    paymentStatus,
+    fulfillmentStatus,
+    sortBy,
+    sortDirection,
+    setSearchParams,
   ]);
 
   // 处理查询值变化
@@ -172,7 +178,7 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
     setCurrentPageState(1);
   }, []);
 
-  const setSortOptions = useCallback((sortBy?: SortOption, sortDirection?: SortDirection) => {
+  const setSortOptions = useCallback((sortBy: SortOption, sortDirection: SortDirection) => {
     setSortByState(sortBy);
     setSortDirectionState(sortDirection);
     setCurrentPageState(1);
@@ -192,17 +198,18 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
     setCustomEndDateState(undefined);
     setPaymentStatusState(undefined);
     setFulfillmentStatusState(undefined);
-    setSortByState(undefined);
-    setSortDirectionState(undefined);
+    setSortByState(SORT_OPTIONS.ORDER_NUMBER);
+    setSortDirectionState(SORT_DIRECTION.DESC);
   }, []);
 
   // 计算值
   const filterType = ORDER_FILTER_TYPES[selectedTab];
 
   const queryParams = useMemo(() => {
-    const dateRange = timeRange === TIME_RANGES.CUSTOM
-      ? {startDate: customStartDate, endDate: customEndDate}
-      : getDateRange(timeRange);
+    const dateRange =
+      timeRange === TIME_RANGES.CUSTOM
+        ? { startDate: customStartDate, endDate: customEndDate }
+        : getDateRange(timeRange);
 
     return {
       page: currentPage,
@@ -218,9 +225,17 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
       sort_direction: sortDirection,
     };
   }, [
-    currentPage, itemsPerPage, filterType, debouncedQuery, timeRange,
-    customStartDate, customEndDate, paymentStatus, fulfillmentStatus,
-    sortBy, sortDirection
+    currentPage,
+    itemsPerPage,
+    filterType,
+    debouncedQuery,
+    timeRange,
+    customStartDate,
+    customEndDate,
+    paymentStatus,
+    fulfillmentStatus,
+    sortBy,
+    sortDirection,
   ]);
 
   return {
