@@ -66,9 +66,8 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 	}
 	// 上传产品操作
 	err = s.productService.UploadProduct(ctxWithTrace, &productEntity.ProductReq{
-		UserID:      uid,
-		ProductType: settingToggleReq.ProductTypeInput,
-		Collection:  string(productCollection),
+		UserID:     uid,
+		Collection: string(productCollection),
 	})
 
 	if err != nil {

@@ -318,7 +318,7 @@ CREATE TABLE `user_cart_setting`
     `show_cart_icon`     tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 关闭 1 打开',
     `icon_url`           text COMMENT '选中url(json)',
     `select_button`      tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 滑动 1 勾选',
-    `product_type`       varchar(100)    NOT NULL DEFAULT '' COMMENT '产品type',
+    `in_collection`        tinyint         NOT NULL DEFAULT 0 COMMENT '是否启用集合筛选 0 关闭 1启用',
     `product_collection` varchar(100)    NOT NULL DEFAULT '' COMMENT '产品选中集合',
     `pricing_type`       tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 金额 1百分比',
     `pricing_select`     text COMMENT '金额计算范围',

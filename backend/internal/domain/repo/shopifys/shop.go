@@ -25,7 +25,7 @@ type ShopGraphqlRepository interface {
 	UpdateShopSettings(ctx context.Context, input shopifys.ShopSettingsInput) error
 	GetShopPolicies(ctx context.Context) (*shopifys.ShopPoliciesResponse, error)
 	GetShopLocales(ctx context.Context) (*shopifys.ShopLocalesResponse, error)
-	GetPublicationList(ctx context.Context) (string, error)
+	GetPublicationID(ctx context.Context) (string, error)
 	QueryWebhookSubscriptions(ctx context.Context, queryParams string) ([]shopifys.WebhookSubscription, error)
 	CreateWebhookSubscription(ctx context.Context, topic string, callbackUrl string) error
 	UpdateWebhookSubscription(ctx context.Context, id string, callbackUrl string) error

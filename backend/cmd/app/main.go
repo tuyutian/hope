@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -72,6 +73,15 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "hello world",
 			"token":   token,
+		})
+	})
+	router.GET("/test/sync_user/:id", func(c *gin.Context) {
+		id, _ := strconv.Atoi(c.Param("id"))
+
+		initUserTask, _ := repos.AsyncRepo.InitUserTask(c.Request.Context(), int64(id))
+		c.JSON(200, gin.H{
+			"message": "hello sync",
+			"task":    initUserTask,
 		})
 	})
 	// http server设置

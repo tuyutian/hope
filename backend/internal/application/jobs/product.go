@@ -98,8 +98,6 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		return p.fail(ctx, payload.JobId, "payload 反序列化失败", err)
 	}
 
-	// 前期小项目 不按照依赖注入
-
 	job, err := p.jobProductRepo.First(ctx, payload.JobId)
 	if err != nil || job == nil {
 		return p.fail(ctx, payload.JobId, "job日志不存在", err)
@@ -137,20 +135,14 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 	if productId == 0 {
 		var variantId int64
 		// 创建产品
-		shopifyProductResp, err := p.productGraphqlRepo.CreateProduct(ctx, shopifyEntity.ProductCreateInput{
+		shopifyProductResp, err := p.productGraphqlRepo.CreateProductWithMedia(ctx, shopifyEntity.ProductCreateInput{
 			Title:           product.Title,
 			Status:          "ACTIVE",
 			DescriptionHtml: product.Description,
 			ProductType:     product.ProductType,
 			Tags:            strings.Split(product.Tags, ","),
 			Vendor:          product.Vendor,
-			Images: []shopifyEntity.ProductImageInput{
-				{
-					Alt: "image-1",
-					Src: product.ImageUrl,
-				},
-			},
-			ProductOptions: []shopifyEntity.OptionCreateInput{
+			ProductOptions: []shopifyEntity.ProductOptionInput{
 				{
 					Name:     "Title",
 					Position: 0,
@@ -159,6 +151,12 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 					},
 				},
 			},
+		}, []shopifyEntity.CreateMediaInput{
+			{
+				Alt:              "image-1",
+				OriginalSource:   product.ImageUrl,
+				MediaContentType: "IMAGE",
+			},
 		}) // 通过 client 调用方法
 
 		if err != nil {
@@ -166,7 +164,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		}
 		shopifyProduct := shopifyProductResp.ProductCreate.Product
 		productId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.ID)
-		variantId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.Variants.Edges[0].Node.ID)
+		variantId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.Variants.Nodes[0].ID)
 		// 删除默认变体
 		err = p.productGraphqlRepo.DeleteVariant(ctx, productId, variantId)
 
@@ -187,7 +185,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 				},
 
 				InventoryItem: shopifyEntity.InventoryItemInput{
-					Sku:     item.SkuName,
+					SKU:     item.SkuName,
 					Tracked: false,
 				},
 			}
@@ -330,7 +328,7 @@ func (p *ProductService) HandleShopifyProduct(ctx context.Context, t *asynq.Task
 			},
 
 			InventoryItem: shopifyEntity.InventoryItemInput{
-				Sku:     item.SkuName,
+				SKU:     item.SkuName,
 				Tracked: false,
 			},
 		}

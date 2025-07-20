@@ -22,7 +22,7 @@ type SettingConfigReq struct {
 	PriceSelect         []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
 	TiersSelect         []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
 	RestValuePrice      string           `json:"restValuePrice" binding:"required"`
-	ProductTypeInput    string           `json:"productTypeInput"`
+	InCollection        bool             `json:"onlyInCollection"`
 	SelectedCollections []CollectionItem `json:"selectedCollections"`
 	Icons               []IconReq        `json:"icons" binding:"required,dive"`
 }
@@ -56,6 +56,7 @@ type CartSettingData struct {
 	ProductType string `json:"product_type"`
 	// 产品选中集合
 	ProductCollection []CollectionItem `json:"product_collection"`
+	InCollection      bool             `json:"in_collection"`
 	PricingType       int              `json:"pricing_type,omitempty"`
 	PriceSelect       []PriceSelectReq `json:"price_select"`
 	TiersSelect       []TierSelectReq  `json:"tiers_select"`

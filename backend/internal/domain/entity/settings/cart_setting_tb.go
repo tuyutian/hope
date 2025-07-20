@@ -17,7 +17,7 @@ type UserCartSetting struct {
 	ShowCartIcon      int     `xorm:"'show_cart_icon' tinyint(1) default 0 notnull comment('购物车图标 0 关闭 1 打开')" json:"show_cart_icon"`
 	IconUrl           string  `xorm:"'icon_url' text comment('选中url(json)')" json:"icon_url"`
 	SelectButton      int     `xorm:"'select_button' tinyint(1) default 0 notnull comment('购物车图标 0 滑动 1 勾选')" json:"select_button"`
-	ProductType       string  `xorm:"'product_type' varchar(100) notnull default '' comment('产品type')" json:"product_type"`
+	InCollection      int     `xorm:"'in_collection' tinyint(1) default 0 not null comment('是否启用集合筛选 0 关闭 1 打开')" json:"in_collection"`
 	ProductCollection string  `xorm:"'product_collection' varchar(100) notnull default '' comment('产品选中集合')" json:"product_collection"`
 	PricingType       int     `xorm:"'pricing_type' tinyint(1) default 0 notnull comment('购物车图标 0 金额 1百分比')" json:"pricing_type"`
 	PricingSelect     string  `xorm:"'pricing_select' text comment('金额计算范围')" json:"pricing_select"`

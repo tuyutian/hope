@@ -77,6 +77,14 @@ func (u *UserService) HandleInitUser(ctx context.Context, t *asynq.Task) error {
 				map[string]interface{}{"webhook": webhookUrl})
 		}
 	}
+	publishId, err := u.shopGraphqlRepo.GetPublicationID(ctx)
+	if err != nil {
+		logger.Error(ctx, fmt.Sprintf("get publication id error:%s", err.Error()))
+	}
+	user.PublishId = utils.GetIdFromShopifyGraphqlId(publishId)
+	if err := u.userRepo.Update(ctx, user); err != nil {
+		logger.Error(ctx, fmt.Sprintf("update user error:%s", err.Error()))
+	}
 	return nil
 }
 

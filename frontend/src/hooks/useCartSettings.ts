@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { GetUserConf, rqGetCartSetting, rqPostUpdateCartSetting } from "@/api";
 import type { WidgetSettings, PricingSettings, ProductSettings, CartSettingsHook } from "@/types/cart";
 import { getMessageState } from "@/stores/messageStore";
-import type { OptionDescriptor } from "@shopify/polaris/build/ts/src/types";
 
 export function useCartSettings(): CartSettingsHook {
   const toastMessage = getMessageState().toastMessage;
@@ -47,17 +46,16 @@ export function useCartSettings(): CartSettingsHook {
   });
 
   const [productSettings, setProductSettings] = useState<ProductSettings>({
-    selectProductTypes: [],
     selectedCollections: [],
-    collectionInput: "",
     icons: [
       { id: 1, src: "https://img.icons8.com/color/48/shield.png", selected: true },
       { id: 2, src: "https://maxst.icons8.com/vue-static/faceswapper/hero/faces/2.jpg", selected: false },
     ],
+    onlyInCollection: false,
   });
 
-  const [collectionOptions, setCollectionOptions] = useState<OptionDescriptor[]>([]);
   const [moneySymbol, setMoneySymbol] = useState("$");
+  const [hasSubscribe, setHasSubscribe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
@@ -150,16 +148,9 @@ export function useCartSettings(): CartSettingsHook {
     const res = await GetUserConf();
     if (res.code !== 0 || !res.data) return;
 
-    const { collections, money_symbol } = res.data;
-    if (Array.isArray(collections)) {
-      setCollectionOptions(
-        collections.map((collection: { label: string; value: number }) => ({
-          label: collection.label,
-          value: String(collection.value),
-        }))
-      );
-    }
+    const { money_symbol, has_subscribe } = res.data;
     if (money_symbol) setMoneySymbol(money_symbol);
+    setHasSubscribe(has_subscribe);
   };
 
   const loadCartData = async () => {
@@ -199,9 +190,9 @@ export function useCartSettings(): CartSettingsHook {
     // 更新产品设置
     setProductSettings(prev => ({
       ...prev,
-      selectProductTypes: data.product_type || prev.selectProductTypes,
       selectedCollections: Array.isArray(data.product_collection) ? data.product_collection : prev.selectedCollections,
       icons: Array.isArray(data.icons) && data.icons.length > 0 ? data.icons : prev.icons,
+      onlyInCollection: data.in_collection,
     }));
   };
 
@@ -271,9 +262,9 @@ export function useCartSettings(): CartSettingsHook {
         restValuePrice: pricingSettings.restValuePrice,
         allPrice: pricingSettings.allPriceValue,
         allTiers: pricingSettings.allTiersValue,
-        selectProductTypes: productSettings.selectProductTypes,
         selectedCollections: productSettings.selectedCollections,
         icons: productSettings.icons,
+        onlyInCollection: productSettings.onlyInCollection,
       };
 
       const res = await rqPostUpdateCartSetting(payload);
@@ -326,8 +317,8 @@ export function useCartSettings(): CartSettingsHook {
     widgetSettings,
     pricingSettings,
     productSettings,
-    collectionOptions,
     moneySymbol,
+    hasSubscribe,
     errors,
     isLoading,
     dirty,

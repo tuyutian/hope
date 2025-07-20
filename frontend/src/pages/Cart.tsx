@@ -17,7 +17,6 @@ export default function ShippingProtectionSettings() {
     widgetSettings,
     pricingSettings,
     productSettings,
-    collectionOptions,
     moneySymbol,
     errors,
     isLoading,
@@ -124,10 +123,10 @@ export default function ShippingProtectionSettings() {
     }));
   };
 
-  const handleRemoveProduct = (valueToRemove: string) => {
+  const handleOnlyCollection = (check: boolean) => {
     setProductSettings(prev => ({
       ...prev,
-      selectProductTypes: prev.selectProductTypes.filter(val => val.id !== Number(valueToRemove)),
+      onlyInCollection: check,
     }));
   };
   // 集合选择处理
@@ -143,13 +142,6 @@ export default function ShippingProtectionSettings() {
     setProductSettings(prev => ({
       ...prev,
       selectedCollections: [...new Set([...prev.selectedCollections, ...resources])],
-    }));
-  };
-  // 处理ResourcePicker选择的集合
-  const handleProductChange = (resources: ResourceItem[]) => {
-    setProductSettings(prev => ({
-      ...prev,
-      selectProductTypes: [...new Set([...prev.selectProductTypes, ...resources])],
     }));
   };
 
@@ -228,10 +220,8 @@ export default function ShippingProtectionSettings() {
 
                 <ProductCard
                   productSettings={productSettings}
-                  collectionOptions={collectionOptions}
-                  onProductChange={handleProductChange}
                   onCollectionSelect={handleCollectionSelect}
-                  onRemoveProduct={handleRemoveProduct}
+                  onlyCollection={handleOnlyCollection}
                   onRemoveCollection={handleRemoveCollection}
                   onCollectionChange={handleCollectionChange}
                 />

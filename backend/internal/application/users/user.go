@@ -131,6 +131,11 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 			return nil, err
 		}
 		user.ID = id
+		initUserTask, err := u.asynqRepo.InitUserTask(ctx, user.ID)
+		if err != nil {
+			utils.CallWilding("InitUserTask 初始化用户数据失败:" + err.Error())
+			logger.Error(ctx, "InitUserTask 初始化用户数据失败:", err.Error(), initUserTask)
+		}
 	}
 	// 更新 app auth记录
 	appAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)

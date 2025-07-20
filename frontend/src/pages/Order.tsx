@@ -1,11 +1,11 @@
-import { Page, Card, Spinner } from "@shopify/polaris";
+import { Card, Page } from "@shopify/polaris";
 import { useEffect } from "react";
 import {
-  OrderFilters,
-  OrderTable,
-  OrderPagination,
   OrderErrorBoundary,
+  OrderFilters,
   OrderLoadingState,
+  OrderPagination,
+  OrderTable,
 } from "@/pages/order/components";
 import { useOrderPageLogic } from "@/hooks/order/useOrderPageLogic";
 
@@ -20,7 +20,6 @@ export default function Order() {
     isInitialLoading,
     isTableLoading,
     isRefreshing,
-    isPageChanging,
     isError,
     error,
 
@@ -87,20 +86,6 @@ export default function Order() {
           isFetching={isRefreshing}
           itemsPerPage={ITEMS_PER_PAGE}
         />
-
-        {/* 页面切换时的加载提示 */}
-        {isPageChanging && (
-          <div
-            style={{
-              padding: "0.5rem",
-              textAlign: "center",
-              backgroundColor: "#f6f6f7",
-              borderTop: "1px solid #e1e3e5",
-            }}
-          >
-            <Spinner />
-          </div>
-        )}
 
         <OrderPagination
           total={total}

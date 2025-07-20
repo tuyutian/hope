@@ -22,33 +22,35 @@ func NewProductGraphqlRepository() shopifys.ProductGraphqlRepository {
 }
 
 // CreateProduct 创建产品
-func (c *productGraphqlRepoImpl) CreateProduct(ctx context.Context, input productEntity.ProductCreateInput) (*productEntity.ProductCreateResponse, error) {
+func (c *productGraphqlRepoImpl) CreateProductWithMedia(ctx context.Context, productInput productEntity.ProductCreateInput, mediaInput []productEntity.CreateMediaInput) (*productEntity.ProductCreateResponse, error) {
 	mutation := `
-        mutation productCreate($input: ProductInput!) {
-            productCreate(input: $input) {
+        mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
+            productCreate(product: $product, media: $media) {
                 product {
                     id
                     title
                     handle
                     status
                     createdAt
-                    images(first: 10) {
-                        edges {
-                            node {
-                                id
-                                url
-                                altText
-                            }
-                        }
+                    media(first: 10) {
+						nodes {
+							alt
+							mediaContentType
+							preview {
+								status
+								image {
+									url
+									id
+								}
+							}
+						}
                     }
                     variants(first: 10) {
-                        edges {
-                            node {
-                                id
-                                sku
-                                price
-                            }
-                        }
+						nodes {
+							id
+							sku
+							price
+						}
                     }
                 }
                 userErrors {
@@ -60,49 +62,8 @@ func (c *productGraphqlRepoImpl) CreateProduct(ctx context.Context, input produc
     `
 
 	variables := map[string]interface{}{
-		"input": input,
-	}
-
-	var response productEntity.ProductCreateResponse
-	err := c.Client.Mutate(ctx, mutation, variables, &response)
-	if err != nil {
-		return nil, fmt.Errorf("创建产品失败: %w", err)
-	}
-
-	// 检查用户错误
-	if len(response.ProductCreate.UserErrors) > 0 {
-		return nil, fmt.Errorf("创建产品错误: %s", response.ProductCreate.UserErrors[0].Message)
-	}
-
-	return &response, nil
-}
-
-// CreateProductWithMedia 创建产品
-func (c *productGraphqlRepoImpl) CreateProductWithMedia(ctx context.Context, input productEntity.ProductCreateInput, media productEntity.CreateMediaInput) (*productEntity.ProductCreateResponse, error) {
-	mutation := `
-        mutation createProduct($product: ProductCreateInput!, $media: [CreateMediaInput!]!) {
-			productCreate(product: $product, media: $media) {
-				product {
-					id
-					variants(first: 1) {
-						edges {
-							node {
-								id
-							}
-						}
-					}
-				}
-				userErrors {
-					field
-					message
-				}
-			}
-		}
-    `
-
-	variables := map[string]interface{}{
-		"product": input,
-		"media":   media,
+		"product": productInput,
+		"media":   mediaInput,
 	}
 
 	var response productEntity.ProductCreateResponse

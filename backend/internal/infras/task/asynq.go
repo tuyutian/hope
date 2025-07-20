@@ -36,14 +36,14 @@ func (a *asynqRepoImpl) NewProductTask(ctx context.Context, jobId int64, userPro
 	return a.sendEnqueue(ctx, task)
 }
 
-func (a *asynqRepoImpl) InitWebhookUserTask(ctx context.Context, userID int64) (*asynq.TaskInfo, error) {
+func (a *asynqRepoImpl) InitUserTask(ctx context.Context, userID int64) (*asynq.TaskInfo, error) {
 	// 初始化任务队列
 	payload := jobs.InitUserPayload{UserID: userID}
 	logger.Info(ctx, "正在初始化用户设置")
 	// 使用标准库 json.Marshal 进行序列化
 	data, err := json.Marshal(payload)
 	if err != nil {
-		logger.Info(ctx, "InitWebhookTask生产失败, Error：", err.Error())
+		logger.Info(ctx, "InitUserTask生产失败, Error：", err.Error())
 		return nil, err
 	}
 	task := asynq.NewTask(config.SendInitUser, data)

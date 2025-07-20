@@ -1,9 +1,8 @@
 package products
 
 type ProductReq struct {
-	UserID      int64  `json:"user_id"`     // 用户ID
-	ProductType string `json:"ProductType"` // 产品type
-	Collection  string `json:"Collection"`  // 产品集合
+	UserID     int64  `json:"user_id"`    // 用户ID
+	Collection string `json:"Collection"` // 产品集合
 }
 
 type ProductWebHookReq struct {

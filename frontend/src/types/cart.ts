@@ -1,5 +1,3 @@
-import type { OptionDescriptor } from "@shopify/polaris/build/ts/src/types";
-
 export interface WidgetSettings {
   planTitle: string;
   iconVisibility: string;
@@ -25,10 +23,9 @@ export interface PricingSettings {
 }
 
 export interface ProductSettings {
-  selectProductTypes: ResourceItem[];
   selectedCollections: ResourceItem[];
-  collectionInput: string;
   icons: IconType[];
+  onlyInCollection: boolean;
 }
 
 export interface PriceRange {
@@ -53,10 +50,10 @@ export interface CartSettingsHook {
   widgetSettings: WidgetSettings;
   pricingSettings: PricingSettings;
   productSettings: ProductSettings;
-  collectionOptions: OptionDescriptor[];
   moneySymbol: string;
   errors: Record<string, string>;
   isLoading: boolean;
+  hasSubscribe: boolean;
   dirty: boolean;
   setWidgetSettings: (setter: (prev: WidgetSettings) => WidgetSettings) => void;
   setPricingSettings: (setter: (prev: PricingSettings) => PricingSettings) => void;
@@ -93,10 +90,8 @@ export interface PricingCardProps {
 export type ResourceItem = { id: number; title: string };
 export interface ProductCardProps {
   productSettings: ProductSettings;
-  collectionOptions: OptionDescriptor[];
-  onProductChange: (value: ResourceItem[]) => void;
   onCollectionSelect: (value: ResourceItem) => void;
-  onRemoveProduct: (value: string) => void;
+  onlyCollection: (value: boolean) => void;
   onRemoveCollection: (value: number) => void;
   onCollectionChange?: (resources: Array<ResourceItem>) => void;
 }

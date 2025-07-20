@@ -425,7 +425,7 @@ func (c *shopGraphqlRepoImpl) QueryWebhookSubscriptions(ctx context.Context, que
 	return response.WebhookSubscriptions.Nodes, nil
 }
 
-func (c *shopGraphqlRepoImpl) GetPublicationList(ctx context.Context) (string, error) {
+func (c *shopGraphqlRepoImpl) GetPublicationID(ctx context.Context) (string, error) {
 	query := `
 		query {
 			publications(first: 20) {

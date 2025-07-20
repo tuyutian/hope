@@ -10,29 +10,32 @@ import (
 	cartRepo "backend/internal/domain/repo/carts"
 	jobRepo "backend/internal/domain/repo/jobs"
 	productRepo "backend/internal/domain/repo/products"
+	"backend/internal/domain/repo/shopifys"
 	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/providers"
 	"backend/pkg/logger"
 )
 
 type ProductService struct {
-	productRepo     productRepo.ProductRepository
-	jobProductRepo  jobRepo.ProductRepository
-	VariantRepo     productRepo.VariantRepository
-	userRepo        userRepo.UserRepository
-	cartSettingRepo cartRepo.CartSettingRepository
-	asynqRepo       jobRepo.AsynqRepository
+	productRepo        productRepo.ProductRepository
+	jobProductRepo     jobRepo.ProductRepository
+	VariantRepo        productRepo.VariantRepository
+	userRepo           userRepo.UserRepository
+	cartSettingRepo    cartRepo.CartSettingRepository
+	asynqRepo          jobRepo.AsynqRepository
+	productGraphqlRepo shopifys.ProductGraphqlRepository
 }
 
 func NewProductService(
 	repos *providers.Repositories) *ProductService {
 	return &ProductService{
-		productRepo:     repos.ProductRepo,
-		VariantRepo:     repos.VariantRepo,    // 添加初始化
-		jobProductRepo:  repos.JobProductRepo, // 添加初始化
-		userRepo:        repos.UserRepo,
-		cartSettingRepo: repos.CartSettingRepo,
-		asynqRepo:       repos.AsyncRepo,
+		productRepo:        repos.ProductRepo,
+		VariantRepo:        repos.VariantRepo,    // 添加初始化
+		jobProductRepo:     repos.JobProductRepo, // 添加初始化
+		userRepo:           repos.UserRepo,
+		cartSettingRepo:    repos.CartSettingRepo,
+		asynqRepo:          repos.AsyncRepo,
+		productGraphqlRepo: repos.ProductGraphqlRepo,
 	}
 }
 
@@ -52,9 +55,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 		userProductId, err = p.productRepo.CreateProduct(ctx, &productEntity.UserProduct{
 			UserID:      req.UserID,
 			Title:       "Shipping insurance Test",
-			ProductType: req.ProductType,
 			Vendor:      "insurance",
-			Collection:  req.Collection,
 			Tags:        "",
 			Description: "insurance",
 			Option1:     "Title",
@@ -87,12 +88,6 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 
 		shopifyProductId = 0
 	} else {
-		// 修改产品
-		_ = p.productRepo.UpdateProduct(ctx, product.Id, req.UserID, &productEntity.UserProduct{
-			ProductType: req.ProductType,
-			Collection:  req.Collection,
-		})
-
 		userProductId = product.Id
 
 		if product.ProductId == 0 {

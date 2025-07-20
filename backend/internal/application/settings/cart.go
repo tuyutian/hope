@@ -70,7 +70,12 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		logger.Error(ctx, "get-cart 解析 TiersSelect 失败", "Err:", err.Error())
 		return cartEntity.CartSettingData{}, fmt.Errorf("解析 TiersSelect 失败: %w", err)
 	}
-
+	var inCollection bool
+	if cartSetting.InCollection != 0 {
+		inCollection = true
+	} else {
+		inCollection = false
+	}
 	// 返回购物车设置结构体
 	return cartEntity.CartSettingData{
 		PlanTitle:         cartSetting.PlanTitle,
@@ -86,7 +91,7 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		ShowCartIcon:      cartSetting.ShowCartIcon,
 		Icons:             icons,
 		SelectButton:      cartSetting.SelectButton,
-		ProductType:       cartSetting.ProductType,
+		InCollection:      inCollection,
 		ProductCollection: collectionArr,
 		PriceSelect:       prices,
 		TiersSelect:       tiers,
@@ -143,6 +148,12 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 	if err != nil {
 		return err
 	}
+	var inCollection int
+	if req.InCollection {
+		inCollection = 1
+	} else {
+		inCollection = 0
+	}
 	userCartSetting := cartEntity.UserCartSetting{
 		PlanTitle:         req.PlanTitle,
 		AddonTitle:        req.AddonTitle,
@@ -157,13 +168,13 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		ShowCartIcon:      req.IconVisibility,
 		IconUrl:           iconStr,
 		SelectButton:      req.SelectButton,
-		ProductType:       req.ProductTypeInput,
+		InCollection:      inCollection,
 		ProductCollection: string(productCollection),
 		PricingSelect:     priceStr,
 		TiersSelect:       tiersStr,
 		PricingType:       req.PricingType,
 	}
-
+	fmt.Println(userCartSetting)
 	if cartSetting == nil {
 		// 创建购物车
 		userCartSetting.UserID = req.UserID

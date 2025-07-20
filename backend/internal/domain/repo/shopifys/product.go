@@ -8,8 +8,7 @@ import (
 
 type ProductGraphqlRepository interface {
 	BaseGraphqlRepository
-	CreateProduct(ctx context.Context, input shopifyEntity.ProductCreateInput) (*shopifyEntity.ProductCreateResponse, error)
-	CreateProductWithMedia(ctx context.Context, input shopifyEntity.ProductCreateInput, media shopifyEntity.CreateMediaInput) (*shopifyEntity.ProductCreateResponse, error)
+	CreateProductWithMedia(ctx context.Context, productInput shopifyEntity.ProductCreateInput, mediaInput []shopifyEntity.CreateMediaInput) (*shopifyEntity.ProductCreateResponse, error)
 	GetProduct(ctx context.Context, productID string) (*shopifyEntity.ProductResponse, error)
 	AddProductImages(ctx context.Context, productID string, images []shopifyEntity.ProductImageInput) error
 	DeleteVariant(ctx context.Context, productID int64, variantID int64) error
