@@ -40,6 +40,7 @@ type UserService struct {
 	productGraphqlRepo shopifyRepo.ProductGraphqlRepository
 	asynqRepo          jobs.AsynqRepository
 	jwtRepo            jwtRepo.JWTRepository
+	subscriptionRepo   userRepo.UserSubscriptionRepository
 }
 
 func NewUserService(repos *providers.Repositories) *UserService {
@@ -55,6 +56,7 @@ func NewUserService(repos *providers.Repositories) *UserService {
 		asynqRepo:          repos.AsyncRepo,
 		jwtRepo:            repos.JwtRepo,
 		userSettingRepo:    repos.UserSettingRepo,
+		subscriptionRepo:   repos.UserSubscriptionRepo,
 	}
 }
 
@@ -233,8 +235,8 @@ type CollectionOption struct {
 	Value int64  `json:"value"`
 }
 type UserConfigResponse struct {
-	MoneySymbol string             `json:"money_symbol"`
-	Collection  []CollectionOption `json:"collections"`
+	MoneySymbol  string `json:"money_symbol"`
+	HasSubscribe bool   `json:"has_subscribe"`
 }
 type Collection struct {
 	ID    string `json:"id"`
@@ -249,25 +251,11 @@ func (u *UserService) GetUserConf(ctx context.Context, userID int64) (*UserConfi
 		return nil, err
 	}
 
-	// 转换 collections 为 label 和 value 格式
-	var collectionOptions []CollectionOption
-	client := ctx.Value(ctxkeys.ShopifyGraphqlClient).(*shopify_graphql.GraphqlClient)
-	u.productGraphqlRepo.WithClient(client)
-	collections, err := u.productGraphqlRepo.GetCollectionList(ctx)
-	if collections != nil && len(collections) > 0 {
-		for _, collection := range collections {
-			collectionOptions = append(collectionOptions, CollectionOption{
-				Label: collection.Title, // Title 作为 label
-				Value: collection.ID,    // ID 作为 value
-			})
-		}
-	} else {
-		collectionOptions = []CollectionOption{}
-	}
+	subscribe, _ := u.subscriptionRepo.GetActiveSubscription(ctx, userID)
 
 	return &UserConfigResponse{
-		MoneySymbol: user.MoneyFormat,
-		Collection:  collectionOptions,
+		MoneySymbol:  user.MoneyFormat,
+		HasSubscribe: subscribe != nil,
 	}, nil
 }
 

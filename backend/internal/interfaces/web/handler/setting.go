@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -58,12 +58,17 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 	uid := claims.UserID
 
 	settingToggleReq.UserID = uid
-
+	productCollection, err := json.Marshal(settingToggleReq.SelectedCollections)
+	if err != nil {
+		fmt.Println(err.Error())
+		s.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
+		return
+	}
 	// 上传产品操作
 	err = s.productService.UploadProduct(ctxWithTrace, &productEntity.ProductReq{
 		UserID:      uid,
 		ProductType: settingToggleReq.ProductTypeInput,
-		Collection:  strings.Join(settingToggleReq.SelectedCollections, ","),
+		Collection:  string(productCollection),
 	})
 
 	if err != nil {

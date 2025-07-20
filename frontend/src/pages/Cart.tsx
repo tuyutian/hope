@@ -1,5 +1,5 @@
 import React, { useTransition } from "react";
-import { Banner, BlockStack, Box, Frame, Layout, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
@@ -8,9 +8,9 @@ import ContentCard from "@/pages/cart/components/ContentCard.tsx";
 import PricingCard from "@/pages/cart/components/PricingCard.tsx";
 import WidgetStyleCard from "@/pages/cart/components/WidgetStyleCard.tsx";
 import ProductCard from "@/pages/cart/components/ProductCard.tsx";
-import { isShopifyEmbedded } from "@/hooks/useShopifyBridge.ts";
 import PageSaveBar from "@/components/form/PageSaveBar.tsx";
 import "@/styles/cart.css";
+import { ResourceItem } from "@/types/cart.ts";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -27,11 +27,9 @@ export default function ShippingProtectionSettings() {
     setProductSettings,
     setErrors,
     saveSettings,
-    markDirty,
     discardChanges,
   } = useCartSettings();
   const [isPending, startTransition] = useTransition();
-  const isShopify = isShopifyEmbedded();
   // 字段变化处理器
   const handleFieldChange =
     (setter: (value: any) => void, field: string, transform?: (value: any) => any) => (value: any) => {
@@ -40,7 +38,6 @@ export default function ShippingProtectionSettings() {
       if (errors[field]) {
         setErrors(prev => ({ ...prev, [field]: "" }));
       }
-      markDirty();
     };
 
   // 图标选择处理
@@ -52,7 +49,6 @@ export default function ShippingProtectionSettings() {
         selected: icon.id === id,
       })),
     }));
-    markDirty();
   };
 
   // 定价表格处理器
@@ -88,7 +84,6 @@ export default function ShippingProtectionSettings() {
     if (errors[errorKey]) {
       setErrors(prev => ({ ...prev, [errorKey]: "" }));
     }
-    markDirty();
   };
 
   // 添加/删除定价项
@@ -104,7 +99,6 @@ export default function ShippingProtectionSettings() {
         tiersSelect: [...prev.tiersSelect, { min: "", max: "", percentage: "" }],
       }));
     }
-    markDirty();
   };
 
   const handleDeletePricingItem = (index: number, type: "price" | "tier") => {
@@ -119,25 +113,44 @@ export default function ShippingProtectionSettings() {
         tiersSelect: prev.tiersSelect.filter((_, i) => i !== index),
       }));
     }
-    markDirty();
   };
 
   // 集合选择处理
-  const handleCollectionSelect = (value: string) => {
+  const handleCollectionSelect = (value: ResourceItem) => {
     setProductSettings(prev => ({
       ...prev,
       selectedCollections: [...new Set([...prev.selectedCollections, value])],
       collectionInput: "",
     }));
-    markDirty();
   };
 
-  const handleRemoveCollection = (valueToRemove: string) => {
+  const handleRemoveProduct = (valueToRemove: string) => {
     setProductSettings(prev => ({
       ...prev,
-      selectedCollections: prev.selectedCollections.filter(val => val !== valueToRemove),
+      selectProductTypes: prev.selectProductTypes.filter(val => val.id !== Number(valueToRemove)),
     }));
-    markDirty();
+  };
+  // 集合选择处理
+  const handleRemoveCollection = (valueToRemove: number) => {
+    setProductSettings(prev => ({
+      ...prev,
+      selectedCollections: prev.selectedCollections.filter(val => val.id !== valueToRemove),
+    }));
+  };
+
+  // 处理ResourcePicker选择的集合
+  const handleCollectionChange = (resources: ResourceItem[]) => {
+    setProductSettings(prev => ({
+      ...prev,
+      selectedCollections: [...new Set([...prev.selectedCollections, ...resources])],
+    }));
+  };
+  // 处理ResourcePicker选择的集合
+  const handleProductChange = (resources: ResourceItem[]) => {
+    setProductSettings(prev => ({
+      ...prev,
+      selectProductTypes: [...new Set([...prev.selectProductTypes, ...resources])],
+    }));
   };
 
   if (isLoading) {
@@ -145,7 +158,7 @@ export default function ShippingProtectionSettings() {
   }
 
   const selectedIcon = productSettings.icons.find(icon => icon.selected);
-  console.log(isShopify);
+
   return (
     <Page
       title="Create Protection Plan (Cart Page)"
@@ -216,24 +229,11 @@ export default function ShippingProtectionSettings() {
                 <ProductCard
                   productSettings={productSettings}
                   collectionOptions={collectionOptions}
-                  onProductTypeChange={handleFieldChange(
-                    (value: string) =>
-                      setProductSettings(prev => ({
-                        ...prev,
-                        productTypeInput: value,
-                      })),
-                    "productType"
-                  )}
-                  onCollectionInputChange={handleFieldChange(
-                    (value: string) =>
-                      setProductSettings(prev => ({
-                        ...prev,
-                        collectionInput: value,
-                      })),
-                    "collectionInput"
-                  )}
+                  onProductChange={handleProductChange}
                   onCollectionSelect={handleCollectionSelect}
+                  onRemoveProduct={handleRemoveProduct}
                   onRemoveCollection={handleRemoveCollection}
+                  onCollectionChange={handleCollectionChange}
                 />
               </BlockStack>
             </div>

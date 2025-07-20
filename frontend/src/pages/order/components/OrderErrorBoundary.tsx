@@ -1,5 +1,5 @@
-import { Page, Card, Button, Text } from '@shopify/polaris';
-import { useOrderActions } from '@/hooks/order/useOrderActions.ts';
+import { Page, Card, Button, Text } from "@shopify/polaris";
+import { useOrderActions } from "@/hooks/order/useOrderActions.ts";
 
 interface OrderErrorBoundaryProps {
   error: Error;
@@ -20,22 +20,24 @@ export const OrderErrorBoundary = ({ error, onRetry }: OrderErrorBoundaryProps) 
   return (
     <Page title="Protection Orders">
       <Card>
-        <div style={{ 
-          padding: '2rem', 
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1rem",
+          }}
+        >
           <Text variant="headingMd" as="h2">
-            加载订单时出错
+            Error when loading orders
           </Text>
           <Text as="p" variant="bodyMd" tone="subdued">
-            {error?.message || '未知错误'}
+            {error?.message || "Unknown error"}
           </Text>
           <Button variant="primary" onClick={handleRetry}>
-            重试
+            Try again
           </Button>
         </div>
       </Card>

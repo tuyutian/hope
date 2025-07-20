@@ -1,5 +1,10 @@
 package settings
 
+type CollectionItem struct {
+	Title string `json:"title"`
+	ID    int64  `json:"id"`
+}
+
 type SettingConfigReq struct {
 	UserID              int64            `json:"user_id,omitempty"`
 	PlanTitle           string           `json:"planTitle" binding:"required"`
@@ -18,11 +23,11 @@ type SettingConfigReq struct {
 	TiersSelect         []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
 	RestValuePrice      string           `json:"restValuePrice" binding:"required"`
 	ProductTypeInput    string           `json:"productTypeInput"`
-	SelectedCollections []string         `json:"selectedCollections"`
+	SelectedCollections []CollectionItem `json:"selectedCollections"`
 	Icons               []IconReq        `json:"icons" binding:"required,dive"`
 }
 
-type CartSettingVO struct {
+type CartSettingData struct {
 	// 保险标题(内部)
 	PlanTitle string `json:"plan_title"`
 	// 保险标题
@@ -50,7 +55,7 @@ type CartSettingVO struct {
 	// 产品type
 	ProductType string `json:"product_type"`
 	// 产品选中集合
-	ProductCollection []string         `json:"product_collection"`
+	ProductCollection []CollectionItem `json:"product_collection"`
 	PricingType       int              `json:"pricing_type,omitempty"`
 	PriceSelect       []PriceSelectReq `json:"price_select"`
 	TiersSelect       []TierSelectReq  `json:"tiers_select"`
@@ -75,7 +80,7 @@ type IconReq struct {
 	Selected bool   `json:"selected"`
 }
 
-type CartPublicVO struct {
+type CartPublicData struct {
 	AddonTitle   string           `json:"addon_title"`              // 保险标题
 	EnabledDesc  string           `json:"enabled_desc"`             // 按钮打开文案
 	DisabledDesc string           `json:"disabled_desc"`            // 按钮关闭文案

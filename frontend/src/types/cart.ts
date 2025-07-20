@@ -25,8 +25,8 @@ export interface PricingSettings {
 }
 
 export interface ProductSettings {
-  productTypeInput: string;
-  selectedCollections: string[];
+  selectProductTypes: ResourceItem[];
+  selectedCollections: ResourceItem[];
   collectionInput: string;
   icons: IconType[];
 }
@@ -63,7 +63,6 @@ export interface CartSettingsHook {
   setProductSettings: (setter: (prev: ProductSettings) => ProductSettings) => void;
   setErrors: (setter: (prev: Record<string, string>) => Record<string, string>) => void;
   saveSettings: () => Promise<void>;
-  markDirty: () => void;
   discardChanges: () => void;
   validateFields: () => boolean;
 }
@@ -91,12 +90,13 @@ export interface PricingCardProps {
   onAddItem: (type: "price" | "tier") => void;
   onDeleteItem: (index: number, type: "price" | "tier") => void;
 }
-
+export type ResourceItem = { id: number; title: string };
 export interface ProductCardProps {
   productSettings: ProductSettings;
   collectionOptions: OptionDescriptor[];
-  onProductTypeChange: (value: string) => void;
-  onCollectionInputChange: (value: string) => void;
-  onCollectionSelect: (value: string) => void;
-  onRemoveCollection: (value: string) => void;
+  onProductChange: (value: ResourceItem[]) => void;
+  onCollectionSelect: (value: ResourceItem) => void;
+  onRemoveProduct: (value: string) => void;
+  onRemoveCollection: (value: number) => void;
+  onCollectionChange?: (resources: Array<ResourceItem>) => void;
 }

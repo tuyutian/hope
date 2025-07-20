@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	cartEntity "backend/internal/domain/entity/settings"
 	cartSettingRepo "backend/internal/domain/repo/carts"
@@ -29,48 +28,51 @@ func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
 	}
 }
 
-func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity.CartSettingVO, error) {
+func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity.CartSettingData, error) {
 	// 查询购物车设置
 	cartSetting, err := s.cartSettingRepo.First(ctx, uid)
 	if err != nil {
 		logger.Error(ctx, "get-cart-db异常", "Err:", err.Error())
-		return cartEntity.CartSettingVO{}, err
+		return cartEntity.CartSettingData{}, err
 	}
 
 	// 如果没有找到相关的购物车设置，返回空结构体
 	if cartSetting == nil {
-		return cartEntity.CartSettingVO{}, nil
+		return cartEntity.CartSettingData{}, nil
 	}
 
 	// 将 ProductCollection 解析为数组，默认空数组
-	var collectionArr []string
+	var collectionArr []cartEntity.CollectionItem
 	if cartSetting.ProductCollection != "" {
-		collectionArr = strings.Split(cartSetting.ProductCollection, ",")
+		err = json.Unmarshal([]byte(cartSetting.ProductCollection), &collectionArr)
+		if err != nil {
+			logger.Error(ctx, "Unmarshal collection fail:"+err.Error())
+		}
 	}
 
 	// 解析 Icons
 	var icons []cartEntity.IconReq
 	if err := json.Unmarshal([]byte(cartSetting.IconUrl), &icons); err != nil {
 		logger.Error(ctx, "get-cart 解析 IconUrl 失败", "Err:", err.Error())
-		return cartEntity.CartSettingVO{}, fmt.Errorf("解析 IconUrl 失败: %w", err)
+		return cartEntity.CartSettingData{}, fmt.Errorf("解析 IconUrl 失败: %w", err)
 	}
 
 	// 解析 PricingSelect
 	var prices []cartEntity.PriceSelectReq
 	if err := json.Unmarshal([]byte(cartSetting.PricingSelect), &prices); err != nil {
 		logger.Error(ctx, "get-cart 解析 PricingSelect 失败", "Err:", err.Error())
-		return cartEntity.CartSettingVO{}, fmt.Errorf("解析 PricingSelect 失败: %w", err)
+		return cartEntity.CartSettingData{}, fmt.Errorf("解析 PricingSelect 失败: %w", err)
 	}
 
 	// 解析 TiersSelect
 	var tiers []cartEntity.TierSelectReq
 	if err := json.Unmarshal([]byte(cartSetting.TiersSelect), &tiers); err != nil {
 		logger.Error(ctx, "get-cart 解析 TiersSelect 失败", "Err:", err.Error())
-		return cartEntity.CartSettingVO{}, fmt.Errorf("解析 TiersSelect 失败: %w", err)
+		return cartEntity.CartSettingData{}, fmt.Errorf("解析 TiersSelect 失败: %w", err)
 	}
 
 	// 返回购物车设置结构体
-	return cartEntity.CartSettingVO{
+	return cartEntity.CartSettingData{
 		PlanTitle:         cartSetting.PlanTitle,
 		AddonTitle:        cartSetting.AddonTitle,
 		EnabledDesc:       cartSetting.EnabledDesc,
@@ -137,6 +139,10 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		logger.Error(ctx, "set-cart 其他价格转float异常", "Err:", err.Error())
 		return err
 	}
+	productCollection, err := json.Marshal(req.SelectedCollections)
+	if err != nil {
+		return err
+	}
 	userCartSetting := cartEntity.UserCartSetting{
 		PlanTitle:         req.PlanTitle,
 		AddonTitle:        req.AddonTitle,
@@ -152,7 +158,7 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		IconUrl:           iconStr,
 		SelectButton:      req.SelectButton,
 		ProductType:       req.ProductTypeInput,
-		ProductCollection: strings.Join(req.SelectedCollections, ","),
+		ProductCollection: string(productCollection),
 		PricingSelect:     priceStr,
 		TiersSelect:       tiersStr,
 		PricingType:       req.PricingType,
@@ -175,7 +181,7 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 	return nil
 }
 
-func (s *CartSettingService) GetPublicCart(ctx context.Context, shop string) (*cartEntity.CartPublicVO, error) {
+func (s *CartSettingService) GetPublicCart(ctx context.Context, shop string) (*cartEntity.CartPublicData, error) {
 	// 获取uid
 	user, err := s.userRepo.FirstName(ctx, shop)
 
@@ -246,7 +252,7 @@ func (s *CartSettingService) GetPublicCart(ctx context.Context, shop string) (*c
 	}
 
 	// 返回购物车设置结构体
-	return &cartEntity.CartPublicVO{
+	return &cartEntity.CartPublicData{
 		AddonTitle:   cartSetting.AddonTitle,
 		EnabledDesc:  cartSetting.EnabledDesc,
 		DisabledDesc: cartSetting.DisabledDesc,

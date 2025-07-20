@@ -1,5 +1,5 @@
-import { Page, Card } from "@shopify/polaris";
-import { useEffect } from 'react';
+import { Page, Card, Spinner } from "@shopify/polaris";
+import { useEffect } from "react";
 import {
   OrderFilters,
   OrderTable,
@@ -15,7 +15,7 @@ export default function Order() {
     orders,
     total,
     totalPages,
-    
+
     // 状态
     isInitialLoading,
     isTableLoading,
@@ -23,17 +23,16 @@ export default function Order() {
     isPageChanging,
     isError,
     error,
-    
+
     // 过滤器
     filters,
-    
+
     // 操作
     handleTabSelect,
-    handlePrimaryAction,
     handlePreviousPage,
     handleNextPage,
     prefetchNextPage,
-    
+
     // 常量
     ITEMS_PER_PAGE,
   } = useOrderPageLogic();
@@ -66,45 +65,43 @@ export default function Order() {
           selected={filters.selectedTab}
           onSelect={handleTabSelect}
           isTabLoading={isTableLoading}
-          onPrimaryAction={handlePrimaryAction}
-          
           // 时间范围筛选
           timeRange={filters.timeRange}
           customStartDate={filters.customStartDate}
           customEndDate={filters.customEndDate}
           onTimeRangeChange={filters.setTimeRange}
-          
           // 状态筛选
           paymentStatus={filters.paymentStatus}
           fulfillmentStatus={filters.fulfillmentStatus}
           onPaymentStatusChange={filters.setPaymentStatus}
           onFulfillmentStatusChange={filters.setFulfillmentStatus}
-          
           // 排序
           sortBy={filters.sortBy}
           sortDirection={filters.sortDirection}
           onSortChange={filters.setSortOptions}
         />
-        
+
         <OrderTable
           orders={orders}
           isLoading={isTableLoading}
           isFetching={isRefreshing}
           itemsPerPage={ITEMS_PER_PAGE}
         />
-        
+
         {/* 页面切换时的加载提示 */}
         {isPageChanging && (
-          <div style={{ 
-            padding: '0.5rem', 
-            textAlign: 'center', 
-            backgroundColor: '#f6f6f7',
-            borderTop: '1px solid #e1e3e5'
-          }}>
-            <small>正在加载...</small>
+          <div
+            style={{
+              padding: "0.5rem",
+              textAlign: "center",
+              backgroundColor: "#f6f6f7",
+              borderTop: "1px solid #e1e3e5",
+            }}
+          >
+            <Spinner />
           </div>
         )}
-        
+
         <OrderPagination
           total={total}
           currentPage={filters.currentPage}

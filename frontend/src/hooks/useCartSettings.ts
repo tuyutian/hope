@@ -47,7 +47,7 @@ export function useCartSettings(): CartSettingsHook {
   });
 
   const [productSettings, setProductSettings] = useState<ProductSettings>({
-    productTypeInput: "",
+    selectProductTypes: [],
     selectedCollections: [],
     collectionInput: "",
     icons: [
@@ -199,7 +199,7 @@ export function useCartSettings(): CartSettingsHook {
     // 更新产品设置
     setProductSettings(prev => ({
       ...prev,
-      productTypeInput: data.product_type || prev.productTypeInput,
+      selectProductTypes: data.product_type || prev.selectProductTypes,
       selectedCollections: Array.isArray(data.product_collection) ? data.product_collection : prev.selectedCollections,
       icons: Array.isArray(data.icons) && data.icons.length > 0 ? data.icons : prev.icons,
     }));
@@ -210,13 +210,13 @@ export function useCartSettings(): CartSettingsHook {
 
     if (widgetSettings.insuranceVisibility === "1") {
       if (!widgetSettings.addonTitle.trim()) {
-        newErrors.addonTitle = "Add-on Title is required";
+        newErrors.addonTitle = "Add-on title is required";
       }
       if (!widgetSettings.enabledDescription.trim()) {
-        newErrors.enabledDescription = "Enabled Description is required";
+        newErrors.enabledDescription = "Enabled description is required";
       }
       if (!widgetSettings.disabledDescription.trim()) {
-        newErrors.disabledDescription = "Disabled Description is required";
+        newErrors.disabledDescription = "Disabled description is required";
       }
 
       // 验证定价规则
@@ -271,7 +271,7 @@ export function useCartSettings(): CartSettingsHook {
         restValuePrice: pricingSettings.restValuePrice,
         allPrice: pricingSettings.allPriceValue,
         allTiers: pricingSettings.allTiersValue,
-        productTypeInput: productSettings.productTypeInput,
+        selectProductTypes: productSettings.selectProductTypes,
         selectedCollections: productSettings.selectedCollections,
         icons: productSettings.icons,
       };
@@ -289,12 +289,6 @@ export function useCartSettings(): CartSettingsHook {
       toastMessage("Service Error", 5000, true);
     }
   }, [widgetSettings, pricingSettings, productSettings, toastMessage, validateFields, saveInitialData]);
-
-  // 移除原来的 markDirty 函数，改用自动检测
-  const markDirty = useCallback(() => {
-    // 这个函数现在是空的，因为我们使用自动检测
-    // 保留它是为了保持API兼容性
-  }, []);
 
   const discardChanges = useCallback(() => {
     if (initialDataRef.current) {
@@ -346,7 +340,6 @@ export function useCartSettings(): CartSettingsHook {
 
     // 操作函数
     saveSettings,
-    markDirty,
     discardChanges,
     validateFields,
   };

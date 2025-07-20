@@ -31,7 +31,7 @@ interface UseOrderFiltersReturn {
   setTimeRange: (range: TimeRange, startDate?: string, endDate?: string) => void;
   setPaymentStatus: (status?: PaymentStatus) => void;
   setFulfillmentStatus: (status?: FulfillmentStatus) => void;
-  setSortOptions: (sortBy: SortOption, sortDirection: SortDirection) => void;
+  setSortOptions: (sortBy?: SortOption, sortDirection?: SortDirection) => void;
   clearQuery: () => void;
   clearAllFilters: () => void;
 
@@ -92,7 +92,7 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
   });
 
   const [sortBy, setSortByState] = useState<SortOption>(() => {
-    return (searchParams.get("sortBy") as SortOption) || SORT_OPTIONS.ORDER_NUMBER;
+    return (searchParams.get("sortBy") as SortOption) || SORT_OPTIONS.PAYMENT_DATE;
   });
 
   const [sortDirection, setSortDirectionState] = useState<SortDirection>(() => {
@@ -178,9 +178,9 @@ export const useOrderFilters = (itemsPerPage: number = 20): UseOrderFiltersRetur
     setCurrentPageState(1);
   }, []);
 
-  const setSortOptions = useCallback((sortBy: SortOption, sortDirection: SortDirection) => {
-    setSortByState(sortBy);
-    setSortDirectionState(sortDirection);
+  const setSortOptions = useCallback((sortBy?: SortOption, sortDirection?: SortDirection) => {
+    setSortByState(sortBy ?? SORT_OPTIONS.PAYMENT_DATE);
+    setSortDirectionState(sortDirection ?? SORT_DIRECTION.DESC);
     setCurrentPageState(1);
   }, []);
 

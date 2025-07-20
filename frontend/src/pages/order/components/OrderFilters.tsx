@@ -5,10 +5,7 @@ import { PaymentStatusFilter } from "./PaymentStatusFilter";
 import { FulfillmentStatusFilter } from "./FulfillmentStatusFilter";
 import type { TimeRange, PaymentStatus, FulfillmentStatus, SortOption, SortDirection } from "@/types/order";
 import { FULL_SORT_OPTIONS } from "@/constants/orderFilters";
-import {
-  IndexFiltersPrimaryAction,
-  SortButtonChoice,
-} from "@shopify/polaris/build/ts/src/components/IndexFilters/types";
+import { SortButtonChoice } from "@shopify/polaris/build/ts/src/components/IndexFilters/types";
 
 interface OrderFiltersProps {
   // 基础筛选
@@ -20,7 +17,6 @@ interface OrderFiltersProps {
   selected: number;
   onSelect: (index: number) => void;
   isTabLoading: boolean;
-  onPrimaryAction: () => Promise<boolean>;
 
   // 时间范围筛选
   timeRange: TimeRange;
@@ -49,7 +45,6 @@ export const OrderFilters = ({
   selected,
   onSelect,
   isTabLoading,
-  onPrimaryAction,
   timeRange,
   customStartDate,
   customEndDate,
@@ -73,12 +68,12 @@ export const OrderFilters = ({
     isLocked: index === 0,
   }));
 
-  const primaryAction: IndexFiltersPrimaryAction = {
+  /*const primaryAction: IndexFiltersPrimaryAction = {
     type: "save",
     onAction: onPrimaryAction,
     disabled: false,
     loading: false,
-  };
+  };*/
 
   // 限制搜索框最多200个字符
   const handleQueryChange = useCallback(
@@ -93,16 +88,6 @@ export const OrderFilters = ({
   // 配置排序选项
   const sortOptions: SortButtonChoice[] = [
     {
-      label: "Order Number",
-      value: FULL_SORT_OPTIONS.ORDER_NUMBER_ASC,
-      directionLabel: "A-Z",
-    },
-    {
-      label: "Order Number",
-      value: FULL_SORT_OPTIONS.ORDER_NUMBER_DESC,
-      directionLabel: "Z-A",
-    },
-    {
       label: "Payment Date",
       value: FULL_SORT_OPTIONS.PAYMENT_DATE_ASC,
       directionLabel: "Oldest-Newest",
@@ -111,6 +96,16 @@ export const OrderFilters = ({
       label: "Payment Date",
       value: FULL_SORT_OPTIONS.PAYMENT_DATE_DESC,
       directionLabel: "Newest-Oldest",
+    },
+    {
+      label: "Order Number",
+      value: FULL_SORT_OPTIONS.ORDER_NUMBER_ASC,
+      directionLabel: "A-Z",
+    },
+    {
+      label: "Order Number",
+      value: FULL_SORT_OPTIONS.ORDER_NUMBER_DESC,
+      directionLabel: "Z-A",
     },
     {
       label: "Protection Fee",
@@ -214,7 +209,6 @@ export const OrderFilters = ({
 
   return (
     <IndexFilters
-      primaryAction={primaryAction}
       onClearAll={onClearAll}
       mode={mode}
       setMode={setMode}
