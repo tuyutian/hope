@@ -3,14 +3,14 @@ import {
   PAYMENT_STATUS,
   SORT_DIRECTION,
   SORT_OPTIONS,
-  TIME_RANGES
+  TIME_RANGES,
 } from "@/constants/orderFilters.ts";
-export type FulfillmentStatus = typeof FULFILLMENT_STATUS[keyof typeof FULFILLMENT_STATUS];
+export type FulfillmentStatus = (typeof FULFILLMENT_STATUS)[keyof typeof FULFILLMENT_STATUS];
 
-export type SortOption = typeof SORT_OPTIONS[keyof typeof SORT_OPTIONS];
-export type SortDirection = typeof SORT_DIRECTION[keyof typeof SORT_DIRECTION];
-export type TimeRange = typeof TIME_RANGES[keyof typeof TIME_RANGES];
-export type PaymentStatus = typeof PAYMENT_STATUS[keyof typeof PAYMENT_STATUS];
+export type SortOption = (typeof SORT_OPTIONS)[keyof typeof SORT_OPTIONS];
+export type SortDirection = (typeof SORT_DIRECTION)[keyof typeof SORT_DIRECTION];
+export type TimeRange = (typeof TIME_RANGES)[keyof typeof TIME_RANGES];
+export type PaymentStatus = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
 
 export interface OrderAPIResponse {
   id: string;
@@ -24,8 +24,6 @@ export interface OrderAPIResponse {
   insurance_amount: string;
   payment_date: number;
 }
-
-
 
 export interface OrderListParams {
   page: number;
@@ -42,12 +40,8 @@ export interface OrderListParams {
 }
 
 export interface OrderListResponse {
-  code: number;
-  data: {
-    list: OrderAPIResponse[];
-    total: number;
-  };
-  message: string;
+  list: OrderAPIResponse[];
+  total: number;
 }
 
 export interface UseOrderQueryData {
@@ -82,7 +76,6 @@ export interface OrderAPIResponse {
   payment_date: number;
 }
 
-
 // 筛选参数接口
 export interface OrderFilters {
   timeRange: TimeRange;
@@ -94,4 +87,3 @@ export interface OrderFilters {
   sortBy?: SortOption;
   sortDirection?: SortDirection;
 }
-

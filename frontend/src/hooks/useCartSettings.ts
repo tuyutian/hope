@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { GetUserConf, rqGetCartSetting, rqPostUpdateCartSetting } from "@/api";
+import { cartService, userService } from "@/api";
 import type { WidgetSettings, PricingSettings, ProductSettings, CartSettingsHook } from "@/types/cart";
 import { getMessageState } from "@/stores/messageStore";
 
@@ -145,7 +145,7 @@ export function useCartSettings(): CartSettingsHook {
   }, []);
 
   const loadUserConfig = async () => {
-    const res = await GetUserConf();
+    const res = await userService.getConfig();
     if (res.code !== 0 || !res.data) return;
 
     const { money_symbol, has_subscribe } = res.data;
@@ -154,7 +154,7 @@ export function useCartSettings(): CartSettingsHook {
   };
 
   const loadCartData = async () => {
-    const res = await rqGetCartSetting();
+    const res = await cartService.getSettings();
     if (res.code !== 0 || !res.data) return;
 
     const data = res.data;
@@ -267,7 +267,7 @@ export function useCartSettings(): CartSettingsHook {
         onlyInCollection: productSettings.onlyInCollection,
       };
 
-      const res = await rqPostUpdateCartSetting(payload);
+      const res = await cartService.updateSettings(payload);
       toastMessage(res?.code === 0 ? "Saved successfully" : "Saved Fail", 5000, res?.code !== 0);
 
       if (res?.code === 0) {

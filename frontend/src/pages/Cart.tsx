@@ -11,6 +11,7 @@ import ProductCard from "@/pages/cart/components/ProductCard.tsx";
 import PageSaveBar from "@/components/form/PageSaveBar.tsx";
 import "@/styles/cart.css";
 import { ResourceItem } from "@/types/cart.ts";
+import { userService } from "@/services/user";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -26,9 +27,11 @@ export default function ShippingProtectionSettings() {
     setProductSettings,
     setErrors,
     saveSettings,
+    hasSubscribe,
     discardChanges,
   } = useCartSettings();
   const [isPending, startTransition] = useTransition();
+  const [isHanding, startSubscription] = useTransition();
   // 字段变化处理器
   const handleFieldChange =
     (setter: (value: any) => void, field: string, transform?: (value: any) => any) => (value: any) => {
@@ -151,6 +154,28 @@ export default function ShippingProtectionSettings() {
 
   const selectedIcon = productSettings.icons.find(icon => icon.selected);
 
+  function handlePublishWidget() {
+    if (!hasSubscribe) {
+      startSubscription(async function () {
+        const res = await userService.startSubscription();
+        if (res.code === 0) {
+          startSubscription(function () {
+            open(res.data, "_self");
+          });
+        }
+      });
+      return;
+    }
+    handleFieldChange(
+      (value: boolean) =>
+        setWidgetSettings(prev => ({
+          ...prev,
+          insuranceVisibility: value ? "1" : "0",
+        })),
+      "insuranceVisibility"
+    );
+  }
+
   return (
     <Page
       title="Create Protection Plan (Cart Page)"
@@ -175,15 +200,9 @@ export default function ShippingProtectionSettings() {
               <BlockStack gap="400">
                 {/* 您的设置组件 */}
                 <PublishWidget
+                  loading={isHanding}
                   insuranceVisibility={widgetSettings.insuranceVisibility}
-                  onInsuranceVisibilityChange={handleFieldChange(
-                    (value: boolean) =>
-                      setWidgetSettings(prev => ({
-                        ...prev,
-                        insuranceVisibility: value ? "1" : "0",
-                      })),
-                    "insuranceVisibility"
-                  )}
+                  onInsuranceVisibilityChange={handlePublishWidget}
                 />
 
                 <WidgetStyleCard

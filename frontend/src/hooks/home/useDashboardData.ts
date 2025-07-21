@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { rqGetDashboard } from '@/api';
+import { useState, useEffect } from "react";
+import { orderService } from "@/api";
 
 interface OrderStatistic {
   refund: number;
@@ -32,7 +32,7 @@ const initialData: DashboardData = {
     orders: 0,
     total: 0,
     sales: 0,
-  }
+  },
 };
 
 export const useDashboardData = () => {
@@ -43,28 +43,28 @@ export const useDashboardData = () => {
   const fetchData = async (period: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const response = await rqGetDashboard(period);
-      
-      if (response.code === 0) {
+      const response = await orderService.getDashboard(period);
+
+      if (response.code === 0 && response.data) {
         setData({
           orderStaticsTable: response.data.order_statistics_table || [],
           orderStatics: response.data.order_statistics || initialData.orderStatics,
         });
       } else {
-        setError('Failed to fetch dashboard data');
+        setError("Failed to fetch dashboard data");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error fetching dashboard data:', err);
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Error fetching dashboard data:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData('30');
+    fetchData("30");
   }, []);
 
   return {
@@ -72,6 +72,6 @@ export const useDashboardData = () => {
     loading,
     error,
     fetchData,
-    refetch: () => fetchData('30'),
+    refetch: () => fetchData("30"),
   };
 };

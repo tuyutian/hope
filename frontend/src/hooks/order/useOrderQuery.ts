@@ -1,12 +1,18 @@
-import { useQuery, UseQueryOptions, keepPreviousData } from '@tanstack/react-query';
-import { formatTimestampToUSDate } from '@/utils/tools.ts';
-import type {OrderItem, OrderAPIResponse, UseOrderQueryData, OrderListParams, OrderListResponse} from "@/types/order.ts";
-import {OrderList} from "@/api";
+import { useQuery, UseQueryOptions, keepPreviousData } from "@tanstack/react-query";
+import { formatTimestampToUSDate } from "@/utils/tools.ts";
+import type {
+  OrderItem,
+  OrderAPIResponse,
+  UseOrderQueryData,
+  OrderListParams,
+  OrderListResponse,
+} from "@/types/order.ts";
+import { type ApiResponse, orderService } from "@/api";
 
 // 查询键生成函数
 export const orderQueryKeys = {
-  all: ['orders'] as const,
-  lists: () => [...orderQueryKeys.all, 'list'] as const,
+  all: ["orders"] as const,
+  lists: () => [...orderQueryKeys.all, "list"] as const,
   list: (params: OrderListParams) => [...orderQueryKeys.lists(), params] as const,
 };
 
@@ -29,14 +35,14 @@ const transformOrderData = (apiData: OrderAPIResponse[]): OrderItem[] => {
 // 订单查询 hook
 export const useOrderQuery = (
   params: OrderListParams,
-  options?: Omit<UseQueryOptions<OrderListResponse, Error, UseOrderQueryData>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<ApiResponse<OrderListResponse>, Error, UseOrderQueryData>, "queryKey" | "queryFn">
 ) => {
-  return useQuery<OrderListResponse, Error, UseOrderQueryData>({
+  return useQuery<ApiResponse<OrderListResponse>, Error, UseOrderQueryData>({
     queryKey: orderQueryKeys.list(params),
-    queryFn: () => OrderList(params),
+    queryFn: () => orderService.getList(params),
     select: (data): UseOrderQueryData => ({
-      list: transformOrderData(data.data.list),
-      total: data.data.total,
+      list: transformOrderData(data?.data?.list || []),
+      total: data?.data?.total || 0,
     }),
     placeholderData: keepPreviousData, // 替换 keepPreviousData: true
     staleTime: 1000 * 60 * 5, // 5 分钟内数据视为新鲜

@@ -12,12 +12,8 @@ export interface OrderStatisticsTableItem {
 }
 
 export interface DashboardResponse {
-  code: number;
-  message: string;
-  data: {
-    order_statistics: OrderStatistic;
-    order_statistics_table: OrderStatisticsTableItem[];
-  };
+  order_statistics: OrderStatistic;
+  order_statistics_table: OrderStatisticsTableItem[];
 }
 
 export interface DashboardData {
