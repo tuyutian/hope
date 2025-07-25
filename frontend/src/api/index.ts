@@ -1,5 +1,4 @@
 // 导出所有服务
-export * from "@/services/auth";
 export * from "@/services/user";
 export * from "@/services/cart";
 export * from "@/services/order";

@@ -11,7 +11,7 @@ export class BaseApiService {
   ) {
     this.config = {
       timeout: import.meta.env.VITE_REQUEST_TIME_OUT,
-      baseURL: `${import.meta.env.VITE_API_BASE_URL}/insurance`,
+      baseURL: `${import.meta.env.VITE_API_BASE_URL}/insurance/api`,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json;charset=utf-8",
@@ -27,6 +27,7 @@ export class BaseApiService {
     const requestConfig = {
       timeout: this.config.timeout,
       headers: this.config.headers,
+      baseURL: this.config.baseURL,
     };
 
     switch (endpoint.method) {

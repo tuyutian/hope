@@ -18,7 +18,7 @@ type Handlers struct {
 func InitHandlers(services *application.Services, repos *providers.Repositories) *Handlers {
 	orderHandler := NewOrderHandler(services.OrderService)
 	commonHandler := NewCommonHandler(repos.AliyunOssRepo)
-	userHandler := NewUserHandler(services.UserService)
+	userHandler := NewUserHandler(services)
 	settingHandler := NewSettingHandler(services)
 	webhookHandler := NewWebHookHandler(services)
 	billingHandler := NewBillingHandler(services)

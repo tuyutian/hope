@@ -39,12 +39,8 @@ const PageSaveBar = ({ dirty, onSave, onDiscard }: Props) => {
     <>
       {appBridge ? (
         <SaveBar id="global-save-bar" open={dirty}>
-          <button variant="primary" loading={isPending} onClick={() => startTransition(handleSave)}>
-            {t("001723", "Save")}
-          </button>
-          <button loading={isHanding} onClick={() => startDiscard(handleDiscardActive)}>
-            {t("001724", "Discard")}
-          </button>
+          <button onClick={() => startTransition(handleSave)}>{t("001723", "Save")}</button>
+          <button onClick={() => startDiscard(handleDiscardActive)}>{t("001724", "Discard")}</button>
         </SaveBar>
       ) : dirty ? (
         <ContextualSaveBar

@@ -197,6 +197,19 @@ func (u *userRepoImpl) GetActiveUserByShop(ctx context.Context, appId string, sh
 	return &user, nil
 }
 
+// GetActiveUserByShopID GetActiveUserByShop 获取用户正常店铺
+func (u *userRepoImpl) GetActiveUserByShopID(ctx context.Context, appId string, shopID int64) (*users.User, error) {
+	var user users.User
+	has, err := u.db.Context(ctx).Where(" app_id = ? and shop_id = ? and is_del = 0", appId, shopID).Get(&user)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, nil
+	}
+	return &user, nil
+}
+
 func (u *userRepoImpl) GetUsers(ctx context.Context, cursorId int64, limit int) ([]*users.User, error) {
 	var usersList []*users.User
 	err := u.db.Context(ctx).Where("id > ? and is_del = 0", cursorId).Cols("id").Limit(limit).Find(&usersList)

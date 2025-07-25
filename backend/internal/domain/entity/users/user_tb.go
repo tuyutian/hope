@@ -6,6 +6,7 @@ type User struct {
 	AppId           string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
 	Name            string `xorm:"notnull varchar(255) 'name' comment('shopify-name')"`
 	Shop            string `xorm:"notnull varchar(100) 'shop' comment('shopify域名')"`
+	ShopID          int64  `xorm:"default 0 'shop_id' comment('shopify 店铺 id')"`
 	RealDomain      string `xorm:"varchar(100) default '' 'real_domain' comment('网站真实域名')"`
 	PlanDisplayName string `xorm:"varchar(40) default '' 'plan_display_name' comment('shopify套餐版本')"`
 	AccessToken     string `xorm:"varchar(512) default '' 'access_token' comment('shopify-token')"`

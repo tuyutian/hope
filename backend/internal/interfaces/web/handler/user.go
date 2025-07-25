@@ -2,7 +2,9 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
 
+	"backend/internal/application"
 	"backend/internal/application/users"
 	userEntity "backend/internal/domain/entity/users"
 	"backend/pkg/response"
@@ -12,11 +14,12 @@ import (
 
 type UserHandler struct {
 	response.BaseHandler
-	userService *users.UserService
+	userService         *users.UserService
+	subscriptionService *users.SubscriptionService
 }
 
-func NewUserHandler(userService *users.UserService) *UserHandler {
-	return &UserHandler{userService: userService}
+func NewUserHandler(services *application.Services) *UserHandler {
+	return &UserHandler{userService: services.UserService, subscriptionService: services.SubscriptionService}
 }
 
 func (u *UserHandler) SetUserStep(c *gin.Context) {
@@ -75,4 +78,25 @@ func (u *UserHandler) GetSessionData(ctx *gin.Context) {
 	}
 
 	u.Success(ctx, "", resp)
+}
+
+func (u *UserHandler) CreateSubscribe(c *gin.Context) {
+	ctx := c.Request.Context()
+	subscription, confirmUrl, err := u.subscriptionService.CreateUsageSubscription(
+		ctx,
+		"Insurance tax",
+		decimal.NewFromInt(200),
+		"USD",
+		"every paid order with insurance product will be taxed",
+		true,
+	)
+	if err != nil {
+		u.Error(c, code.PaymentRequestFailed, err.Error(), "")
+		return
+	}
+	if subscription == nil {
+		u.Error(c, code.PaymentRequestFailed, "subscription is nil", "")
+		return
+	}
+	u.Success(c, "", confirmUrl)
 }

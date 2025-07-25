@@ -5,7 +5,7 @@ import type { DashboardResponse } from "@/types/home";
 
 export class OrderService extends BaseApiService {
   constructor() {
-    super("api/v1/order/");
+    super("v1/order/");
   }
 
   // 获取仪表盘数据 - 返回原始的 ApiResponse

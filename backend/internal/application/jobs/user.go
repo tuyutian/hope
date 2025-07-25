@@ -52,7 +52,7 @@ func (u *UserService) HandleInitUser(ctx context.Context, t *asynq.Task) error {
 	webhooks, _ := u.shopGraphqlRepo.QueryWebhookSubscriptions(ctx, "")
 
 	topics := shopifyRepo.ShopifyWebhookTopics
-	webhookUrl := u.shopifyRepo.GetWebhookUrl()
+	webhookUrl := u.shopifyRepo.GetWebhookUrl(user.AppId)
 	for _, topic := range topics {
 		hasWebhook := false
 		if webhooks != nil {

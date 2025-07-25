@@ -51,7 +51,7 @@ export interface UpdateCartSettingsParams {
 
 export class CartService extends BaseApiService {
   constructor() {
-    super("api/v1/setting/");
+    super("v1/setting/");
   }
 
   // 获取购物车设置

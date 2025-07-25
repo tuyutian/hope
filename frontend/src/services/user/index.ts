@@ -18,7 +18,7 @@ export interface UpdateGuideParams {
 
 export class UserService extends BaseApiService {
   constructor() {
-    super("api/v1/user/");
+    super("v1/user/");
   }
 
   // 获取用户配置
@@ -39,6 +39,11 @@ export class UserService extends BaseApiService {
   // 开始订阅
   startSubscription(): Promise<ApiResponse> {
     return this.get("subscribe");
+  }
+
+  // 获取会话数据
+  getSessionData(): Promise<ApiResponse> {
+    return this.get("session");
   }
 }
 

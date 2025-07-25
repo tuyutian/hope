@@ -59,9 +59,9 @@ func main() {
 	// 初始化 middlewares
 	// init middleware and routers
 	middlewares := &routers.Middleware{
-		AuthWare:           middleware.NewAuthWare(services.UserService, repos, appConf.Shopify),
 		RequestWare:        &middleware.RequestWare{},
 		CorsWare:           &middleware.CorsWare{},
+		AuthWare:           middleware.NewAuthWare(services.UserService, services.AppService, repos),
 		ShopifyGraphqlWare: middleware.NewShopifyGraphqlWare(repos, services.UserService),
 	}
 	// 初始化路由规则

@@ -2,12 +2,14 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/redis/go-redis/v9"
 	"xorm.io/xorm"
 
 	appEntity "backend/internal/domain/entity/apps"
 	appRepo "backend/internal/domain/repo/apps"
+	"backend/pkg/logger"
 )
 
 var _ appRepo.AppRepository = (*appRepoImpl)(nil)
@@ -22,10 +24,15 @@ func NewAppRepository(engine *xorm.Engine, redisClient redis.UniversalClient) ap
 }
 
 func (r *appRepoImpl) GetByAppId(ctx context.Context, appId string) (*appEntity.AppDefinition, error) {
-	var appConfig appEntity.AppDefinition
-	err := r.db.Context(ctx).Where("app_id = ?", appId).Find(&appConfig)
+	var appConfig = &appEntity.AppDefinition{}
+	has, err := r.db.Context(ctx).Where("app_id = ?", appId).Get(appConfig)
 	if err != nil {
+		fmt.Println(err)
+		logger.Error(ctx, "get app config error: %s", err.Error())
 		return nil, err
 	}
-	return &appConfig, nil
+	if !has {
+		return nil, nil
+	}
+	return appConfig, nil
 }

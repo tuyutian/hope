@@ -65,6 +65,12 @@ func (u *UserService) GetLoginUserFromID(ctx context.Context, id int64) (*users.
 	return user, err
 }
 
+func (u *UserService) GetUserFromShopID(ctx context.Context, shopID int64) (*users.User, error) {
+	appId := ctx.Value(ctxkeys.AppID).(string)
+	user, err := u.userRepo.GetActiveUserByShopID(ctx, appId, shopID)
+	return user, err
+}
+
 func (u *UserService) GetLoginUserFromShop(ctx context.Context, shop string) (*users.User, error) {
 	appId := ctx.Value(ctxkeys.AppID).(string)
 	user, err := u.userRepo.GetActiveUserByShop(ctx, appId, shop)
@@ -109,6 +115,7 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	user.Shop = claims.Dest
 	user.IsDel = 0
 	if shop != nil {
+		user.ShopID = utils.GetIdFromShopifyGraphqlId(shop.ID)
 		user.City = shop.BillingAddress.City
 		user.CountryName = shop.BillingAddress.Country
 		user.CountryCode = shop.BillingAddress.CountryCodeV2

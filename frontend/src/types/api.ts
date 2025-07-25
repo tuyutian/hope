@@ -2,7 +2,7 @@
 export interface ApiResponse<T = any> {
   code: number;
   data?: T;
-  message?: string;
+  message: string;
 }
 
 // API端点配置

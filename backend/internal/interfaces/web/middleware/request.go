@@ -49,6 +49,7 @@ func (ware *RequestWare) Access() gin.HandlerFunc {
 		c.Request = utils.SetValueToHTTPCtx(c.Request, ctxkeys.RequestMethod, method)
 
 		ctx := c.Request.Context()
+		appId := c.Param("appId")
 		// 记录请求日志
 		logger.Info(ctx, "exec begin",
 			"log_id", logId,
@@ -56,19 +57,18 @@ func (ware *RequestWare) Access() gin.HandlerFunc {
 			"request_method", method,
 			"request_agent", ua,
 			"request_ip", ip,
+			"app_id", appId,
 		)
-		appId := c.Param("appId")
-		logger.Warn(ctx, "appid is:"+appId)
 		ctx = context.WithValue(ctx, ctxkeys.AppID, appId)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 
-		code := c.Writer.Status()
+		status := c.Writer.Status()
 		execTime := time.Now().Sub(t).Seconds() // 计算请求耗时
 		ctx2 := c.Request.Context()
 		logger.Info(ctx2, "exec end",
 			"exec_time", fmt.Sprintf("%.4f", execTime),
-			"response_code", code,
+			"response_code", status,
 			"log_id", logId,
 			"request_uri", requestURI,
 			"request_method", method,

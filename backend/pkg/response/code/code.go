@@ -13,4 +13,5 @@ var (
 	ThirdPartInitFailed   = 1010006
 	UploadFailed          = 1010007
 	ServerOperationFailed = 1010008
+	PaymentRequestFailed  = 1010009
 )

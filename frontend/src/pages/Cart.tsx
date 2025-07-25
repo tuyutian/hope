@@ -12,6 +12,7 @@ import PageSaveBar from "@/components/form/PageSaveBar.tsx";
 import "@/styles/cart.css";
 import { ResourceItem } from "@/types/cart.ts";
 import { userService } from "@/services/user";
+import { getMessageState } from "@/stores/messageStore.ts";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -32,6 +33,7 @@ export default function ShippingProtectionSettings() {
   } = useCartSettings();
   const [isPending, startTransition] = useTransition();
   const [isHanding, startSubscription] = useTransition();
+  const toastMessage = getMessageState().toastMessage;
   // 字段变化处理器
   const handleFieldChange =
     (setter: (value: any) => void, field: string, transform?: (value: any) => any) => (value: any) => {
@@ -160,8 +162,10 @@ export default function ShippingProtectionSettings() {
         const res = await userService.startSubscription();
         if (res.code === 0) {
           startSubscription(function () {
-            open(res.data, "_self");
+            open(res.data, "_top");
           });
+        } else {
+          toastMessage(res.message, 5000, true);
         }
       });
       return;

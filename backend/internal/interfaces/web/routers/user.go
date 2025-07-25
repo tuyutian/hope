@@ -14,5 +14,6 @@ func RegisterUserRouter(r *gin.RouterGroup, handler *handler.UserHandler, m *Mid
 	userGroup.GET("conf", handler.GetUserConf)
 	userGroup.GET("session", handler.GetSessionData)
 	userGroup.POST("setting", handler.UpdateUserSetting)
+	userGroup.GET("subscribe", handler.CreateSubscribe)
 
 }

@@ -23,5 +23,6 @@ func RegisterWebhookRouter(r *gin.RouterGroup, handler *handler.WebHookHandler) 
 
 	webhookGroup.POST("/customer-data_request", handler.Customers)
 	webhookGroup.POST("/customer-redact", handler.Customers)*/
-	webhookGroup.POST("/shopify", handler.Customers)
+	webhookGroup.POST("/shopify", handler.Shopify)
+	webhookGroup.GET("/charge_callback/:userID", handler.ChargeCallback)
 }

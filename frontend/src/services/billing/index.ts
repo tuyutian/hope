@@ -4,7 +4,7 @@ import type { FilterParams } from "@/types/billing";
 
 export class BillingService extends BaseApiService {
   constructor() {
-    super("api/v1/billing/");
+    super("v1/billing/");
   }
 
   // 获取账单数据

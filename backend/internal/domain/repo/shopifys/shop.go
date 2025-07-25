@@ -8,12 +8,18 @@ import (
 
 var (
 	ShopifyWebhookTopics = []string{
-		"app/uninstalled",
-		"shop/update",
 		"orders/updated",
 		"orders/delete",
+		"app_subscriptions/update",
+		"app_subscriptions/cancel",
+		"app_subscriptions/approaching_capped_amount",
+		"app/uninstalled",
 		"products/update",
 		"products/delete",
+		"shop/update",
+	}
+	ShopifyComplianceTopics = []string{
+		"customers/data_request", "customers/redact", "shop/redact",
 	}
 )
 

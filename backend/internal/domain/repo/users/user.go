@@ -35,6 +35,7 @@ type UserRepository interface {
 	// GetByShop 通过域名获取店铺
 	GetByShop(ctx context.Context, appId string, shop string) (*users.User, error)
 	GetActiveUserByShop(ctx context.Context, appId string, shop string) (*users.User, error)
+	GetActiveUserByShopID(ctx context.Context, appId string, shopID int64) (*users.User, error)
 	GetActiveUser(ctx context.Context, id int64, columns ...string) (*users.User, error)
 	GetUsers(ctx context.Context, cursorId int64, size int) ([]*users.User, error)
 }

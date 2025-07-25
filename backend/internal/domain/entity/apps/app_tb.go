@@ -8,6 +8,7 @@ type AppDefinition struct {
 	Description string `xorm:"text 'description' comment('App描述')"`
 	IconUrl     string `xorm:"varchar(255) default '' 'icon_url' comment('App图标')"`
 	CallbackUrl string `xorm:"varchar(255) default '' 'callback_url' comment('回调URL')"`
+	AppLink     string `xorm:"notnull varchar(100) 'app_link' comment('APP Link')"`
 	ApiKey      string `xorm:"notnull varchar(100) 'api_key' comment('API Key')"`
 	ApiSecret   string `xorm:"notnull varchar(100) 'api_secret' comment('API Secret')"`
 	Scopes      string `xorm:"notnull text 'scopes' comment('授权域')"`

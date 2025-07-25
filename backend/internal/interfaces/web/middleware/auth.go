@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"backend/internal/application/apps"
 	"backend/internal/application/users"
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	userEntity "backend/internal/domain/entity/users"
 	"backend/internal/domain/repo/jwtauth"
-	"backend/internal/infras/config"
 	"backend/internal/providers"
 	"backend/pkg/crypto/bcrypt"
 	"backend/pkg/ctxkeys"
@@ -28,7 +28,7 @@ type AuthWare struct {
 	jwtRepo      jwtauth.JWTRepository
 	customCrypto bcrypt.BCrypto
 	aesCrypto    bcrypt.BCrypto
-	shopifyConf  config.Shopify
+	appService   *apps.AppService
 }
 
 // CookieClaims cookie 中的登录信息
@@ -38,12 +38,12 @@ type CookieClaims struct {
 }
 
 // NewAuthWare JWT 中间件
-func NewAuthWare(userService *users.UserService, repos *providers.Repositories, shopifyConf config.Shopify) *AuthWare {
+func NewAuthWare(userService *users.UserService, appService *apps.AppService, repos *providers.Repositories) *AuthWare {
 	return &AuthWare{
 		userService: userService,
+		appService:  appService,
 		jwtRepo:     repos.JwtRepo,
 		aesCrypto:   repos.AesCrypto,
-		shopifyConf: shopifyConf,
 	}
 }
 
@@ -251,6 +251,12 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 		return err
 	}
 	url := "https://" + claims.Dest + "/" + accessTokenRelPath
+
+	appID := auth.appService.GetAppID(ctx)
+	appConf, err := auth.appService.GetAppConfig(ctx, appID)
+	if err != nil {
+		return err
+	}
 	data := struct {
 		ClientId           string `json:"client_id"`
 		ClientSecret       string `json:"client_secret"`
@@ -259,8 +265,8 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 		SubjectTokenType   string `json:"subject_token_type"`
 		RequestedTokenType string `json:"requested_token_type"`
 	}{
-		ClientId:           auth.shopifyConf.AppKey,
-		ClientSecret:       auth.shopifyConf.AppSecret,
+		ClientId:           appConf.ApiKey,
+		ClientSecret:       appConf.ApiSecret,
 		GrantType:          "urn:ietf:params:oauth:grant-type:token-exchange",
 		SubjectToken:       token,
 		SubjectTokenType:   "urn:ietf:params:oauth:token-type:id_token",
@@ -268,7 +274,6 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	}
 	client := utils.NewHTTPClient()
 	sessionToken := new(shopifyEntity.Token)
-	logger.Warn(ctx, "url:"+url, data)
 	err = client.PostJSON(ctx, url, &data, &sessionToken)
 	if err != nil {
 		return err

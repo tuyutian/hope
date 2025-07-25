@@ -1,7 +1,7 @@
 import { AuthContext } from "@/stores/context";
 import { DefaultUser, User } from "@/types/user.ts";
 import { ReactNode, useEffect, useState } from "react";
-import { authService } from "@/api";
+import { userService } from "@/api";
 import { useShopifyBridge } from "@/hooks/useShopifyBridge";
 import { getUserState } from "@/stores/userStore.ts";
 
@@ -24,7 +24,7 @@ export function ShopifyAuthContext({ children }: ShopifyAuthContextProps) {
   const initializeUser = async () => {
     try {
       // 这里可以调用 API 获取用户数据
-      const res = await authService.getSessionData();
+      const res = await userService.getSessionData();
       if (res.code !== 0) return;
       const userData = res.data;
       setUser({

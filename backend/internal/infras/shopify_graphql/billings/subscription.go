@@ -43,7 +43,7 @@ func (s *subscriptionGraphqlRepoImpl) CreateSubscription(ctx context.Context, in
                         id
                         plan {
                             pricingDetails {
-                                ... on AppUsagePricingDetails {
+                                ... on AppUsagePricing {
                                     cappedAmount {
                                         amount
                                         currencyCode
@@ -54,7 +54,7 @@ func (s *subscriptionGraphqlRepoImpl) CreateSubscription(ctx context.Context, in
                                         currencyCode
                                     }
                                 }
-                                ... on AppRecurringPricingDetails {
+                                ... on AppRecurringPricing {
                                     price {
                                         amount
                                         currencyCode
@@ -168,4 +168,78 @@ func (s *subscriptionGraphqlRepoImpl) GetCurrentSubscription(ctx context.Context
 	}
 
 	return nil, fmt.Errorf("no active subscription found")
+}
+
+func (s *subscriptionGraphqlRepoImpl) GetRecurrentChargeByID(ctx context.Context, id int64) (*shopifyEntity.AppSubscription, error) {
+	mutation := `
+query GetAppSubscription($id: ID!) {
+    node(id: $id) {
+        ... on AppSubscription {
+            id
+            currentPeriodEnd
+            createdAt
+            name
+            returnUrl
+            status
+            test
+            trialDays
+            lineItems {
+                id
+                plan {
+                    pricingDetails {
+                        ... on AppRecurringPricing {
+                            discount {
+                                durationLimitInIntervals
+                                remainingDurationInIntervals
+                                value {
+                                    ... on AppSubscriptionDiscountAmount {
+                                        amount {
+                                            amount
+                                            currencyCode
+                                        }
+                                    }
+                                    ... on AppSubscriptionDiscountPercentage {
+                                        percentage
+                                    }
+                                }
+                            }
+                            interval
+                            planHandle
+                            price {
+                                amount
+                                currencyCode
+                            }
+                        }
+                        ... on AppUsagePricing {
+                            balanceUsed {
+                                amount
+                                currencyCode
+                            }
+                            cappedAmount {
+                                amount
+                                currencyCode
+                            }
+                            interval
+                            terms
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+`
+	variables := map[string]interface{}{
+		"id": fmt.Sprintf("gid://shopify/AppSubscription/%d", id),
+	}
+	var response struct {
+		Node shopifyEntity.AppSubscription `json:"node"`
+	}
+	// 发送请求
+	err := s.Client.Mutate(ctx, mutation, variables, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.Node, nil
 }
