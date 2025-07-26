@@ -1,0 +1,30 @@
+.settings-scroll-container {
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.preview-sticky-container {
+  height: calc(100vh - 100px);
+  position: sticky;
+  top: 20px;
+}
+
+/* 自定义滚动条样式（可选） */
+.settings-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.settings-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.settings-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}

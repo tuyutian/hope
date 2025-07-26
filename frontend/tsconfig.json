@@ -22,7 +22,8 @@
 			"vitest/globals",
 			"@testing-library/jest-dom",
 			"@vitest/browser/providers/playwright",
-			"@shopify/app-bridge-ui-types"
+			"@shopify/app-bridge-ui-types",
+			"@shopify/app-bridge-types"
 		],
 		/* Linting */
 		"strict": true,
@@ -38,8 +39,9 @@
 			"~/*": [
 				"./src/*"
 			]
-		}
-	},
+		},
+      "allowSyntheticDefaultImports": true
+    },
 	"include": [
 		"./src/**/*.ts",
 		"./src/**/*.tsx",

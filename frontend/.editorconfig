@@ -1,0 +1,81 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# 顶层配置文件
+root = true
+
+# 所有文件的默认设置
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+# TypeScript 和 JavaScript 文件
+[*.{js,jsx,ts,tsx}]
+indent_size = 2
+quote_type = double
+
+# JSON 文件
+[*.json]
+indent_size = 2
+insert_final_newline = false
+
+# HTML 文件
+[*.html]
+indent_size = 2
+
+# CSS, SCSS, LESS 文件
+[*.{css,scss,less}]
+indent_size = 2
+
+# Vue 文件 (如果使用 Vue)
+[*.vue]
+indent_size = 2
+
+# Markdown 文件
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# YAML 文件
+[*.{yml,yaml}]
+indent_size = 2
+
+# 配置文件
+[*.{config,conf}]
+indent_size = 2
+
+# 包管理器锁文件
+[{package-lock.json,pnpm-lock.yaml,yarn.lock}]
+indent_size = 2
+insert_final_newline = false
+
+# 环境变量文件
+[.env*]
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# XML 文件
+[*.xml]
+indent_size = 2
+
+# Dockerfile
+[Dockerfile*]
+indent_size = 4
+
+# Makefile
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+# 忽略第三方库文件
+[{node_modules,dist,build}/**]
+charset = unset
+indent_style = unset
+indent_size = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset

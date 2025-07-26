@@ -1,0 +1,197 @@
+.insurance-ns .insurance-card {
+  display: flex;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+  font-family: inherit; /* 保持与 Shopify 主题一致 */
+}
+
+.insurance-ns .insurance-image img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.insurance-ns .insurance-image {
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.insurance-ns .insurance-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.insurance-ns .insurance-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.insurance-ns .insurance-description {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+.insurance-ns .insurance-toggle {
+  flex-shrink: 0;
+}
+
+/* 默认状态下的滑动开关大小 */
+.insurance-ns .switch {
+  position: relative;
+  display: inline-block;
+  width: 27px;
+  height: 14px;
+}
+
+.insurance-ns .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.insurance-ns .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d1d5db;
+  transition: background-color 0.4s;
+  border-radius: 20px;
+}
+
+.insurance-ns .slider:before {
+  position: absolute;
+  content: "";
+  height: 9px;
+  width: 9px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: transform 0.4s;
+  border-radius: 50%;
+}
+
+.insurance-ns input:checked + .slider {
+  background-color: #4ade80;
+}
+
+.insurance-ns input:checked + .slider:before {
+  transform: translateX(12px);
+}
+
+/* 复选框外框样式 */
+.insurance-ns .checkbox-wrapper {
+  display: inline-block;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+}
+
+/* 复选框样式 */
+.insurance-ns .checkbox-wrapper input[type="checkbox"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+/* 复选框背景色 */
+.insurance-ns .checkbox-wrapper input[type="checkbox"]:checked + .checkbox-label {
+  background-color: #fff;
+  color: #fff;
+}
+
+/* 复选框未选中时的背景色 */
+.insurance-ns .checkbox-wrapper input[type="checkbox"]:not(:checked) + .checkbox-label {
+  background-color: #fff;
+  color: #111827;
+}
+
+/* 复选框内部的勾选标记 */
+.insurance-ns .checkbox-label {
+  position: relative;
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  border: 1px solid #fff;
+  background-color: #fff;
+  border-radius: 3px;
+  margin-right: 5px;
+  margin-bottom: 3px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 勾选框选中的状态 */
+.insurance-ns .checkbox-wrapper input[type="checkbox"]:checked + .checkbox-label::after {
+  content: '✔';
+  position: absolute;
+  top: -2px;
+  left: 3px;
+  font-size: 11px;
+  color: #fff;
+}
+
+.insurance-ns .insurance-foot-url {
+  font-size: 10px;
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+/* 响应式适配 - 移动端时调整滑动开关尺寸 */
+@media (max-width: 768px) {
+  .insurance-ns .insurance-card {
+    padding: 12px;
+  }
+
+  .insurance-ns .insurance-image img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .insurance-ns .insurance-title {
+    font-size: 13px;
+  }
+
+  .insurance-ns .insurance-description {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .insurance-ns input:checked + .slider:before {
+    transform: translateX(12px);
+  }
+}
+
+/* 更小屏幕下的进一步适配 */
+@media (max-width: 480px) {
+  .insurance-ns .insurance-card {
+    padding: 10px;
+  }
+
+  .insurance-ns .insurance-image img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .insurance-ns .insurance-title {
+    font-size: 13px;
+  }
+
+  .insurance-ns .insurance-description {
+    font-size: 12px;
+  }
+}
