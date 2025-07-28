@@ -6,25 +6,25 @@ type CollectionItem struct {
 }
 
 type SettingConfigReq struct {
-	UserID              int64            `json:"user_id,omitempty"`
-	PlanTitle           string           `json:"planTitle" binding:"required"`
-	IconVisibility      int              `json:"iconVisibility,omitempty" binding:"oneof=0 1"`
-	InsuranceVisibility int              `json:"insuranceVisibility,omitempty" binding:"oneof=0 1"`
-	SelectButton        int              `json:"selectButton,omitempty" binding:"oneof=0 1"`
-	AddonTitle          string           `json:"addonTitle,omitempty" binding:"required,max=50"`
-	EnabledDescription  string           `json:"enabledDescription" binding:"required,max=200"`
-	DisabledDescription string           `json:"disabledDescription" binding:"required,max=200"`
-	FooterText          string           `json:"footerText"`
-	FooterUrl           string           `json:"footerUrl"`
-	OptInColor          string           `json:"optInColor" binding:"required,max=50"`
-	OptOutColor         string           `json:"optOutColor" binding:"required,max=50"`
-	PricingType         int              `json:"pricingType,omitempty" binding:"oneof=0 1"`
-	PriceSelect         []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
-	TiersSelect         []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
-	RestValuePrice      string           `json:"restValuePrice" binding:"required"`
-	InCollection        bool             `json:"onlyInCollection"`
-	SelectedCollections []CollectionItem `json:"selectedCollections"`
-	Icons               []IconReq        `json:"icons" binding:"required,dive"`
+	UserID               int64            `json:"user_id,omitempty"`
+	PlanTitle            string           `json:"planTitle" binding:"required"`
+	IconVisibility       int              `json:"iconVisibility,omitempty" binding:"oneof=0 1"`
+	ProtectifyVisibility int              `json:"protectifyVisibility,omitempty" binding:"oneof=0 1"`
+	SelectButton         int              `json:"selectButton,omitempty" binding:"oneof=0 1"`
+	AddonTitle           string           `json:"addonTitle,omitempty" binding:"required,max=50"`
+	EnabledDescription   string           `json:"enabledDescription" binding:"required,max=200"`
+	DisabledDescription  string           `json:"disabledDescription" binding:"required,max=200"`
+	FooterText           string           `json:"footerText"`
+	FooterUrl            string           `json:"footerUrl"`
+	OptInColor           string           `json:"optInColor" binding:"required,max=50"`
+	OptOutColor          string           `json:"optOutColor" binding:"required,max=50"`
+	PricingType          int              `json:"pricingType,omitempty" binding:"oneof=0 1"`
+	PriceSelect          []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
+	TiersSelect          []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
+	RestValuePrice       string           `json:"restValuePrice" binding:"required"`
+	InCollection         bool             `json:"onlyInCollection"`
+	SelectedCollections  []CollectionItem `json:"selectedCollections"`
+	Icons                []IconReq        `json:"icons" binding:"required,dive"`
 }
 
 type CartSettingData struct {
@@ -47,17 +47,17 @@ type CartSettingData struct {
 	// 其他金额
 	OtherMoney float64 `json:"other_money"`
 	// 购物车状态 0 关闭 1 打开
-	ShowCart int `json:"show_cart,omitempty"`
+	ShowCart int `json:"show_cart"`
 	// 购物车图标 0 关闭 1 打开
-	ShowCartIcon int `json:"show_cart_icon,omitempty"`
+	ShowCartIcon int `json:"show_cart_icon"`
 	// 购物车图标 0 滑动 1 勾选
-	SelectButton int `json:"select_button,omitempty"`
+	SelectButton int `json:"select_button"`
 	// 产品type
 	ProductType string `json:"product_type"`
 	// 产品选中集合
 	ProductCollection []CollectionItem `json:"product_collection"`
 	InCollection      bool             `json:"in_collection"`
-	PricingType       int              `json:"pricing_type,omitempty"`
+	PricingType       int              `json:"pricing_type"`
 	PriceSelect       []PriceSelectReq `json:"price_select"`
 	TiersSelect       []TierSelectReq  `json:"tiers_select"`
 	Icons             []IconReq        `json:"icons"`

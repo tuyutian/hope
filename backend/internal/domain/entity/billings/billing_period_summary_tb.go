@@ -17,10 +17,10 @@ type BillingPeriodSummary struct {
 	BillCount             int32           `xorm:"int 'bill_count' comment('账单数量') notnull default 0 " json:"bill_count"`                                            // 账单数量
 	OrderCount            int32           `xorm:"int 'order_count' comment('订单数量') notnull default 0 " json:"order_count"`                                          // 订单数量
 	Currency              string          `xorm:"varchar(10) 'currency' comment('货币类型') notnull " json:"currency"`                                                  // 货币类型
-	InsuranceType         string          `xorm:"varchar(30) 'insurance_type' comment('保险类型') notnull default general " json:"insurance_type"`                      // 保险类型
+	ProtectifyType        string          `xorm:"varchar(30) 'protectify_type' comment('保险类型') notnull default general " json:"protectify_type"`                    // 保险类型
 	SummaryStatus         string          `xorm:"varchar(20) 'summary_status' comment('周期状态：open-开放，closed-已关闭') notnull default open " json:"summary_status"`      // 周期状态：open-开放，closed-已关闭
 	Remarks               string          `xorm:"varchar(255) 'remarks' comment('备注信息') notnull " json:"remarks"`                                                   // 备注信息
-	TotalInsuranceAmount  decimal.Decimal `xorm:"decimal(12, 2) 'total_insurance_amount' comment('总保险金额') notnull default 0.00 " json:"total_insurance_amount"`     // 总保险金额
+	TotalProtectifyAmount decimal.Decimal `xorm:"decimal(12, 2) 'total_protectify_amount' comment('总保险金额') notnull default 0.00 " json:"total_protectify_amount"`   // 总保险金额
 	TotalOrderAmount      decimal.Decimal `xorm:"decimal(12, 2) 'total_order_amount' comment('总订单金额') notnull default 0.00 " json:"total_order_amount"`             // 总订单金额
 	TotalRefundAmount     decimal.Decimal `xorm:"decimal(12, 2) 'total_refund_amount' comment('总退款金额') notnull default 0.00 " json:"total_refund_amount"`           // 总退款金额
 	BusinessMonth         string          `xorm:"varchar(7) 'business_month' comment('业务月份（YYYY-MM）') notnull " json:"business_month"`                              // 业务月份（YYYY-MM）

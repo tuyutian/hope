@@ -34,7 +34,6 @@ func (s *SettingHandler) GetCart(ctx *gin.Context) {
 	uid := claims.UserID
 
 	rsp, err := s.cartSettingService.GetCart(ctx, uid)
-
 	if err != nil {
 		utils.CallWilding(err.Error())
 		return

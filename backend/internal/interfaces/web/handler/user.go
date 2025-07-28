@@ -84,7 +84,7 @@ func (u *UserHandler) CreateSubscribe(c *gin.Context) {
 	ctx := c.Request.Context()
 	subscription, confirmUrl, err := u.subscriptionService.CreateUsageSubscription(
 		ctx,
-		"Insurance tax",
+		"Protectify tax",
 		decimal.NewFromInt(200),
 		"USD",
 		"every paid order with insurance product will be taxed",

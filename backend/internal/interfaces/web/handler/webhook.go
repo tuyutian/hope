@@ -359,30 +359,6 @@ func (w *WebHookHandler) ChargeCallback(ctx *gin.Context) {
 }
 
 func (w *WebHookHandler) Customers(ctx *gin.Context, appID string, body []byte) {
-	hmacHeader := ctx.GetHeader("X-Shopify-Hmac-Sha256")
-	appId := ctx.Param("appId")
-	ctxWithTrace := ctx.Request.Context()
-	appConfig, err := w.appService.GetAppConfig(ctxWithTrace, appId)
-	if err != nil {
-		utils.CallWilding(appId + " config get with error" + err.Error())
-	}
-	if hmacHeader == "" {
-		w.Fail(ctx, http.StatusUnauthorized, message.ErrorUnauthorized.Error(), nil)
-		return
-	}
-
-	// 读取请求体数据
-	data, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		w.Fail(ctx, http.StatusBadGateway, message.ErrorBadRequest.Error(), nil)
-		return
-	} else {
-		// 验证 HMAC
-		if !utils.VerifyWebhook(data, hmacHeader, appConfig.ApiSecret) {
-			w.Fail(ctx, http.StatusBadRequest, message.ErrorBadRequest.Error(), nil)
-			return
-		}
-	}
 	w.Success(ctx, "", nil)
 
 }

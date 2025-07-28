@@ -23,7 +23,7 @@ redis_conf:
   MaxIdle: 150
   Active: 150
   IdleTimeout: 200s
-  Prefix: "insurance_api_"
+  Prefix: "protectify_api_"
 
 # mysql配置
 db_conf:

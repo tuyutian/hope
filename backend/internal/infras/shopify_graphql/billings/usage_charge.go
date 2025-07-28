@@ -3,7 +3,6 @@ package billings
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/shopspring/decimal"
 
@@ -22,7 +21,7 @@ func NewUsageChargeGraphqlRepository() shopifys.UsageChargeGraphqlRepository {
 	return &usageChargeGraphqlRepoImpl{}
 }
 
-func (u *usageChargeGraphqlRepoImpl) CreateUsageCharge(ctx context.Context, lineItemId int64, amount decimal.Decimal, description string) (string, error) {
+func (u *usageChargeGraphqlRepoImpl) CreateUsageCharge(ctx context.Context, lineItemId string, amount decimal.Decimal, description string) (string, error) {
 
 	// 构建 GraphQL 请求
 	mutation := `
@@ -51,7 +50,7 @@ func (u *usageChargeGraphqlRepoImpl) CreateUsageCharge(ctx context.Context, line
 			"amount":       amount.String(),
 			"currencyCode": "USD",
 		},
-		"subscriptionLineItemId": fmt.Sprintf("gid://shopify/SubscriptionLineItem/%d", lineItemId),
+		"subscriptionLineItemId": lineItemId,
 	}
 	var response shopifyEntity.AppUsageRecordCreateResponse
 	// 发送请求
