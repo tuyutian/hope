@@ -22,6 +22,7 @@ const PageSaveBar = ({ dirty, onSave, onDiscard }: Props) => {
   }, [discardActive]);
 
   const handleSave = async () => {
+    console.log(123);
     await onSave();
     if (appBridge) {
       await appBridge.saveBar.hide("global-save-bar");
@@ -39,7 +40,10 @@ const PageSaveBar = ({ dirty, onSave, onDiscard }: Props) => {
     <>
       {appBridge ? (
         <SaveBar id="global-save-bar" open={dirty}>
-          <button onClick={() => startTransition(handleSave)}>{t("001723", "Save")}</button>
+          {/* eslint-disable-next-line react/no-unknown-property */}
+          <button variant="primary" onClick={() => startTransition(handleSave)}>
+            {t("001723", "Save")}
+          </button>
           <button onClick={() => startDiscard(handleDiscardActive)}>{t("001724", "Discard")}</button>
         </SaveBar>
       ) : dirty ? (
