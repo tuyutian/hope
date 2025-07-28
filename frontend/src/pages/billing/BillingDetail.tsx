@@ -14,7 +14,7 @@ type TableData = {
     order_name: string;
     charged_at: string;
     total_price_amount: number;
-    insurance_amount: number;
+    protectify_amount: number;
     commission_amount: number;
   }[];
   total: number;
@@ -101,7 +101,7 @@ export default function BillingDetail() {
   };
 
   const rowMarkup = data.list.map(
-    ({ id, order_name, charged_at, total_price_amount, insurance_amount, commission_amount }, index) => (
+    ({ id, order_name, charged_at, total_price_amount, protectify_amount, commission_amount }, index) => (
       <IndexTable.Row id={String(id)} key={id} position={index}>
         <IndexTable.Cell>
           <Text variant="bodyMd" fontWeight="bold" as="span">
@@ -112,7 +112,7 @@ export default function BillingDetail() {
         <IndexTable.Cell>{total_price_amount}</IndexTable.Cell>
         <IndexTable.Cell>
           <Text as="span" alignment="end" numeric>
-            {insurance_amount}
+            {protectify_amount}
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>
@@ -152,7 +152,7 @@ export default function BillingDetail() {
                   image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                   fullWidth
                 >
-                  <p>Set up your insurance plugin, embed it in your store and start increasing your revenue.</p>
+                  <p>Set up your protectify plugin, embed it in your store and start increasing your revenue.</p>
                 </EmptyState>
               }
             >

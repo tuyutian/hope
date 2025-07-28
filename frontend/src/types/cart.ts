@@ -1,7 +1,7 @@
 export interface WidgetSettings {
   planTitle: string;
   iconVisibility: string;
-  insuranceVisibility: string;
+  protectifyVisibility: string;
   selectButton: string;
   addonTitle: string;
   enabledDescription: string;

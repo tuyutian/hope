@@ -15,8 +15,10 @@ interface IconSelectorProps {
 const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
   return (
     <>
-      <Text as="h2" variant="bodyMd">Widget Icon</Text>
-      <InlineStack wrap={false} gap="200">
+      <Text as="h2" variant="bodyMd">
+        Widget Icon
+      </Text>
+      <InlineStack wrap gap="200">
         {icons.map((icon, index) => {
           const isSelected = icon.selected;
           return (
@@ -31,34 +33,32 @@ const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
                 backgroundColor: isSelected ? "#f0f1f3" : "white",
                 cursor: "pointer",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 if (!isSelected) e.currentTarget.style.borderColor = "#b4bcc4";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 if (!isSelected) e.currentTarget.style.borderColor = "#dfe3e8";
               }}
             >
-              <Thumbnail
-                source={icon.src}
-                alt="Icon"
-                size="medium"
-              />
+              <Thumbnail source={icon.src} alt="Icon" size="medium" />
               {isSelected && (
-                <div style={{
-                  position: "absolute",
-                  top: "6px",
-                  right: "6px",
-                  backgroundColor: "#5c6ac4",
-                  color: "white",
-                  borderRadius: "50%",
-                  width: "18px",
-                  height: "18px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "6px",
+                    right: "6px",
+                    backgroundColor: "#5c6ac4",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
                   ✓
                 </div>
               )}

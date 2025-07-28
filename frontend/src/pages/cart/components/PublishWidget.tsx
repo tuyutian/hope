@@ -3,12 +3,16 @@ import { Box, Card, InlineStack, Link, Text } from "@shopify/polaris";
 import CustomSwitch from "./CustomSwitch";
 
 interface PublishWidgetProps {
-  insuranceVisibility: string;
+  protectifyVisibility: string;
   loading: boolean;
-  onInsuranceVisibilityChange: (value: boolean) => void;
+  onProtectifyVisibilityChange: (value: boolean) => void;
 }
 
-const PublishWidget: React.FC<PublishWidgetProps> = ({ insuranceVisibility, loading, onInsuranceVisibilityChange }) => {
+const PublishWidget: React.FC<PublishWidgetProps> = ({
+  protectifyVisibility,
+  loading,
+  onProtectifyVisibilityChange,
+}) => {
   return (
     <Card padding="300">
       <InlineStack align="space-between" blockAlign="center" gap="200">
@@ -18,8 +22,8 @@ const PublishWidget: React.FC<PublishWidgetProps> = ({ insuranceVisibility, load
         <Box>
           <CustomSwitch
             loading={loading}
-            onChange={onInsuranceVisibilityChange}
-            checked={insuranceVisibility === "1"}
+            onChange={onProtectifyVisibilityChange}
+            checked={protectifyVisibility === "1"}
           />
         </Box>
       </InlineStack>

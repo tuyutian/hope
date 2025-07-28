@@ -26,9 +26,9 @@ const transformOrderData = (apiData: OrderAPIResponse[]): OrderItem[] => {
     paymentStatus: item.financial_status,
     fulfillmentStatus: item.fulfillment_status, // 添加缺失的字段
     total: `${item.total_price_amount} ${item.currency}`,
-    protectionFee: `${item.insurance_amount} ${item.currency}`,
+    protectionFee: `${item.protectify_amount} ${item.currency}`,
     paymentDate: item.payment_date > 0 ? formatTimestampToUSDate(item.payment_date) : "-", // 添加缺失的字段
-    protectionFeeAmount: parseFloat(item.insurance_amount) || 0, // 添加缺失的字段，转换为数字
+    protectionFeeAmount: parseFloat(item.protectify_amount) || 0, // 添加缺失的字段，转换为数字
   }));
 };
 

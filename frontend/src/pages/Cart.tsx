@@ -156,7 +156,7 @@ export default function ShippingProtectionSettings() {
 
   const selectedIcon = productSettings.icons.find(icon => icon.selected);
 
-  function handlePublishWidget() {
+  function handlePublishWidget(value: boolean) {
     if (!hasSubscribe) {
       startSubscription(async function () {
         const res = await userService.startSubscription();
@@ -170,14 +170,10 @@ export default function ShippingProtectionSettings() {
       });
       return;
     }
-    handleFieldChange(
-      (value: boolean) =>
-        setWidgetSettings(prev => ({
-          ...prev,
-          insuranceVisibility: value ? "1" : "0",
-        })),
-      "insuranceVisibility"
-    );
+    setWidgetSettings(prev => ({
+      ...prev,
+      protectifyVisibility: value ? "1" : "0",
+    }));
   }
 
   return (
@@ -205,8 +201,8 @@ export default function ShippingProtectionSettings() {
                 {/* 您的设置组件 */}
                 <PublishWidget
                   loading={isHanding}
-                  insuranceVisibility={widgetSettings.insuranceVisibility}
-                  onInsuranceVisibilityChange={handlePublishWidget}
+                  protectifyVisibility={widgetSettings.protectifyVisibility}
+                  onProtectifyVisibilityChange={handlePublishWidget}
                 />
 
                 <WidgetStyleCard
@@ -265,9 +261,7 @@ export default function ShippingProtectionSettings() {
                 selectButton={widgetSettings.selectButton}
                 optInColor={widgetSettings.optInColor}
                 optOutColor={widgetSettings.optOutColor}
-                switchValue={false}
                 checkboxInput={false}
-                onSwitchChange={() => {}}
                 onCheckboxChange={() => {}}
               />
             </div>

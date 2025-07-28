@@ -11,7 +11,7 @@ export class BaseApiService {
   ) {
     this.config = {
       timeout: import.meta.env.VITE_REQUEST_TIME_OUT,
-      baseURL: `${import.meta.env.VITE_API_BASE_URL}/insurance/api`,
+      baseURL: `${import.meta.env.VITE_API_BASE_URL}/protectify/api`,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json;charset=utf-8",

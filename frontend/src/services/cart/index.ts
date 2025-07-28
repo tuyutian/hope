@@ -28,7 +28,7 @@ export interface CartSettingsData {
 export interface UpdateCartSettingsParams {
   planTitle: string;
   iconVisibility: number;
-  insuranceVisibility: number;
+  protectifyVisibility: number;
   selectButton: number;
   addonTitle: string;
   enabledDescription: string;
