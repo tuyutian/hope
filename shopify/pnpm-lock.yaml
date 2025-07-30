@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@shopify/cli':
-        specifier: ^3.82.0
-        version: 3.82.0
+        specifier: ^3.83.1
+        version: 3.83.1
 
 packages:
 
@@ -222,8 +222,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@shopify/cli@3.82.0':
-    resolution: {integrity: sha512-y+Sq21Zr+vJVQu7z2wNKXXI4NnkACuh/Tt/KrAX7C+NntmKLXl7CZEaVesmJ5shpksG2up1iY1MgMYsDPoNpUA==}
+  '@shopify/cli@3.83.1':
+    resolution: {integrity: sha512-jjyfKXZjYVHwWBAool91Yh6HTUsy8CuQiEYhMFl6gXa/aRiq/YW5jfEqeMA6XEFiqBtdMSQGLZ10pk9FbHVvMQ==}
     engines: {node: '>=20.10.0'}
     os: [darwin, linux, win32]
     hasBin: true
@@ -428,7 +428,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.5':
     optional: true
 
-  '@shopify/cli@3.82.0':
+  '@shopify/cli@3.83.1':
     dependencies:
       '@ast-grep/napi': 0.33.0
       esbuild: 0.25.5
