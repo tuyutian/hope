@@ -2,6 +2,7 @@ package application
 
 import (
 	"backend/internal/application/apps"
+	"backend/internal/application/files"
 	"backend/internal/application/jobs"
 	"backend/internal/application/orders"
 	"backend/internal/application/products"
@@ -21,6 +22,7 @@ type Services struct {
 	AppService          *apps.AppService
 	SubscriptionService *users.SubscriptionService
 	BillingService      *users.BillingService
+	FileService         *files.FileService
 }
 
 func NewServices(repos *providers.Repositories) *Services {
@@ -34,6 +36,7 @@ func NewServices(repos *providers.Repositories) *Services {
 	appService := apps.NewAppService(repos)
 	subscriptionService := users.NewSubscriptionService(repos)
 	billingService := users.NewBillingService(repos)
+	fileService := files.NewFileService(repos)
 	return &Services{
 		SubscriptionService: subscriptionService,
 		UserService:         userService,
@@ -45,5 +48,6 @@ func NewServices(repos *providers.Repositories) *Services {
 		ProductService:      productService,
 		AppService:          appService,
 		BillingService:      billingService,
+		FileService:         fileService,
 	}
 }

@@ -14,4 +14,5 @@ func RegisterSettingRouter(r *gin.RouterGroup, h *handler.SettingHandler, m *Mid
 
 	settingGroup.GET("/cart", h.GetCart)
 	settingGroup.POST("/cart", h.UpdateCart)
+	settingGroup.POST("/upload_logo", h.UploadLogo)
 }
