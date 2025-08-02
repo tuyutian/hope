@@ -34,14 +34,21 @@ func NewSettingHandler(services *application.Services) *SettingHandler {
 }
 
 func (s *SettingHandler) GetCart(ctx *gin.Context) {
-	claims := s.userService.GetClaims(ctx.Request.Context())
+	ctxWithTrace := ctx.Request.Context()
+	claims := s.userService.GetClaims(ctxWithTrace)
 	uid := claims.UserID
 
-	rsp, err := s.cartSettingService.GetCart(ctx, uid)
+	logger.Info(ctxWithTrace, "开始获取购物车设置", "user_id", uid)
+
+	rsp, err := s.cartSettingService.GetCart(ctxWithTrace, uid)
 	if err != nil {
+		logger.Error(ctxWithTrace, "获取购物车设置失败", "user_id", uid, "error", err.Error())
 		utils.CallWilding(err.Error())
+		s.Error(ctx, code.ServerOperationFailed, "获取购物车设置失败", nil)
 		return
 	}
+
+	logger.Info(ctxWithTrace, "获取购物车设置成功", "user_id", uid)
 	s.Success(ctx, "", rsp)
 }
 

@@ -91,10 +91,10 @@ func main() {
 	server := &http.Server{
 		Handler:           router,
 		Addr:              fmt.Sprintf("0.0.0.0:%d", appConf.AppPort),
-		IdleTimeout:       20 * time.Second, // tcp idle time
-		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second, // 增加空闲超时时间
+		ReadHeaderTimeout: 30 * time.Second, // 增加读取头部超时时间
+		ReadTimeout:       60 * time.Second, // 增加读取超时时间
+		WriteTimeout:      60 * time.Second, // 增加写入超时时间
 	}
 
 	// 在独立携程中运行
