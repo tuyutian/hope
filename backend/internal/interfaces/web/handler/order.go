@@ -52,6 +52,35 @@ func (h *OrderHandler) Dashboard(ctx *gin.Context) {
 	h.Success(ctx, "", resp)
 }
 
+// TestDashboard 公开的测试接口，用于验证 API 是否正常工作
+func (h *OrderHandler) TestDashboard(ctx *gin.Context) {
+	reqCtx := ctx.Request.Context()
+	dayParam := strings.TrimSpace(ctx.Query("days"))
+	if dayParam == "" {
+		dayParam = "30"
+	}
+	days, err := strconv.Atoi(dayParam)
+	// 绑定并校验 query 参数
+	if err != nil {
+		// 绑定失败或校验失败
+		logger.Warn(ctx, "test dashboard 参数错误！", "Err:", err.Error())
+		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
+		return
+	}
+
+	// 使用测试用户 ID (2)
+	testUserID := int64(2)
+
+	resp, err := h.orderService.Summary(reqCtx, testUserID, days)
+	if err != nil {
+		logger.Error(ctx, "test dashboard 服务错误", "Err:", err.Error())
+		h.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
+		return
+	}
+
+	h.Success(ctx, "测试接口 - 使用测试用户ID", resp)
+}
+
 func (h *OrderHandler) OrderList(c *gin.Context) {
 	var orderListParams orderEntity.QueryOrderEntity
 	ctx := c.Request.Context()

@@ -3,6 +3,8 @@ package middleware
 import (
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -26,9 +28,9 @@ func (ware *CorsWare) Cors() gin.HandlerFunc {
 		// 检查是否允许该域名
 		if ware.isAllowedOrigin(origin) {
 			ware.setCorsHeaders(c, origin)
-			logger.Info(c.Request.Context(), "CORS 允许", "origin", origin)
+			logger.Info(c.Request.Context(), "CORS 允许", zap.String("origin", origin))
 		} else {
-			logger.Warn(c.Request.Context(), "CORS 拒绝", "origin", origin)
+			logger.Warn(c.Request.Context(), "CORS 拒绝", zap.String("origin", origin))
 		}
 
 		// 处理预检请求

@@ -30,7 +30,6 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 	router.Use(
 		requestWare.Access(),
 		middlewares.CorsWare.Cors(),
-		middlewares.CspWare.Csp(),
 		func() gin.HandlerFunc {
 			return func(c *gin.Context) {
 				defer func() {
@@ -50,7 +49,7 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 	// 路由找不到的情况
 	router.NoRoute(requestWare.NotFoundHandler())
 	api := router.Group("/:appId/api/v1") // 定义路由组
-	api.Use(middlewares.AppMiddleware.AppMust())
+	api.Use(middlewares.AppMiddleware.AppMust(), middlewares.CspWare.Csp())
 	RegisterPluginRouter(api, handlers.SettingHandler)
 	RegisterWebhookRouter(api, handlers.WebhookHandler)
 	RegisterCommonRouter(api, handlers.CommonHandler, middlewares.AuthWare)
