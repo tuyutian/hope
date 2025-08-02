@@ -42,7 +42,7 @@ services:
 
   # Redis 服务
   redis:
-    image: registry.cn-hangzhou.aliyuncs.com/library/redis:7-alpine
+    image: redis:7-alpine
     container_name: hope-redis
     ports:
       - "6379:6379"
@@ -57,7 +57,7 @@ services:
 
   # MySQL 服务
   mysql:
-    image: registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0
+    image: mysql:8.0
     container_name: hope-mysql
     ports:
       - "3306:3306"

@@ -1,5 +1,5 @@
 # 使用阿里云镜像的 Go 基础镜像
-FROM registry.cn-hangzhou.aliyuncs.com/library/golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -29,7 +29,7 @@ RUN go build -ldflags="-w -s -extldflags '-static'" -o api ./cmd/app/main.go && 
     go build -ldflags="-w -s -extldflags '-static'" -o job ./cmd/job/main.go
 
 # 使用阿里云镜像的最小基础镜像
-FROM registry.cn-hangzhou.aliyuncs.com/library/alpine:latest
+FROM alpine:latest
 
 # 设置 Alpine 包管理器国内镜像源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
