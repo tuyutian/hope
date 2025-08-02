@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/application/apps"
 	appEntity "backend/internal/domain/entity/apps"
 	"backend/pkg/ctxkeys"
-	"backend/pkg/response/code"
 )
 
 type AppMiddleware struct {
@@ -26,13 +26,13 @@ func (m *AppMiddleware) AppMust() gin.HandlerFunc {
 		ctx := c.Request.Context()
 		appId := c.Param("appId")
 		if appId == "" {
-			c.AbortWithStatusJSON(code.AppNotfound, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "appId is empty",
 			})
 		}
 		appDefinition, err := m.appService.GetAppConfig(ctx, appId)
 		if err != nil {
-			c.AbortWithStatusJSON(code.AppNotfound, gin.H{
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "app is empty",
 			})
 		}

@@ -92,6 +92,14 @@ compose-logs:
 	@echo "查看服务日志..."
 	@cd .. && docker-compose logs -f
 
+# 使用 up 命令只更新指定服务，其他服务不受影响
+compose-restart-api:
+	@echo "重启API"
+	@cd .. && docker-compose up -d --pull always --no-deps --build backend-api
+compose-restart-job:
+	@echo "重启API"
+	@cd .. && docker-compose up -d --pull always --no-deps --build backend-job
+
 # 运行容器
 run: run_api run_job
 run_api:

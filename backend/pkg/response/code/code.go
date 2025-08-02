@@ -1,5 +1,15 @@
 package code
 
+// HTTP状态码
+const (
+	StatusOK                  = 200
+	StatusBadRequest          = 400
+	StatusUnauthorized        = 401
+	StatusNotFound            = 404
+	StatusInternalServerError = 500
+)
+
+// 业务错误码（用于响应体中的code字段）
 // 1级公式错误码 1～9999
 // 业务模块错误码 100xxxx
 // 其他模块 101xxxx 102xxxx 以此类推

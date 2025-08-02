@@ -52,7 +52,20 @@ func (ctrl *BaseHandler) Fail(ctx *gin.Context, code int, message string, data i
 		code = returnCode.BadRequest
 	}
 
-	ctx.JSON(code, gin.H{
+	// 根据业务错误码映射到合适的HTTP状态码
+	httpStatus := returnCode.StatusBadRequest
+	switch code {
+	case returnCode.NotFound, returnCode.AppNotfound, returnCode.UserNotfound:
+		httpStatus = returnCode.StatusNotFound
+	case returnCode.Unauthorized:
+		httpStatus = returnCode.StatusUnauthorized
+	case returnCode.ServerOperationFailed, returnCode.ThirdPartInitFailed:
+		httpStatus = returnCode.StatusInternalServerError
+	default:
+		httpStatus = returnCode.StatusBadRequest
+	}
+
+	ctx.JSON(httpStatus, gin.H{
 		"code":     code,
 		"message":  message,
 		"data":     data,
