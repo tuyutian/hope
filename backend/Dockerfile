@@ -35,13 +35,10 @@ FROM alpine:latest
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache add ca-certificates tzdata
 
-# 创建非root用户
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
 
 # 创建工作目录和日志目录
 WORKDIR /app
-RUN mkdir -p /app/logs && chown -R appuser:appgroup /app
+RUN mkdir -p /app/logs
 
 # 从builder阶段复制可执行文件
 COPY --from=builder /app/api /app/api
@@ -54,8 +51,7 @@ COPY --from=builder /app/app.example.yaml /app/app.yaml
 COPY ./scripts/entrypoint.sh /app/start.sh
 
 # 设置文件权限
-RUN chmod +x /app/start.sh && chown -R appuser:appgroup /app
-USER appuser
+RUN chmod +x /app/start.sh
 
 # 暴露端口
 EXPOSE 8080 8090
