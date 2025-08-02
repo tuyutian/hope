@@ -75,6 +75,11 @@ build:
 	@echo "docker build start for "${IMAGE_NAME}:${VERSION}
 	@docker build --build-arg  -t ${IMAGE_NAME}:${VERSION} . -f Dockerfile
 
+# 使用 docker-compose 构建和运行
+compose-build:
+	@echo "使用 docker-compose 构建所有服务..."
+	@cd .. && docker-compose build
+
 compose-up:
 	@echo "启动所有服务..."
 	@cd .. && docker-compose up -d
