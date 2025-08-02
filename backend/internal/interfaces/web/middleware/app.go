@@ -61,7 +61,7 @@ func (m *AppMiddleware) AppMust() gin.HandlerFunc {
 		)
 		// 更新现有的 JwtRepository 而不是重新创建
 		m.jwtRepo.UpdateSecret(appDefinition.ApiSecret, jwtManager)
-
+		logger.Warn(ctx, "appDefinition dump", zap.Any("appDefinition", appDefinition))
 		// 添加日志验证 JwtRepo 已更新
 		logger.Info(ctx, "JwtRepo updated for app",
 			"appId", appId,
