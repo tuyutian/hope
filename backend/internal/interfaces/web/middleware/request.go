@@ -59,13 +59,10 @@ func (ware *RequestWare) Access() gin.HandlerFunc {
 			"request_ip", ip,
 			"app_id", appId,
 		)
-
 		c.Next()
-
 		status := c.Writer.Status()
-		execTime := time.Now().Sub(t).Seconds() // 计算请求耗时
-		ctx2 := c.Request.Context()
-		logger.Info(ctx2, "exec end",
+		execTime := time.Since(t).Seconds() // 计算请求耗时
+		logger.Info(ctx, "exec end",
 			"exec_time", fmt.Sprintf("%.4f", execTime),
 			"response_code", status,
 			"log_id", logId,

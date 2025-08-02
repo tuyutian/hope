@@ -3,10 +3,6 @@ package middleware
 import (
 	"net/http"
 
-	"go.uber.org/zap"
-
-	"backend/pkg/logger"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,23 +13,9 @@ type CorsWare struct {
 
 func (ware *CorsWare) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
+		ware.setCorsHeaders(c)
 
-		// 添加调试日志
-		logger.Info(c.Request.Context(), "CORS 请求",
-			"origin", origin,
-			"method", c.Request.Method,
-			"path", c.Request.URL.Path)
-
-		// 检查是否允许该域名
-		if ware.isAllowedOrigin(origin) {
-			ware.setCorsHeaders(c, origin)
-			logger.Info(c.Request.Context(), "CORS 允许", zap.String("origin", origin))
-		} else {
-			logger.Warn(c.Request.Context(), "CORS 拒绝", zap.String("origin", origin))
-		}
-
-		// 处理预检请求
+		// 处理OPTIONS预检请求Add commentMore actions
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
@@ -41,39 +23,6 @@ func (ware *CorsWare) Cors() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-// isAllowedOrigin 检查是否允许该域名
-func (ware *CorsWare) isAllowedOrigin(origin string) bool {
-	if origin == "" {
-		return false
-	}
-
-	// 如果配置了允许的域名列表，使用配置的列表
-	if len(ware.AllowedOrigins) > 0 {
-		for _, allowed := range ware.AllowedOrigins {
-			if origin == allowed {
-				return true
-			}
-		}
-		return false
-	}
-
-	// 默认允许的域名列表
-	allowedOrigins := []string{
-		"https://s.protectifyapp.com",
-		"https://protectifyapp.com",
-		"http://localhost:9527",
-		"http://127.0.0.1:9527",
-	}
-
-	for _, allowed := range allowedOrigins {
-		if origin == allowed {
-			return true
-		}
-	}
-
-	return false
 }
 
 var (
@@ -84,8 +33,8 @@ var (
 )
 
 // setCorsHeaders 设置CORS相关的响应头
-func (ware *CorsWare) setCorsHeaders(c *gin.Context, origin string) {
-	c.Header("Access-Control-Allow-Origin", origin)
+func (ware *CorsWare) setCorsHeaders(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Methods", allowMethod)
 	c.Header("Access-Control-Allow-Headers", allowHeaders)
 	c.Header("Access-Control-Expose-Headers", exposeHeaders)
