@@ -14,7 +14,7 @@
     "info": "shopify app info"
   },
   "dependencies": {
-    "@shopify/cli": "^3.82.0"
+    "@shopify/cli": "^3.83.1"
   },
   "trustedDependencies": [
     "@shopify/plugin-cloudflare"

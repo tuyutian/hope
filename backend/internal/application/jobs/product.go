@@ -144,7 +144,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			Vendor:          product.Vendor,
 			ProductOptions: []shopifyEntity.ProductOptionInput{
 				{
-					Name:     "Title",
+					Name:     "Protectify",
 					Position: 0,
 					Values: []shopifyEntity.OptionValueCreateInput{
 						{Name: "In-0"},

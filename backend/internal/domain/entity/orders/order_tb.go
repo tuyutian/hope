@@ -11,7 +11,7 @@ type UserOrder struct {
 	FinancialStatus   string  `xorm:"'financial_status' varchar(50) notnull default '' comment('支付状态')" json:"financial_status"`
 	TotalPriceAmount  float64 `xorm:"'total_price_amount' decimal(12,2) notnull default 0.00 comment('订单总金额')" json:"total_price_amount"`
 	RefundPriceAmount float64 `xorm:"'refund_price_amount' decimal(12,2) notnull default 0.00 comment('退款总金额')" json:"refund_price_amount"`
-	InsuranceAmount   float64 `xorm:"'insurance_amount' decimal(12,2) notnull default 0.00 comment('保险金额')" json:"insurance_amount"`
+	ProtectifyAmount  float64 `xorm:"'protectify_amount' decimal(12,2) notnull default 0.00 comment('保险金额')" json:"protectify_amount"`
 	Currency          string  `xorm:"'currency' varchar(10) notnull default '' comment('货币类型')" json:"currency"`
 	SkuNum            int     `xorm:"'sku_num' int(11) notnull default 0 comment('sku购买数量')" json:"sku_num"`
 	IsDel             int     `xorm:"'is_del' tinyint(1) notnull default 0 comment('删除状态 0 正常 1 已删除')" json:"is_del"`

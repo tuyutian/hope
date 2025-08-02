@@ -3,7 +3,9 @@ import { useShopifyBridge } from "@/hooks/useShopifyBridge";
 import { useEffect, useState } from "react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import i18n from "@/lib/i18n.ts";
-import { Frame, TabProps, Tabs } from "@shopify/polaris";
+import { Box, Button, Frame, InlineStack, TabProps, Tabs } from "@shopify/polaris";
+import { useTheme } from "@/stores/context.ts";
+import GlobalToast from "@/components/global/GlobalToast";
 
 const links = [
   {
@@ -28,6 +30,8 @@ const MainLayout = () => {
   const appBridge = useShopifyBridge();
   const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
+  const { setTheme, theme } = useTheme();
+
   const [selected, setSelected] = useState(links.findIndex(link => link.url === pathname) || 0);
   const tabs: TabProps[] = links.map(link => {
     return {
@@ -85,15 +89,29 @@ const MainLayout = () => {
             })}
           </NavMenu>
         ) : (
-          <div>
-            <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange} disclosureText="More views" />
-          </div>
+          <Box padding="400">
+            <InlineStack align="space-between">
+              <Tabs tabs={tabs} selected={selected} onSelect={handleTabChange} disclosureText="More views" />
+              <div>
+                <Button
+                  onClick={() => {
+                    setTheme(theme === "light" ? "dark" : "light");
+                  }}
+                >
+                  Change
+                </Button>
+              </div>
+            </InlineStack>
+          </Box>
         )}
       </s-heading>
 
       <div className="pb-10">
         <Outlet />
       </div>
+      
+      {/* 全局 Toast 组件 */}
+      <GlobalToast />
     </Frame>
   );
 };

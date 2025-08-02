@@ -21,4 +21,7 @@ type ProductGraphqlRepository interface {
 		ID    int64  `json:"id"`
 		Title string `json:"title"`
 	}, error)
+	FileCreate(ctx context.Context, input shopifyEntity.FileCreateInput) (*[]shopifyEntity.FileCreated, error)
+	StagedUploadsCreate(ctx context.Context, input shopifyEntity.StagedUploadInput) (*[]shopifyEntity.StagedTarget, error)
+	GetImageMedia(ctx context.Context, id string) (*shopifyEntity.ImageMedia, error)
 }

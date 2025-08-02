@@ -12,8 +12,9 @@ type UserSubscription struct {
 	ChargeID               int64            `xorm:"not null default 0 'charge_id'" json:"charge_id"`
 	SubscriptionName       string           `xorm:"varchar(100) not null default '' 'subscription_name'" json:"subscription_name"`
 	SubscriptionStatus     string           `xorm:"varchar(20) not null default '' 'subscription_status'" json:"subscription_status"`
-	SubscriptionLineItemID int64            `xorm:"not null default 0 'subscription_line_item_id'" json:"subscription_line_item_id"`
+	SubscriptionLineItemID string           `xorm:"varchar(100) not null default '' 'subscription_line_item_id'"`
 	PricingType            string           `xorm:"varchar(20) not null default '' 'pricing_type'" json:"pricing_type"`
+	Price                  *decimal.Decimal `xorm:"decimal(12,2) not null default 0.00 'price'" json:"price"`
 	CappedAmount           *decimal.Decimal `xorm:"decimal(12,2) not null default 0.00 'capped_amount'" json:"capped_amount"`
 	Currency               string           `xorm:"varchar(10) not null default '' 'currency'" json:"currency"`
 	BalanceUsed            *decimal.Decimal `xorm:"decimal(12,2) not null default 0.00 'balance_used'" json:"balance_used"`

@@ -73,7 +73,10 @@ func CallWilding(error string) {
 	requestBody := fmt.Sprintf(`{"msgtype": "text","text": {"content":"%s"}}`, error)
 	var jsonStr = []byte(requestBody)
 	req, err := http.NewRequest("POST", urlP, bytes.NewBuffer(jsonStr))
-
+	if req == nil {
+		fmt.Println(err)
+		return
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

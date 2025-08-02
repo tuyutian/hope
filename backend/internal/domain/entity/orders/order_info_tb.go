@@ -12,7 +12,7 @@ type UserOrderInfo struct {
 	UnitPriceAmount float64 `xorm:"'unit_price_amount' decimal(12,2) notnull default 0.00 comment('单价金额')" json:"unit_price_amount"`
 	Currency        string  `xorm:"'currency' varchar(10) notnull default '' comment('货币类型')" json:"currency"`
 	RefundNum       int     `xorm:"'refund_num' int(11) notnull default 0 comment('退款数量')" json:"refund_num"`
-	IsInsurance     int     `xorm:"'is_insurance' tinyint(1) notnull default 0 comment('是否是保险产品')" json:"is_insurance"`
+	IsProtectify    int     `xorm:"'is_protectify' tinyint(1) notnull default 0 comment('是否是保险产品')" json:"is_protectify"`
 	CreateTime      int64   `xorm:"created 'create_time' bigint(20) notnull comment('创建时间')" json:"create_time"`
 	UpdateTime      int64   `xorm:"updated 'update_time' bigint(20) notnull comment('修改时间')" json:"update_time"`
 }

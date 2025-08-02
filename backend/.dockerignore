@@ -1,0 +1,31 @@
+# Git相关
+.git
+.gitignore
+
+# 文档
+*.md
+README.md
+
+# 日志
+logs/
+# 临时文件
+tmp/
+.DS_Store
+.idea/
+
+# 测试文件
+*_test.go
+test/
+
+# 开发工具
+Makefile
+
+# IDE配置
+.vscode/
+*.iml
+
+# 环境文件
+.env*
+
+# 脚本
+scripts/

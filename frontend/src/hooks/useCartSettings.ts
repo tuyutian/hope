@@ -16,7 +16,7 @@ export function useCartSettings(): CartSettingsHook {
   const [widgetSettings, setWidgetSettings] = useState<WidgetSettings>({
     planTitle: "Plan Title",
     iconVisibility: "0",
-    insuranceVisibility: "0",
+    protectifyVisibility: "0",
     selectButton: "0",
     addonTitle: "Shipping Protection",
     enabledDescription:
@@ -170,21 +170,21 @@ export function useCartSettings(): CartSettingsHook {
       footerUrl: data.foot_url || prev.footerUrl,
       optInColor: data.in_color || prev.optInColor,
       optOutColor: data.out_color || prev.optOutColor,
-      insuranceVisibility: typeof data.show_cart === "number" ? String(data.show_cart) : prev.insuranceVisibility,
-      iconVisibility: typeof data.show_cart_icon === "number" ? String(data.show_cart_icon) : prev.iconVisibility,
-      selectButton: typeof data.select_button === "number" ? String(data.select_button) : prev.selectButton,
+      protectifyVisibility: String(data.show_cart),
+      iconVisibility: String(data.show_cart_icon),
+      selectButton: String(data.select_button),
     }));
 
     // 更新pricing设置
     setPricingSettings(prev => ({
       ...prev,
-      pricingType: typeof data.pricing_type === "number" ? String(data.pricing_type) : prev.pricingType,
-      pricingRule: typeof data.price_rule === "number" ? String(data.price_rule) : prev.pricingRule,
+      pricingType: String(data.pricing_type),
+      pricingRule: String(data.price_rule),
       priceSelect: Array.isArray(data.price_select) ? data.price_select : prev.priceSelect,
       tiersSelect: Array.isArray(data.tiers_select) ? data.tiers_select : prev.tiersSelect,
-      restValuePrice: typeof data.other_money === "number" ? String(data.other_money) : prev.restValuePrice,
-      allPriceValue: typeof data.all_price === "number" ? String(data.all_price) : prev.allPriceValue,
-      allTiersValue: typeof data.all_tiers === "number" ? String(data.all_tiers) : prev.allTiersValue,
+      restValuePrice: String(data.other_money),
+      allPriceValue: String(data.all_price),
+      allTiersValue: String(data.all_tiers),
     }));
 
     // 更新产品设置
@@ -199,7 +199,7 @@ export function useCartSettings(): CartSettingsHook {
   const validateFields = useCallback(() => {
     const newErrors: Record<string, string> = {};
 
-    if (widgetSettings.insuranceVisibility === "1") {
+    if (widgetSettings.protectifyVisibility === "1") {
       if (!widgetSettings.addonTitle.trim()) {
         newErrors.addonTitle = "Add-on title is required";
       }
@@ -246,7 +246,7 @@ export function useCartSettings(): CartSettingsHook {
       const payload = {
         planTitle: widgetSettings.planTitle,
         iconVisibility: Number(widgetSettings.iconVisibility),
-        insuranceVisibility: Number(widgetSettings.insuranceVisibility),
+        protectifyVisibility: Number(widgetSettings.protectifyVisibility),
         selectButton: Number(widgetSettings.selectButton),
         addonTitle: widgetSettings.addonTitle,
         enabledDescription: widgetSettings.enabledDescription,

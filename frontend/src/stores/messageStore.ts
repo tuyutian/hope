@@ -1,22 +1,23 @@
-import {create} from "zustand";
-import {Message} from "~/types/notify";
+import { create } from "zustand";
+import { Message } from "~/types/notify";
 
 type State = {
   message: Message[];
   messageNum: number;
-
-}
+};
 type Action = {
   toastMessage: (payload: string | Message, duration?: number, error?: boolean) => void;
   toastComplete: (payload: number) => void;
-}
+};
 
-export const useMessageStore = create<State&Action>((set) => {
+export const useMessageStore = create<State & Action>(set => {
   return {
     message: [],
     messageNum: 0,
     toastMessage: (payload: string | Message, duration = 2000, error = false) => {
+      console.log(payload);
       if (typeof payload === "string") {
+        console.log(shopify);
         if (typeof shopify === "object") {
           shopify.toast.show(payload, {
             duration: duration,
@@ -25,13 +26,16 @@ export const useMessageStore = create<State&Action>((set) => {
           return;
         }
         set(state => ({
-          message: [...state.message, {
-            content: payload,
-            error,
-            duration,
-            id: Math.floor(Math.random() * 100 + 1),
-          }],
-          messageNum: state.message.length + 1
+          message: [
+            ...state.message,
+            {
+              content: payload,
+              error,
+              duration,
+              id: Math.floor(Math.random() * 100 + 1),
+            },
+          ],
+          messageNum: state.message.length + 1,
         }));
         return;
       }
@@ -43,13 +47,16 @@ export const useMessageStore = create<State&Action>((set) => {
         return;
       }
       set(state => ({
-        message: [...state.message, {
-          content: payload.content,
-          error: payload.error,
-          duration: payload.duration ? payload.duration : 2000,
-          id: Math.floor(Math.random() * 100 + 1),
-        }],
-        messageNum: state.message.length + 1
+        message: [
+          ...state.message,
+          {
+            content: payload.content,
+            error: payload.error,
+            duration: payload.duration ? payload.duration : 2000,
+            id: Math.floor(Math.random() * 100 + 1),
+          },
+        ],
+        messageNum: state.message.length + 1,
       }));
     },
     toastComplete: (payload: number) => {
@@ -59,16 +66,16 @@ export const useMessageStore = create<State&Action>((set) => {
         newMessage.splice(index, 1);
         return {
           message: newMessage,
-          messageNum: newMessage.length
+          messageNum: newMessage.length,
         };
       });
     },
   };
-})
-export default useMessageStore
+});
+export default useMessageStore;
 
 // 导出 store 实例
-export const messageStore = useMessageStore
+export const messageStore = useMessageStore;
 
 // 导出获取状态的函数（非 hook）
-export const getMessageState = () => useMessageStore.getState()
+export const getMessageState = () => useMessageStore.getState();

@@ -1,11 +1,10 @@
-import {Message} from "@/types/notify.ts";
-import {useMessageStore} from "@/stores/messageStore.ts";
-import {Toast} from "@shopify/polaris";
+import { Message } from "@/types/notify.ts";
+import { useMessageStore } from "@/stores/messageStore.ts";
+import { Toast } from "@shopify/polaris";
 
 export const GlobalToast = function () {
   const message = useMessageStore(state => state.message);
   const toastComplete = useMessageStore(state => state.toastComplete);
-
   const completeToast = (toast: Message) => {
     if (toast.id) {
       toastComplete(toast.id);
@@ -32,6 +31,6 @@ export const GlobalToast = function () {
       )}
     </>
   );
-}
+};
 
 export default GlobalToast;

@@ -11,9 +11,11 @@ export interface ApiEndpoint {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 }
 
-// API服务配置
+
+// API服务配置（支持所有 axios 配置选项）
 export interface ApiServiceConfig {
   baseURL?: string;
   timeout?: number;
   headers?: Record<string, string>;
+  [key: string]: any; // 支持所有 axios 配置选项
 }

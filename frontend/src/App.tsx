@@ -1,14 +1,15 @@
-import React, {useEffect} from "react";
-import {isShopifyEmbedded, useShopifyBridge} from "@/hooks/useShopifyBridge";
-import {isProductionEnv} from "@/utils/app.ts";
-import {getUserState} from "@/stores/userStore.ts";
-import {redirectRemote} from "@/utils/shopify.ts";
+import React, { useEffect } from "react";
+import { isShopifyEmbedded, useShopifyBridge } from "@/hooks/useShopifyBridge";
+import { isProductionEnv } from "@/utils/app.ts";
+import { getUserState } from "@/stores/userStore.ts";
+import { redirectRemote } from "@/utils/shopify.ts";
 import Router from "./routes/Router.tsx";
 import "@shopify/polaris/build/esm/styles.css";
-import {PolarisProvider} from "@/components/providers/PolarisProvider.tsx";
-import {ShopifyAuthContext} from "@/layouts/ShopifyAuthContext.tsx";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-const queryClient = new QueryClient()
+import { PolarisProvider } from "@/components/providers/PolarisProvider.tsx";
+import { ShopifyAuthProvider } from "@/components/providers/ShopifyAuthProvider.tsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/providers/ThemeProvider.tsx";
+const queryClient = new QueryClient();
 
 function App() {
   const shopify = useShopifyBridge();
@@ -30,10 +31,7 @@ function App() {
 
     // 开发环境设置
     if (!isShopifyEmbedded() && !isProductionEnv()) {
-      console.log(
-        "%c开发环境,使用用户token",
-        "background-color:#00a0ac; color: white; padding: 4px 8px;"
-      );
+      console.log("%c开发环境,使用用户token", "background-color:#00a0ac; color: white; padding: 4px 8px;");
       updateAuthToken(import.meta.env.VITE_TEST_TOKEN as string);
     }
 
@@ -45,12 +43,7 @@ function App() {
     }
 
     // 重定向逻辑
-    if (
-      !isShopifyEmbedded() &&
-      isProductionEnv() &&
-      !useAdminToken &&
-      !useAuthToken
-    ) {
+    if (!isShopifyEmbedded() && isProductionEnv() && !useAdminToken && !useAuthToken) {
       let redirectUrl = "https://api.insurance.com/insurance";
       if (shop) {
         redirectUrl += `?shop=${shop}`;
@@ -62,11 +55,13 @@ function App() {
   return (
     // Provide the client to your App
     <QueryClientProvider client={queryClient}>
-    <PolarisProvider>
-      <ShopifyAuthContext>
-        <Router />
-      </ShopifyAuthContext>
-    </PolarisProvider>
+      <PolarisProvider>
+        <ShopifyAuthProvider>
+          <ThemeProvider defaultTheme="light" storageKey="protectify-theme-key">
+            <Router />
+          </ThemeProvider>
+        </ShopifyAuthProvider>
+      </PolarisProvider>
     </QueryClientProvider>
   );
 }

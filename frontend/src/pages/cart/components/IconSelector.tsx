@@ -1,5 +1,5 @@
-import React from "react";
-import { InlineStack, Text, Thumbnail } from "@shopify/polaris";
+import React, { useCallback, useTransition } from "react";
+import { DropZone, Icon, InlineStack, Spinner, Text, Thumbnail } from "@shopify/polaris";
 
 interface Icon {
   id: number;
@@ -10,13 +10,23 @@ interface Icon {
 interface IconSelectorProps {
   icons: Icon[];
   onIconClick: (id: number) => void;
+  onIconUpload: (file: File) => void;
 }
 
-const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
+const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick, onIconUpload }) => {
+  const [uploading, startTransition] = useTransition();
+  const handleDropZoneDrop = useCallback((_dropFiles: File[], acceptedFiles: File[], _rejectedFiles: File[]) => {
+    startTransition(() => {
+      onIconUpload(acceptedFiles[0]);
+    });
+  }, []);
+
   return (
     <>
-      <Text as="h2" variant="bodyMd">Widget Icon</Text>
-      <InlineStack wrap={false} gap="200">
+      <Text as="h2" variant="bodyMd">
+        Widget Icon
+      </Text>
+      <InlineStack wrap gap="200" blockAlign="center">
         {icons.map((icon, index) => {
           const isSelected = icon.selected;
           return (
@@ -31,40 +41,49 @@ const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
                 backgroundColor: isSelected ? "#f0f1f3" : "white",
                 cursor: "pointer",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={e => {
                 if (!isSelected) e.currentTarget.style.borderColor = "#b4bcc4";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={e => {
                 if (!isSelected) e.currentTarget.style.borderColor = "#dfe3e8";
               }}
             >
-              <Thumbnail
-                source={icon.src}
-                alt="Icon"
-                size="medium"
-              />
+              <Thumbnail source={icon.src} alt="Icon" size="medium" />
               {isSelected && (
-                <div style={{
-                  position: "absolute",
-                  top: "6px",
-                  right: "6px",
-                  backgroundColor: "#5c6ac4",
-                  color: "white",
-                  borderRadius: "50%",
-                  width: "18px",
-                  height: "18px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "6px",
+                    right: "6px",
+                    backgroundColor: "#5c6ac4",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "18px",
+                    height: "18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
                   ✓
                 </div>
               )}
             </div>
           );
         })}
+        <div style={{ width: 75, height: 75 }}>
+          <DropZone type="image" allowMultiple={false} onDrop={handleDropZoneDrop}>
+            {uploading ? (
+              <div className="flex items-center justify-center cursor-default">
+                <Spinner accessibilityLabel="Small spinner example" size="small" />
+              </div>
+            ) : (
+              <DropZone.FileUpload />
+            )}
+          </DropZone>
+        </div>
       </InlineStack>
     </>
   );

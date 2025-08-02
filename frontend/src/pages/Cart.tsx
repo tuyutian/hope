@@ -13,6 +13,7 @@ import "@/styles/cart.css";
 import { ResourceItem } from "@/types/cart.ts";
 import { userService } from "@/services/user";
 import { getMessageState } from "@/stores/messageStore.ts";
+import { cartService } from "@/services/cart";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -53,6 +54,47 @@ export default function ShippingProtectionSettings() {
         selected: icon.id === id,
       })),
     }));
+  };
+
+  const handleIconUpload = (file: File) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!validImageTypes.includes(file.type)) {
+      toastMessage("Please upload an image file (JPG, PNG or GIF)", 5000, true);
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toastMessage("Image size should be less than 10MB", 5000, true);
+      return;
+    }
+
+    void cartService.uploadLogo(file).then(res => {
+      if (res.code === 0&&res.data) {
+        // 找到最大的 id
+        const maxId = Math.max(...productSettings.icons.map(icon => icon.id), 0);
+        const newUrl = res.data;
+        if (res.data.length <= 0) {
+          toastMessage("Upload failed", 5000, true);
+          return;
+        }
+        setProductSettings(prev => ({
+          ...prev,
+          icons: [
+            ...prev.icons.map(icon => ({
+              ...icon,
+              selected: false, // 将所有图标的 selected 设置为 false
+            })),
+            {
+              id: maxId + 1,
+              src: newUrl, // 假设上传接口返回的图片 URL 在 res.data 中
+              selected: true, // 新图标的 selected 设置为 true
+            },
+          ],
+        }));
+      }
+    });
   };
 
   // 定价表格处理器
@@ -156,7 +198,7 @@ export default function ShippingProtectionSettings() {
 
   const selectedIcon = productSettings.icons.find(icon => icon.selected);
 
-  function handlePublishWidget() {
+  function handlePublishWidget(value: boolean) {
     if (!hasSubscribe) {
       startSubscription(async function () {
         const res = await userService.startSubscription();
@@ -170,14 +212,10 @@ export default function ShippingProtectionSettings() {
       });
       return;
     }
-    handleFieldChange(
-      (value: boolean) =>
-        setWidgetSettings(prev => ({
-          ...prev,
-          insuranceVisibility: value ? "1" : "0",
-        })),
-      "insuranceVisibility"
-    );
+    setWidgetSettings(prev => ({
+      ...prev,
+      protectifyVisibility: value ? "1" : "0",
+    }));
   }
 
   return (
@@ -185,6 +223,7 @@ export default function ShippingProtectionSettings() {
       title="Create Protection Plan (Cart Page)"
       primaryAction={{
         content: "Save Changes",
+        disabled: isPending||!dirty,
         onAction: () => startTransition(saveSettings),
         loading: isPending,
       }}
@@ -205,8 +244,8 @@ export default function ShippingProtectionSettings() {
                 {/* 您的设置组件 */}
                 <PublishWidget
                   loading={isHanding}
-                  insuranceVisibility={widgetSettings.insuranceVisibility}
-                  onInsuranceVisibilityChange={handlePublishWidget}
+                  protectifyVisibility={widgetSettings.protectifyVisibility}
+                  onProtectifyVisibilityChange={handlePublishWidget}
                 />
 
                 <WidgetStyleCard
@@ -217,6 +256,7 @@ export default function ShippingProtectionSettings() {
                     "widgetSettings"
                   )}
                   onIconClick={handleIconClick}
+                  onIconUpload={handleIconUpload}
                 />
 
                 <ContentCard
@@ -265,9 +305,7 @@ export default function ShippingProtectionSettings() {
                 selectButton={widgetSettings.selectButton}
                 optInColor={widgetSettings.optInColor}
                 optOutColor={widgetSettings.optOutColor}
-                switchValue={false}
                 checkboxInput={false}
-                onSwitchChange={() => {}}
                 onCheckboxChange={() => {}}
               />
             </div>

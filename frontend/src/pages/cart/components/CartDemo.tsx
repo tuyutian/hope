@@ -17,11 +17,9 @@ interface CartDemoProps {
   footerText: string;
   footerUrl: string;
   selectButton: string;
-  switchValue: boolean;
   checkboxInput: boolean;
   optInColor: string;
   optOutColor: string;
-  onSwitchChange: (value: boolean) => void;
   onCheckboxChange: () => void;
 }
 
@@ -34,37 +32,34 @@ const CartDemo: React.FC<CartDemoProps> = ({
   footerText,
   footerUrl,
   selectButton,
-  switchValue,
   checkboxInput,
   optInColor,
   optOutColor,
-  onSwitchChange,
   onCheckboxChange,
 }) => {
+  const [checked, setChecked] = React.useState(false);
   const renderSelectionControl = () => {
     if (selectButton === "0") {
       return (
         <CustomSwitch
-          onChange={onSwitchChange}
-          checked={switchValue}
+          onChange={setChecked}
+          checked={checked}
           onColor={optInColor}
           offColor={optOutColor}
-          uncheckedIcon={<div className="switchBtn" />}
           checkedIcon={false}
         />
       );
     } else {
       return (
         <label className="custom-checkbox">
-          <input
-            type="checkbox"
-            checked={checkboxInput}
-            onChange={onCheckboxChange}
+          <input type="checkbox" checked={checkboxInput} onChange={onCheckboxChange} />
+          <span
+            className="checkmark"
+            style={{
+              backgroundColor: checkboxInput ? optInColor : optOutColor,
+              borderColor: checkboxInput ? optInColor : optOutColor,
+            }}
           />
-          <span className="checkmark" style={{
-            backgroundColor: checkboxInput ? optInColor : optOutColor,
-            borderColor: checkboxInput ? optInColor : optOutColor,
-          }} />
         </label>
       );
     }
@@ -92,7 +87,9 @@ const CartDemo: React.FC<CartDemoProps> = ({
                   size="medium"
                 />
                 <BlockStack>
-                  <Text as="p" variant="bodyMd" fontWeight="medium">Cute Cat Slippers</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">
+                    Cute Cat Slippers
+                  </Text>
                   <Text as="span">$10.00</Text>
                 </BlockStack>
               </InlineStack>
@@ -103,11 +100,7 @@ const CartDemo: React.FC<CartDemoProps> = ({
           <Card padding="300">
             <InlineStack wrap={false} gap="300" blockAlign="start">
               {iconVisibility === "1" && selectedIcon ? (
-                <img
-                  src={selectedIcon.src}
-                  alt="Protection"
-                  style={{flexShrink: 0, width: "66px", height: "66px"}}
-                />
+                <img src={selectedIcon.src} alt="Protection" style={{ flexShrink: 0, width: "66px", height: "66px" }} />
               ) : (
                 <div />
               )}
@@ -123,22 +116,22 @@ const CartDemo: React.FC<CartDemoProps> = ({
                       </Text>
                     </Box>
                     <Text as="p" tone="subdued" variant="bodySm">
-                      {(selectButton === "0" && switchValue) || (selectButton === "1" && checkboxInput) 
-                        ? enabledDescription 
+                      {(selectButton === "0" && checked) || (selectButton === "1" && checkboxInput)
+                        ? enabledDescription
                         : disabledDescription}
                     </Text>
                     {/* Footer Link */}
                     {footerText && (
                       <Box>
                         <Text variant="bodySm" as="span">
-                          <a 
-                            title={footerUrl || ""} 
+                          <a
+                            title={footerUrl || ""}
                             style={{
                               color: "#0070f3",
                               textDecoration: "none",
-                              cursor: "pointer"
-                            }} 
-                            onClick={(e) => e.preventDefault()}
+                              cursor: "pointer",
+                            }}
+                            onClick={e => e.preventDefault()}
                           >
                             {footerText}
                           </a>
@@ -154,7 +147,7 @@ const CartDemo: React.FC<CartDemoProps> = ({
 
           {/* Checkout Button */}
           <Button fullWidth size="large">
-            Checkout {switchValue || checkboxInput ? "22.00 USD" : "20.00 USD"}
+            Checkout {checked || checkboxInput ? "22.00 USD" : "20.00 USD"}
           </Button>
         </BlockStack>
       </Box>

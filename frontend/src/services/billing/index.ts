@@ -1,6 +1,6 @@
 import { BaseApiService } from "../base";
 import type { ApiResponse } from "@/types/api.ts";
-import type { FilterParams } from "@/types/billing";
+import type { FilterParams,CurrentPeriodResponse } from "@/types/billing";
 
 export class BillingService extends BaseApiService {
   constructor() {
@@ -18,7 +18,7 @@ export class BillingService extends BaseApiService {
   }
 
   // 获取当前周期
-  getCurrentPeriod(): Promise<ApiResponse> {
+  getCurrentPeriod(): Promise<ApiResponse<CurrentPeriodResponse>> {
     return this.get("current");
   }
 }

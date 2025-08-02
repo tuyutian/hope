@@ -21,7 +21,7 @@ export interface OrderAPIResponse {
   fulfillment_status: string;
   total_price_amount: string;
   currency: string;
-  insurance_amount: string;
+  protectify_amount: string;
   payment_date: number;
 }
 
@@ -72,7 +72,7 @@ export interface OrderAPIResponse {
   fulfillment_status: string;
   total_price_amount: string;
   currency: string;
-  insurance_amount: string;
+  protectify_amount: string;
   payment_date: number;
 }
 

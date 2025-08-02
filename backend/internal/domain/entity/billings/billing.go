@@ -11,7 +11,7 @@ type BillingSummaryResponse struct {
 	Total int64                   `json:"total"`
 }
 type CurrentPeriodResponse struct {
-	PeriodStart string          `json:"period_start"`
-	PeriodEnd   string          `json:"period_end"`
+	PeriodStart int64           `json:"period_start"`
+	PeriodEnd   int64           `json:"period_end"`
 	Amount      decimal.Decimal `json:"amount"`
 }

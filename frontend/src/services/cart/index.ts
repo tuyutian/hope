@@ -1,53 +1,6 @@
 import { BaseApiService } from "../base";
 import type { ApiResponse } from "@/types/api.ts";
-
-export interface CartSettingsData {
-  plan_title: string;
-  addon_title: string;
-  enabled_desc: string;
-  disabled_desc: string;
-  foot_text: string;
-  foot_url: string;
-  in_color: string;
-  out_color: string;
-  show_cart: number;
-  show_cart_icon: number;
-  select_button: number;
-  pricing_type: number;
-  price_rule: number;
-  price_select: any[];
-  tiers_select: any[];
-  other_money: number;
-  all_price: number;
-  all_tiers: number;
-  product_collection: any[];
-  icons: any[];
-  in_collection: boolean;
-}
-
-export interface UpdateCartSettingsParams {
-  planTitle: string;
-  iconVisibility: number;
-  insuranceVisibility: number;
-  selectButton: number;
-  addonTitle: string;
-  enabledDescription: string;
-  disabledDescription: string;
-  footerText: string;
-  footerUrl: string;
-  optInColor: string;
-  optOutColor: string;
-  pricingType: number;
-  pricingRule: number;
-  priceSelect: any[];
-  tiersSelect: any[];
-  restValuePrice: string;
-  allPrice: string;
-  allTiers: string;
-  selectedCollections: any[];
-  icons: any[];
-  onlyInCollection: boolean;
-}
+import { CartSettingsData, UpdateCartSettingsParams } from "@/types/cart.ts";
 
 export class CartService extends BaseApiService {
   constructor() {
@@ -62,6 +15,17 @@ export class CartService extends BaseApiService {
   // 更新购物车设置
   updateSettings(params: UpdateCartSettingsParams): Promise<ApiResponse> {
     return this.post("cart", params);
+  }
+
+  uploadLogo(image: File): Promise<ApiResponse<string>> {
+    const formData = new FormData();
+    formData.append("image", image);
+    return this.post("upload_logo", formData, {
+      timeout: 60000, // 文件上传需要更长时间
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   }
 }
 

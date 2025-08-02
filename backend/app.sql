@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS `user_app_auth`;
 DROP TABLE IF EXISTS `commission_bill`;
 DROP TABLE IF EXISTS `user_subscription`;
 DROP TABLE IF EXISTS `billing_period_summary`;
-DROP TABLE IF EXISTS `insurance_statistics`;
+DROP TABLE IF EXISTS `protectify_statistics`;
 
 -- 用户订阅信息表
 CREATE TABLE `user_subscription`
@@ -24,11 +24,12 @@ CREATE TABLE `user_subscription`
     `id`                        bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `user_id`                   bigint unsigned NOT NULL COMMENT '用户ID',
     `shop_domain`               varchar(100)    NOT NULL DEFAULT '' COMMENT '店铺域名',
-    `charge_id`           bigint unsigned NOT NULL DEFAULT 0 COMMENT 'Shopify订阅ID',
+    `charge_id`                 bigint unsigned NOT NULL DEFAULT 0 COMMENT 'Shopify订阅ID',
     `subscription_name`         varchar(100)    NOT NULL DEFAULT '' COMMENT '订阅名称',
     `subscription_status`       varchar(20)     NOT NULL DEFAULT '' COMMENT '订阅状态：ACTIVE, CANCELLED, DECLINED, EXPIRED, FROZEN, PENDING',
-    `subscription_line_item_id` bigint unsigned NOT NULL DEFAULT 0  COMMENT '订阅项目ID（用于创建用量扣费）',
+    `subscription_line_item_id` varchar(100)    NOT NULL DEFAULT '' COMMENT '订阅项目ID（用于创建用量扣费）',
     `pricing_type`              varchar(20)     NOT NULL DEFAULT '' COMMENT '定价类型：ANNUAL, RECURRING, ONE_TIME',
+    `price`                     decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT ' 套餐金额',
     `capped_amount`             decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '封顶金额',
     `currency`                  varchar(10)     NOT NULL DEFAULT '' COMMENT '货币类型',
     `balance_used`              decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '已使用额度',
@@ -65,9 +66,9 @@ CREATE TABLE `commission_bill`
     `bill_cycle`              varchar(20)     NOT NULL COMMENT '账单周期标识（YYYY-MM-DD）',
     `commission_amount`       decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '抽成金额',
     `commission_rate`         decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '抽成比例（百分比）',
-    `insurance_type`          varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型：general-通用保险，product-产品保险，shipping-运输保险',
+    `protectify_type`         varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型：general-通用保险，product-产品保险，shipping-运输保险',
     `subscription_id`         bigint unsigned NOT NULL DEFAULT 0 COMMENT '关联的订阅ID',
-    `order_insurance_amount`  decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '订单保险金额',
+    `order_protectify_amount` decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '订单保险金额',
     `order_total_amount`      decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '订单总金额',
     `commission_items`        text COMMENT '抽成明细项（JSON格式，包含保险项目等）',
     `currency`                varchar(10)     NOT NULL DEFAULT '' COMMENT '货币类型',
@@ -86,7 +87,7 @@ CREATE TABLE `commission_bill`
     KEY `idx_shopify_usage_record_id` (`shopify_usage_record_id`),
     KEY `idx_billing_period` (`billing_period_start`, `billing_period_end`),
     KEY `idx_subscription_id` (`subscription_id`),
-    KEY `idx_insurance_type` (`insurance_type`)
+    KEY `idx_protectify_type` (`protectify_type`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='抽成收费记录表';
@@ -108,10 +109,10 @@ CREATE TABLE `billing_period_summary`
     `bill_count`              int             NOT NULL DEFAULT 0 COMMENT '账单数量',
     `order_count`             int             NOT NULL DEFAULT 0 COMMENT '订单数量',
     `currency`                varchar(10)     NOT NULL DEFAULT '' COMMENT '货币类型',
-    `insurance_type`          varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型',
+    `protectify_type`         varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型',
     `summary_status`          varchar(20)     NOT NULL DEFAULT 'open' COMMENT '周期状态：open-开放，closed-已关闭',
     `remarks`                 varchar(255)    NOT NULL DEFAULT '' COMMENT '备注信息',
-    `total_insurance_amount`  decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '总保险金额',
+    `total_protectify_amount` decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '总保险金额',
     `total_order_amount`      decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '总订单金额',
     `total_refund_amount`     decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '总退款金额',
     `business_month`          varchar(7)      NOT NULL DEFAULT '' COMMENT '业务月份（YYYY-MM）',
@@ -134,7 +135,7 @@ CREATE TABLE `billing_period_summary`
   COLLATE = utf8mb4_unicode_ci COMMENT ='账单周期汇总表';
 
 -- 保险业务统计报表
-CREATE TABLE `insurance_statistics`
+CREATE TABLE `protectify_statistics`
 (
     `id`                       bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `user_id`                  bigint unsigned NOT NULL COMMENT '用户ID',
@@ -142,13 +143,13 @@ CREATE TABLE `insurance_statistics`
     `statistics_date`          bigint unsigned NOT NULL COMMENT '统计日期（当天0点时间戳）',
     `statistics_month`         varchar(7)      NOT NULL COMMENT '统计月份（YYYY-MM）',
     `statistics_year`          int             NOT NULL COMMENT '统计年份',
-    `insurance_type`           varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型',
+    `protectify_type`          varchar(30)     NOT NULL DEFAULT 'general' COMMENT '保险类型',
     `order_count`              int             NOT NULL DEFAULT 0 COMMENT '订单数量',
-    `order_with_insurance`     int             NOT NULL DEFAULT 0 COMMENT '含保险订单数量',
-    `insurance_attach_rate`    decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '保险附加率（百分比）',
+    `order_with_protectify`    int             NOT NULL DEFAULT 0 COMMENT '含保险订单数量',
+    `protectify_attach_rate`   decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '保险附加率（百分比）',
     `order_amount`             decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '订单金额',
-    `insurance_amount`         decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '保险金额',
-    `insurance_ratio`          decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '保险金额占比（百分比）',
+    `protectify_amount`        decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '保险金额',
+    `protectify_ratio`         decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '保险金额占比（百分比）',
     `commission_amount`        decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '佣金金额',
     `profit_amount`            decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '利润金额',
     `profit_margin`            decimal(5, 2)   NOT NULL DEFAULT 0.00 COMMENT '利润率（百分比）',
@@ -164,13 +165,13 @@ CREATE TABLE `insurance_statistics`
     `create_time`              bigint unsigned NOT NULL COMMENT '创建时间',
     `update_time`              bigint unsigned NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_date_type` (`user_id`, `statistics_date`, `insurance_type`),
+    UNIQUE KEY `uk_user_date_type` (`user_id`, `statistics_date`, `protectify_type`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_shop_domain` (`shop_domain`),
     KEY `idx_statistics_date` (`statistics_date`),
     KEY `idx_statistics_month` (`statistics_month`),
     KEY `idx_statistics_year` (`statistics_year`),
-    KEY `idx_insurance_type` (`insurance_type`),
+    KEY `idx_protectify_type` (`protectify_type`),
     KEY `idx_create_time` (`create_time`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -318,7 +319,7 @@ CREATE TABLE `user_cart_setting`
     `show_cart_icon`     tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 关闭 1 打开',
     `icon_url`           text COMMENT '选中url(json)',
     `select_button`      tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 滑动 1 勾选',
-    `in_collection`        tinyint         NOT NULL DEFAULT 0 COMMENT '是否启用集合筛选 0 关闭 1启用',
+    `in_collection`      tinyint         NOT NULL DEFAULT 0 COMMENT '是否启用集合筛选 0 关闭 1启用',
     `product_collection` varchar(100)    NOT NULL DEFAULT '' COMMENT '产品选中集合',
     `pricing_type`       tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 金额 1百分比',
     `pricing_select`     text COMMENT '金额计算范围',
@@ -343,7 +344,7 @@ CREATE TABLE `user_order`
     `financial_status`    varchar(50)     NOT NULL DEFAULT '' COMMENT '支付状态',
     `total_price_amount`  decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '订单总金额',
     `refund_price_amount` decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '退款总金额',
-    `insurance_amount`    decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '保险金额',
+    `protectify_amount`   decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '保险金额',
     `currency`            varchar(10)     NOT NULL DEFAULT '' COMMENT '货币类型',
     `sku_num`             int             NOT NULL DEFAULT 0 COMMENT 'sku购买数量',
     `is_del`              tinyint         NOT NULL DEFAULT 0 COMMENT '删除状态 0 正常 1 已删除',
@@ -373,13 +374,13 @@ CREATE TABLE `user_order_info`
     `unit_price_amount` decimal(12, 2)  NOT NULL DEFAULT 0.00 COMMENT '单价金额',
     `currency`          varchar(10)     NOT NULL DEFAULT '' COMMENT '货币类型',
     `refund_num`        int             NOT NULL DEFAULT 0 COMMENT '退款数量',
-    `is_insurance`      tinyint         NOT NULL DEFAULT 0 COMMENT '是否是保险产品',
+    `is_protectify`     tinyint         NOT NULL DEFAULT 0 COMMENT '是否是保险产品',
     `create_time`       bigint unsigned NOT NULL COMMENT '创建时间',
     `update_time`       bigint unsigned NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_user_order_id` (`user_order_id`),
-    KEY `idx_order_insurance` (`user_order_id`, `is_insurance`),
+    KEY `idx_order_protectify` (`user_order_id`, `is_protectify`),
     KEY `idx_sku` (`sku`),
     KEY `idx_variant_id` (`variant_id`),
     KEY `idx_create_time` (`create_time`)
@@ -513,7 +514,7 @@ CREATE TABLE `app_definition`
     `description`  text COMMENT 'App描述',
     `icon_url`     varchar(255)    NOT NULL DEFAULT '' COMMENT 'App图标',
     `callback_url` varchar(255)    NOT NULL DEFAULT '' COMMENT '回调URL',
-    `app_link`      varchar(100)    NOT NULL COMMENT 'APP Link',
+    `app_link`     varchar(100)    NOT NULL COMMENT 'APP Link',
     `api_key`      varchar(100)    NOT NULL COMMENT 'API Key',
     `api_secret`   varchar(100)    NOT NULL COMMENT 'API Secret',
     `scopes`       text            NOT NULL COMMENT '授权域',

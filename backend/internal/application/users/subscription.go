@@ -76,7 +76,6 @@ func (s *SubscriptionService) CreateUsageSubscription(
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to create Shopify subscription: %v", err)
 	}
-
 	// 3. 保存到本地数据库
 	userSubscription := &userEntity.UserSubscription{
 		UserID:                 claims.UserID,
@@ -84,14 +83,15 @@ func (s *SubscriptionService) CreateUsageSubscription(
 		ChargeID:               utils.GetIdFromShopifyGraphqlId(subscription.ID),
 		SubscriptionName:       subscription.Name,
 		SubscriptionStatus:     subscription.Status,
-		SubscriptionLineItemID: utils.GetIdFromShopifyGraphqlId(subscription.LineItems[0].ID),
+		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
 		CappedAmount:           &cappedAmount,
 		Currency:               currency,
 		BalanceUsed:            &decimal.Zero,
+		Price:                  &decimal.Zero,
 		Terms:                  terms,
 		CurrentPeriodStart:     time.Now().Unix(),
-		CurrentPeriodEnd:       parseShopifyTime(subscription.CurrentPeriodEnd),
+		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),
 		TrialDays:              subscription.TrialDays,
 		TestSubscription:       subscription.Test,
 		LastSyncTime:           time.Now().Unix(),
@@ -152,14 +152,15 @@ func (s *SubscriptionService) CreateRecurringSubscription(
 		ChargeID:               utils.GetIdFromShopifyGraphqlId(subscription.ID),
 		SubscriptionName:       subscription.Name,
 		SubscriptionStatus:     subscription.Status,
-		SubscriptionLineItemID: utils.GetIdFromShopifyGraphqlId(subscription.LineItems[0].ID),
+		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
-		CappedAmount:           &price, // 对于循环订阅，这里存储价格
+		Price:                  &price, // 对于循环订阅，这里存储价格
 		Currency:               currency,
+		CappedAmount:           &decimal.Zero,
 		BalanceUsed:            &decimal.Zero,
 		Terms:                  fmt.Sprintf("Recurring charge - %s", interval),
 		CurrentPeriodStart:     time.Now().Unix(),
-		CurrentPeriodEnd:       parseShopifyTime(subscription.CurrentPeriodEnd),
+		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),
 		TrialDays:              subscription.TrialDays,
 		TestSubscription:       subscription.Test,
 		LastSyncTime:           time.Now().Unix(),
@@ -198,7 +199,7 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 	if userSubscription != nil {
 		// 更新现有订阅
 		userSubscription.SubscriptionStatus = currentSubscription.Status
-		userSubscription.CurrentPeriodEnd = parseShopifyTime(currentSubscription.CurrentPeriodEnd)
+		userSubscription.CurrentPeriodEnd = utils.ParseShopifyTime(currentSubscription.CurrentPeriodEnd)
 		userSubscription.LastSyncTime = time.Now().Unix()
 		userSubscription.UpdateTime = time.Now().Unix()
 
@@ -214,14 +215,14 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 		}
 
 		// 解析订阅 ID
-		lineItemID := utils.GetIdFromShopifyGraphqlId(currentSubscription.LineItems[0].ID)
+		lineItemID := currentSubscription.LineItems[0].ID
 
 		// 确定定价类型和相关信息
 		var pricingType string
 		var cappedAmount decimal.Decimal
 		var terms string
 		var balanceUsed decimal.Decimal
-		var currency string = "USD" // 默认货币
+		var currency = "USD" // 默认货币
 
 		if currentSubscription.IsUsageSubscription() {
 			pricingType = userEntity.PricingTypeRecurring
@@ -252,8 +253,8 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 			Currency:               currency,
 			BalanceUsed:            &balanceUsed,
 			Terms:                  terms,
-			CurrentPeriodStart:     parseShopifyTime(currentSubscription.CreatedAt),
-			CurrentPeriodEnd:       parseShopifyTime(currentSubscription.CurrentPeriodEnd),
+			CurrentPeriodStart:     utils.ParseShopifyTime(currentSubscription.CreatedAt),
+			CurrentPeriodEnd:       utils.ParseShopifyTime(currentSubscription.CurrentPeriodEnd),
 			TrialDays:              currentSubscription.TrialDays,
 			TestSubscription:       currentSubscription.Test,
 			LastSyncTime:           time.Now().Unix(),
@@ -309,19 +310,18 @@ func (s *SubscriptionService) VerifyPayment(ctx context.Context, user *userEntit
 		ChargeID:               utils.GetIdFromShopifyGraphqlId(subscription.ID),
 		SubscriptionName:       subscription.Name,
 		SubscriptionStatus:     subscription.Status,
-		SubscriptionLineItemID: utils.GetIdFromShopifyGraphqlId(subscription.LineItems[0].ID),
+		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
 		CappedAmount:           &CappedAmount, // 对于循环订阅，这里存储价格
 		Currency:               usagePrice.CappedAmount.CurrencyCode,
 		BalanceUsed:            &BalanceUsed,
 		Terms:                  Terms,
 		CurrentPeriodStart:     time.Now().Unix(),
-		CurrentPeriodEnd:       parseShopifyTime(subscription.CurrentPeriodEnd),
+		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),
 		TrialDays:              subscription.TrialDays,
 		TestSubscription:       subscription.Test,
 		LastSyncTime:           time.Now().Unix(),
 	}
-
 	err = s.userSubscriptionRepo.UpsertUserSubscription(ctx, userSubscription)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save subscription to database: %v", err)
@@ -343,16 +343,19 @@ func (s *SubscriptionService) UpdateSubscriptionStatus(ctx context.Context, user
 	return nil
 }
 
-// parseShopifyTime 解析 Shopify 时间格式
-func parseShopifyTime(timeStr string) int64 {
-	if timeStr == "" {
-		return 0
-	}
-
-	t, err := time.Parse(time.RFC3339, timeStr)
+func (s *SubscriptionService) CreateUsageCharge(ctx context.Context, user *userEntity.User, lineItemId string, amount decimal.Decimal, currency string) error {
+	shopName, _ := utils.GetShopName(user.Shop)
+	client := shopify_graphql.NewGraphqlClient(shopName, user.AccessToken)
+	s.usageChargeGraphqlRepo.WithClient(client)
+	usageRecordID, err := s.usageChargeGraphqlRepo.CreateUsageCharge(ctx, lineItemId, amount, currency)
 	if err != nil {
-		return 0
+		logger.Error(ctx, "failed to create usage charge: ", err)
+		return err
+	}
+	if usageRecordID == "" {
+		utils.CallWilding(fmt.Sprintf("failed to create usage charge with user: %d amount:%v ", user.ID, amount))
+		return fmt.Errorf("failed to create usage charge")
 	}
 
-	return t.Unix()
+	return nil
 }

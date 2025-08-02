@@ -54,10 +54,10 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 		// 创建产品
 		userProductId, err = p.productRepo.CreateProduct(ctx, &productEntity.UserProduct{
 			UserID:      req.UserID,
-			Title:       "Shipping insurance Test",
-			Vendor:      "insurance",
-			Tags:        "",
-			Description: "insurance",
+			Title:       "Protectify",
+			Vendor:      "Protectify",
+			Tags:        "Protectify",
+			Description: "Protectify",
 			Option1:     "Title",
 			ImageUrl:    "https://img0.baidu.com/it/u=1868319137,207061070&fm=253&fmt=auto?w=1431&h=800",
 		})

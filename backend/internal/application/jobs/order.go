@@ -161,9 +161,9 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 		} else {
 			// 新增订单详情
 			price := o.parsePrice(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
-			isInsurance := 0
+			isProtectify := 0
 			if _, ok := variantIDMap[variantID]; ok {
-				isInsurance = 1
+				isProtectify = 1
 				insuranceAmount += price
 			}
 			userOrderInfos = append(userOrderInfos, &orders.UserOrderInfo{
@@ -175,14 +175,14 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 				UnitPriceAmount: price,
 				Currency:        data.Order.TotalPriceSet.ShopMoney.CurrencyCode,
 				RefundNum:       refundQuantity,
-				IsInsurance:     isInsurance,
+				IsProtectify:    isProtectify,
 				UserOrderId:     dbOrderId,
 			})
 		}
 	}
 
 	userOrder.SkuNum = skuNum
-	userOrder.InsuranceAmount = insuranceAmount
+	userOrder.ProtectifyAmount = insuranceAmount
 	o.orderRepo.UpdateShopifyOrderId(ctx, userOrder)
 
 	// 插入新增的变体
@@ -209,7 +209,7 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 		FinancialStatus:   data.Order.DisplayFinancialStatus,
 		TotalPriceAmount:  total,
 		RefundPriceAmount: refundAmount,
-		InsuranceAmount:   0,
+		ProtectifyAmount:  0,
 		Currency:          data.Order.TotalPriceSet.ShopMoney.CurrencyCode,
 		SkuNum:            0,
 	}
@@ -222,9 +222,9 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 		variantID := utils.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
 		price := o.parsePrice(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
 		refundQuantity := refundMap[variantID]
-		isInsurance := 0
+		isProtectify := 0
 		if _, ok := variantIDMap[variantID]; ok {
-			isInsurance = 1
+			isProtectify = 1
 			insuranceAmount += price
 		}
 		userOrderInfos = append(userOrderInfos, &orders.UserOrderInfo{
@@ -236,12 +236,12 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 			UnitPriceAmount: price,
 			Currency:        data.Order.TotalPriceSet.ShopMoney.CurrencyCode,
 			RefundNum:       refundQuantity,
-			IsInsurance:     isInsurance,
+			IsProtectify:    isProtectify,
 		})
 		skuNum++
 	}
 
-	userOrder.InsuranceAmount = insuranceAmount
+	userOrder.ProtectifyAmount = insuranceAmount
 	userOrder.SkuNum = skuNum
 
 	dbOrderId, err := o.orderRepo.Create(ctx, userOrder)
@@ -338,7 +338,7 @@ func (o *OrderService) HandleOrderStatistics(ctx context.Context, t *asynq.Task)
 			Today:  start,
 			Orders: statistics.TotalOrders,
 			Refund: statistics.TotalRefund,
-			Sales:  statistics.TotalInsurance,
+			Sales:  statistics.TotalProtectify,
 		}
 
 		if orderStatisticId > 0 {

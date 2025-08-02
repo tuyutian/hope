@@ -1,5 +1,5 @@
-import {createBrowserRouter, RouteObject, RouterProvider} from "react-router";
-import React, {lazy, Suspense} from "react";
+import { createBrowserRouter, RouteObject, RouterProvider } from "react-router";
+import React, { lazy, Suspense } from "react";
 
 // 布局组件
 const Layout = lazy(() => import("@/layouts/MainLayout"));
@@ -13,15 +13,17 @@ const Billing = lazy(() => import("@/pages/Billing"));
 const BillingDetail = lazy(() => import("@/pages/billing/BillingDetail"));
 // 加载指示器组件
 export const LoadingFallback = () => {
-  return <div
-        className="flex items-center justify-center absolute top-0 bg-white bg-opacity-90 w-full h-full"
-        style={{
-          zIndex: 98,
-        }}
-      >
-        <s-spinner accessibilityLabel="Loading" size="large-100" />
-      </div>
-}
+  return (
+    <div
+      className="flex items-center justify-center absolute top-0 bg-white bg-opacity-90 w-full h-full"
+      style={{
+        zIndex: 98,
+      }}
+    >
+      <s-spinner accessibilityLabel="Loading" size="large-100" />
+    </div>
+  );
+};
 
 // 路由配置对象
 const routes: RouteObject[] = [
@@ -89,7 +91,7 @@ const routes: RouteObject[] = [
 // 创建路由器
 const router = createBrowserRouter(routes);
 const Router = () => {
-  return <RouterProvider router={router}  />;
+  return <RouterProvider router={router} />;
 };
 
 export default Router;

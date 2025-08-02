@@ -37,7 +37,7 @@ const CustomSwitch: React.FC<SwitchProps> = ({
     >
       {loading ? (
         <div className="flex items-center justify-center w-full h-full">
-          <div className="w-2 h-2 border border-gray-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border border-gray-400 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : checked ? (
         checkedIcon

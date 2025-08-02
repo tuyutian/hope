@@ -1,0 +1,6 @@
+/assets/*
+    Cache-Control: public, max-age=14400, s-maxage=14400
+
+https://s.protectifyapp.com/*
+    Content-Security-Policy: frame-ancestors https://*.myshopify.com https://admin.shopify.com https://*.protectifyapp.com ;
+    Cache-Control:public, must-revalidate, proxy-revalidate;

@@ -164,7 +164,7 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		InColor:           req.OptInColor,
 		OutColor:          req.OptOutColor,
 		OtherMoney:        f,
-		ShowCart:          req.InsuranceVisibility,
+		ShowCart:          req.ProtectifyVisibility,
 		ShowCartIcon:      req.IconVisibility,
 		IconUrl:           iconStr,
 		SelectButton:      req.SelectButton,

@@ -17,5 +17,5 @@ type SubscriptionGraphqlRepository interface {
 
 type UsageChargeGraphqlRepository interface {
 	BaseGraphqlRepository
-	CreateUsageCharge(ctx context.Context, lineItemId int64, amount decimal.Decimal, description string) (string, error)
+	CreateUsageCharge(ctx context.Context, lineItemId string, amount decimal.Decimal, description string) (string, error)
 }

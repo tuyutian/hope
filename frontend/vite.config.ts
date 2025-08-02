@@ -1,46 +1,40 @@
 import tsconfigPaths from "vite-tsconfig-paths";
-import {resolve} from "path";
-import {defineConfig} from "vite";
+import { resolve } from "path";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from "@tailwindcss/vite";
 
 const pathResolve = (dir: string): string => {
-    return resolve(__dirname, ".", dir);
+  return resolve(__dirname, ".", dir);
 };
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    esbuild: {
-        target: "node20",
+  esbuild: {
+    target: "node20",
+  },
+  base: "/",
+  plugins: [tailwindcss(), react(), tsconfigPaths()],
+  build: {
+    manifest: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        chunkFileNames: "assets/js/[name]-[hash].js",
+        entryFileNames: "assets/js/[name]-[hash].js",
+        assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
+      },
     },
-    base: "/",
-    plugins: [
-        tailwindcss(),
-        react(),
-        tsconfigPaths(),
-    ],
-    build: {
-        sourcemap: false,
-        rollupOptions: {
-            output: {
-                chunkFileNames: "assets/js/[name]-[hash].js",
-                entryFileNames: "assets/js/[name]-[hash].js",
-                assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
-            },
-        },
+  },
+  resolve: {
+    alias: {
+      "~": pathResolve("src"),
+      "@": pathResolve("src"),
     },
-    resolve: {
-        alias: {
-            "~": pathResolve("src"),
-            "@": pathResolve("src"),
-        },
-    },
-    server: {
-        host: "0.0.0.0",
-        port: 9527,
-        allowedHosts: [
-            "s.sunshine-boy.click",
-            "api.sunshine-boy.click",
-        ]
-    },
+  },
+  server: {
+    host: "0.0.0.0",
+    port: 9527,
+    allowedHosts: ["s.protectifyapp.com", "api.protectifyapp.com"],
+  },
 });

@@ -25,7 +25,7 @@ func (s *summaryRepoImpl) GetByDays(ctx context.Context, userId int64, days int)
 	err := s.db.
 		Where("user_id = ? ", userId).
 		Desc("id").
-		Limit(int(days)).
+		Limit(days).
 		Find(&summary)
 	if err != nil {
 		return nil, err
