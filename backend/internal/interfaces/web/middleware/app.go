@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"backend/internal/application/apps"
 	appEntity "backend/internal/domain/entity/apps"
@@ -34,6 +35,7 @@ func (m *AppMiddleware) AppMust() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		appId := c.Param("appId")
+		logger.Warn(ctx, "AppMiddleware AppMust", zap.String("appId", appId))
 		if appId == "" {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "appId is empty",
