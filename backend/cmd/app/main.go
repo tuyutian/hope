@@ -52,6 +52,9 @@ func main() {
 		log.Fatalf("oss init error:%v", err)
 	}
 	asynqClient, err := config.NewAsynqClient("redis_conf")
+	if err != nil {
+		log.Fatalf("asynq client init error:%v", err)
+	}
 	// 初始化repos
 	repos := providers.NewRepositories(db, redisClient, appConf, providers.WithOssRepo(ossClient, bucketName), providers.WithAsynqRepo(asynqClient))
 	// 初始化服务
@@ -61,8 +64,16 @@ func main() {
 	// 初始化 middlewares
 	// init middleware and routers
 	middlewares := &routers.Middleware{
-		RequestWare:        &middleware.RequestWare{},
-		CorsWare:           &middleware.CorsWare{},
+		RequestWare: &middleware.RequestWare{},
+		CorsWare: &middleware.CorsWare{
+			AllowedOrigins: []string{
+				"https://s.protectifyapp.com",
+				"https://protectifyapp.com",
+				"http://localhost:9527",
+				"http://127.0.0.1:9527",
+			},
+		},
+		CspWare:            middleware.NewCspMiddleware(true), // 设置为嵌入式应用
 		AppMiddleware:      middleware.NewAppMiddleware(services.AppService, repos.JwtRepo, appConf.JWT),
 		AuthWare:           middleware.NewAuthWare(services.UserService, services.AppService, repos),
 		ShopifyGraphqlWare: middleware.NewShopifyGraphqlWare(repos, services.UserService),

@@ -17,6 +17,7 @@ type Middleware struct {
 	AuthWare           *middleware.AuthWare
 	RequestWare        *middleware.RequestWare
 	CorsWare           *middleware.CorsWare
+	CspWare            *middleware.CspMiddleware
 	ShopifyGraphqlWare *middleware.ShopifyGraphqlWare
 	AppMiddleware      *middleware.AppMiddleware
 }
@@ -27,7 +28,10 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 
 	// 对所有的请求进行性能监控，一般来说生产环境，可以对指定的接口做性能监控
 	router.Use(
-		requestWare.Access(), middlewares.CorsWare.Cors(), func() gin.HandlerFunc {
+		requestWare.Access(),
+		middlewares.CorsWare.Cors(),
+		middlewares.CspWare.Csp(),
+		func() gin.HandlerFunc {
 			return func(c *gin.Context) {
 				defer func() {
 					if err := recover(); err != nil {
@@ -36,7 +40,8 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 					}
 				}()
 			}
-		}(), middleware.TimeoutHandler(40*time.Second),
+		}(),
+		middleware.TimeoutHandler(40*time.Second),
 	)
 
 	// gin 框架prometheus接入
