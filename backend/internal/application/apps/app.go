@@ -25,11 +25,11 @@ func (a *AppService) GetAppConfig(ctx context.Context, appId string) (*appEntity
 }
 
 func (a *AppService) GetAppID(ctx context.Context) string {
-	return ctx.Value(ctxkeys.AppData).(appEntity.AppData).AppID
+	return ctx.Value(ctxkeys.AppData).(*appEntity.AppData).AppID
 }
 
 func (a *AppService) VerifyWebhook(ctx context.Context, signature string, body []byte) bool {
-	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	appSecret := appData.AppSecret
 	// 从配置中获取 webhook secret
 	if appSecret == "" {

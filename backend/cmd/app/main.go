@@ -32,8 +32,10 @@ func main() {
 	appConf := config.InitAppConfig()
 	// 日志输出采用zap框架实现日志json格式输出
 	logger.Default(
-		logger.WriteToFile(true), logger.WithStdout(true), // 将日志写到stdout
-		logger.WithAddCaller(true), logger.WithLogLevel(appConf.GetLogLevel()),
+		logger.WriteToFile(true),
+		logger.WithStdout(false), // 生产环境不输出到控制台，减少日志量
+		logger.WithAddCaller(true),
+		logger.WithLogLevel(appConf.GetLogLevel()),
 	)
 
 	logger.Info(context.Background(), "starting server", zap.Int("pid", pid))
@@ -61,7 +63,7 @@ func main() {
 	middlewares := &routers.Middleware{
 		RequestWare:        &middleware.RequestWare{},
 		CorsWare:           &middleware.CorsWare{},
-		AppMiddleware:      middleware.NewAppMiddleware(services.AppService),
+		AppMiddleware:      middleware.NewAppMiddleware(services.AppService, repos.JwtRepo, appConf.JWT),
 		AuthWare:           middleware.NewAuthWare(services.UserService, services.AppService, repos),
 		ShopifyGraphqlWare: middleware.NewShopifyGraphqlWare(repos, services.UserService),
 	}

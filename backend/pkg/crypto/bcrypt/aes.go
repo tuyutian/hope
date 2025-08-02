@@ -1,13 +1,8 @@
 package bcrypt
 
 import (
-	"strings"
-
 	"backend/pkg/crypto"
 )
-
-// EncryptedPrefix encrypt prefix
-const EncryptedPrefix = "encrypt_"
 
 var _ BCrypto = (*aesImpl)(nil)
 
@@ -33,11 +28,10 @@ func (c *aesImpl) Encrypt(s string) (string, error) {
 		return "", err
 	}
 
-	return strings.Join([]string{EncryptedPrefix, payload}, ""), err
+	return payload, err
 }
 
 // Decrypt returns decrypt payload
 func (c *aesImpl) Decrypt(payload string) (string, error) {
-	payload = strings.TrimPrefix(payload, EncryptedPrefix)
 	return crypto.AesDecrypt(payload, c.key, c.iv)
 }

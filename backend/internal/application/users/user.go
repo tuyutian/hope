@@ -67,13 +67,13 @@ func (u *UserService) GetLoginUserFromID(ctx context.Context, id int64) (*users.
 }
 
 func (u *UserService) GetUserFromShopID(ctx context.Context, shopID int64) (*users.User, error) {
-	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	user, err := u.userRepo.GetActiveUserByShopID(ctx, appData.AppID, shopID)
 	return user, err
 }
 
 func (u *UserService) GetLoginUserFromShop(ctx context.Context, shop string) (*users.User, error) {
-	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	user, err := u.userRepo.GetActiveUserByShop(ctx, appData.AppID, shop)
 	return user, err
 }
@@ -95,7 +95,7 @@ func (u *UserService) GetShopifyClient(ctx context.Context) *shopify_graphql.Gra
 }
 
 func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token, claims *jwt.BizClaims) (*users.User, error) {
-	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	shopName, err := utils.GetShopName(claims.Dest)
 	if err != nil {
 		return nil, err

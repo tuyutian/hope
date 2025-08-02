@@ -2,7 +2,7 @@ package jwtauth
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
 	"backend/internal/domain/repo/jwtauth"
 	"backend/pkg/crypto/bcrypt"
@@ -28,9 +28,6 @@ func NewJWTRepository(secret string, manager *jwt.JwtManager, aes bcrypt.BCrypto
 
 // Verify 校验 token
 func (j *jwtRepoImpl) Verify(ctx context.Context, token string) (*jwt.BizClaims, error) {
-	if strings.HasPrefix(token, bcrypt.EncryptedPrefix) {
-		return j.cryptoTokenParse(token)
-	}
 	return j.Parse(token)
 }
 
@@ -64,4 +61,11 @@ func (j *jwtRepoImpl) cryptoTokenParse(token string) (*jwt.BizClaims, error) {
 		return nil, err
 	}
 	return &claims.BizClaims, err
+}
+
+// UpdateSecret 更新 JWT 的 secret 和 manager
+func (j *jwtRepoImpl) UpdateSecret(secret string, manager *jwt.JwtManager) {
+	fmt.Printf("Updating JWT secret from %s to %s\n", j.secret[:8]+"...", secret[:8]+"...")
+	j.secret = secret
+	j.manager = manager
 }

@@ -1,15 +1,16 @@
 app_conf:
-  app_debug: true # 是否开启调试模式
-  app_env: dev # prod,test,local,dev
+  app_debug: false # 是否开启调试模式
+  app_env: prod # prod,test,local,dev
   app_port: 8080
   monitor_port: 8090 # pprof性能监控和prometheus监控端口，这是通过http服务访问
   graceful_wait: 5s # 平滑退出等待时间，单位s
-  log_level: info
+  log_level: warn
   # shopify 配置
   shopify:
     webhook_host: webhook.protectifyapp.com
   # jwt 配置项
   jwt:
+    secret_key: SbODEPq7EpEl3ByfL0MP67+9IJA8e7leVUK0SABdBM8=
     access_expiration: 168h # access token 过期时间
     refresh_expiration: 168h # refresh token 过期时间
 
@@ -21,7 +22,7 @@ redis_conf:
   MaxIdle: 150
   Active: 150
   IdleTimeout: 200s
-  Prefix: "insurance_api_"
+  Prefix: "hope_api_"
 
 # mysql配置
 db_conf:

@@ -179,12 +179,6 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	if len(token) == 0 {
 		return nil, errJwtTokenEmpty
 	}
-
-	// 包含 bcrypt.EncryptedPrefix 前缀，为新版 JWT 生成的 token
-	if strings.HasPrefix(token, bcrypt.EncryptedPrefix) {
-		// strings.TrimPrefix 底层使用的是切片截取
-		token = token[len(bcrypt.EncryptedPrefix):]
-	}
 	// token 校验失败
 	claims, err := auth.jwtRepo.Verify(ctx, token)
 	if err != nil {
