@@ -1,5 +1,6 @@
 import request from "~/utils/request";
 import type { ApiResponse, ApiEndpoint, ApiServiceConfig } from "@/types/api.ts";
+import type { AxiosRequestConfig } from "axios";
 
 // 基础API服务类
 export class BaseApiService {
@@ -21,53 +22,57 @@ export class BaseApiService {
   }
 
   // 通用请求方法
-  private async request<T>(endpoint: ApiEndpoint, params?: any): Promise<ApiResponse<T>> {
+  private async request<T>(endpoint: ApiEndpoint, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const url = this.baseUrl + endpoint.url;
-    // 应用全局配置
+    
+    // 合并配置，处理headers的深度合并
     const requestConfig = {
-      timeout: this.config.timeout,
-      headers: this.config.headers,
-      baseURL: this.config.baseURL,
+      ...this.config,
+      ...config,
+      headers: {
+        ...this.config.headers,
+        ...config?.headers,
+      },
     };
 
     switch (endpoint.method) {
       case "GET":
-        return request.get(url, { params, ...requestConfig });
+        return request.get(url, { params: data, ...requestConfig });
       case "POST":
-        return request.post(url, params, requestConfig);
+        return request.post(url, data, requestConfig);
       case "PUT":
-        return request.put(url, params, requestConfig);
+        return request.put(url, data, requestConfig);
       case "DELETE":
-        return request.delete(url, { params, ...requestConfig });
+        return request.delete(url, { params: data, ...requestConfig });
       case "PATCH":
-        return request.patch(url, params, requestConfig);
+        return request.patch(url, data, requestConfig);
       default:
         throw new Error(`Unsupported method: ${endpoint.method}`);
     }
   }
 
   // GET 请求
-  protected get<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.request<T>({ url, method: "GET" }, params);
+  protected get<T = any>(url: string, params?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>({ url, method: "GET" }, params, config);
   }
 
   // POST 请求
-  protected post<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.request<T>({ url, method: "POST" }, params);
+  protected post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>({ url, method: "POST" }, data, config);
   }
 
   // PUT 请求
-  protected put<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.request<T>({ url, method: "PUT" }, params);
+  protected put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>({ url, method: "PUT" }, data, config);
   }
 
   // DELETE 请求
-  protected delete<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.request<T>({ url, method: "DELETE" }, params);
+  protected delete<T = any>(url: string, params?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>({ url, method: "DELETE" }, params, config);
   }
 
   // PATCH 请求
-  protected patch<T>(url: string, params?: any): Promise<ApiResponse<T>> {
-    return this.request<T>({ url, method: "PATCH" }, params);
+  protected patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    return this.request<T>({ url, method: "PATCH" }, data, config);
   }
 }

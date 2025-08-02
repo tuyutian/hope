@@ -18,8 +18,8 @@ export default function BillingTable() {
     sort: "desc",
     page: 1,
     size: 10,
-    minTime: "",
-    maxTime: "",
+    minTime: 0,
+    maxTime: 0,
   });
 
   const { data, error, isLoading, isFetching } = useQuery<ApiResponse, Error, TableData>({

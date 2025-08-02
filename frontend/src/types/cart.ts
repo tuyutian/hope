@@ -70,6 +70,7 @@ export interface WidgetStyleCardProps {
   icons: IconType[];
   onWidgetSettingsChange: (value: Partial<WidgetSettings>) => void;
   onIconClick: (id: number) => void;
+  onIconUpload: (file: File) => void;
 }
 
 export interface ContentCardProps {
@@ -94,4 +95,52 @@ export interface ProductCardProps {
   onlyCollection: (value: boolean) => void;
   onRemoveCollection: (value: number) => void;
   onCollectionChange?: (resources: Array<ResourceItem>) => void;
+}
+
+export interface CartSettingsData {
+  plan_title: string;
+  addon_title: string;
+  enabled_desc: string;
+  disabled_desc: string;
+  foot_text: string;
+  foot_url: string;
+  in_color: string;
+  out_color: string;
+  show_cart: number;
+  show_cart_icon: number;
+  select_button: number;
+  pricing_type: number;
+  price_rule: number;
+  price_select: any[];
+  tiers_select: any[];
+  other_money: number;
+  all_price: number;
+  all_tiers: number;
+  product_collection: any[];
+  icons: any[];
+  in_collection: boolean;
+}
+
+export interface UpdateCartSettingsParams {
+  planTitle: string;
+  iconVisibility: number;
+  protectifyVisibility: number;
+  selectButton: number;
+  addonTitle: string;
+  enabledDescription: string;
+  disabledDescription: string;
+  footerText: string;
+  footerUrl: string;
+  optInColor: string;
+  optOutColor: string;
+  pricingType: number;
+  pricingRule: number;
+  priceSelect: any[];
+  tiersSelect: any[];
+  restValuePrice: string;
+  allPrice: string;
+  allTiers: string;
+  selectedCollections: any[];
+  icons: any[];
+  onlyInCollection: boolean;
 }

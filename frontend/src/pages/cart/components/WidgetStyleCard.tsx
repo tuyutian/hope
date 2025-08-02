@@ -8,6 +8,7 @@ export default function WidgetStyleCard({
   icons,
   onWidgetSettingsChange,
   onIconClick,
+  onIconUpload,
 }: WidgetStyleCardProps) {
   return (
     <Card padding="400">
@@ -26,7 +27,7 @@ export default function WidgetStyleCard({
           onChange={value => onWidgetSettingsChange({ iconVisibility: value })}
         />
 
-        <IconSelector icons={icons} onIconClick={onIconClick} />
+        <IconSelector icons={icons} onIconClick={onIconClick} onIconUpload={onIconUpload} />
 
         <Select
           label="Select Button"

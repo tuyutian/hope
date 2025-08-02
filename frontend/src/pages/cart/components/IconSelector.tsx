@@ -1,5 +1,5 @@
-import React from "react";
-import { InlineStack, Text, Thumbnail } from "@shopify/polaris";
+import React, { useCallback, useTransition } from "react";
+import { DropZone, Icon, InlineStack, Spinner, Text, Thumbnail } from "@shopify/polaris";
 
 interface Icon {
   id: number;
@@ -10,15 +10,23 @@ interface Icon {
 interface IconSelectorProps {
   icons: Icon[];
   onIconClick: (id: number) => void;
+  onIconUpload: (file: File) => void;
 }
 
-const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
+const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick, onIconUpload }) => {
+  const [uploading, startTransition] = useTransition();
+  const handleDropZoneDrop = useCallback((_dropFiles: File[], acceptedFiles: File[], _rejectedFiles: File[]) => {
+    startTransition(() => {
+      onIconUpload(acceptedFiles[0]);
+    });
+  }, []);
+
   return (
     <>
       <Text as="h2" variant="bodyMd">
         Widget Icon
       </Text>
-      <InlineStack wrap gap="200">
+      <InlineStack wrap gap="200" blockAlign="center">
         {icons.map((icon, index) => {
           const isSelected = icon.selected;
           return (
@@ -65,6 +73,17 @@ const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick }) => {
             </div>
           );
         })}
+        <div style={{ width: 75, height: 75 }}>
+          <DropZone type="image" allowMultiple={false} onDrop={handleDropZoneDrop}>
+            {uploading ? (
+              <div className="flex items-center justify-center cursor-default">
+                <Spinner accessibilityLabel="Small spinner example" size="small" />
+              </div>
+            ) : (
+              <DropZone.FileUpload />
+            )}
+          </DropZone>
+        </div>
       </InlineStack>
     </>
   );

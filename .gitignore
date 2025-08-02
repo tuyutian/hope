@@ -20,5 +20,7 @@ yarn-error.log*
 
 # editor
 .idea
+*.iml
+*.log
 
 
