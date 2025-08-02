@@ -16,6 +16,7 @@ export default defineConfig({
   base: "/",
   plugins: [tailwindcss(), react(), tsconfigPaths()],
   build: {
+    manifest: true,
     sourcemap: false,
     rollupOptions: {
       output: {
