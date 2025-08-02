@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"backend/pkg/ctxkeys"
-	"backend/pkg/jwt"
 	"backend/pkg/logger"
 	"backend/pkg/utils"
 
@@ -33,9 +31,7 @@ func (m *CspMiddleware) Csp() gin.HandlerFunc {
 		shop := c.Query("shop")
 		if shop == "" {
 			// 尝试从用户信息中获取
-			if claims, ok := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims); ok && claims.Dest != "" {
-				shop = claims.Dest
-			}
+			shop = c.GetHeader("X-Shopify-Shop-Domain")
 		}
 
 		// 清理 shop 域名

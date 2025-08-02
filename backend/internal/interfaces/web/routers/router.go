@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"backend/internal/interfaces/web/handler"
 	"backend/internal/interfaces/web/middleware"
+	"backend/pkg/logger"
 	"backend/pkg/utils"
 )
 
@@ -35,9 +37,11 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 				defer func() {
 					if err := recover(); err != nil {
 						log.Printf("Panic info is: %v", err)
+						logger.Error(c.Request.Context(), "server panic recover", zap.Any("Panic info is", err))
 						go utils.CallWilding(fmt.Sprintf("Painc App:%s\nInfo is: %v\nRequest is: %s\nDomain: %s", "tms-api", err, c.Request.URL, c.GetHeader("X-Shopify-Shop-Domain")))
 					}
 				}()
+				c.Next()
 			}
 		}(),
 		middleware.TimeoutHandler(40*time.Second),

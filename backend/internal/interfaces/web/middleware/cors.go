@@ -40,10 +40,12 @@ func (ware *CorsWare) Cors() gin.HandlerFunc {
 
 		// 处理预检请求
 		if c.Request.Method == "OPTIONS" {
+			logger.Info(c.Request.Context(), "CORS 预检请求", "origin", origin)
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 
+		logger.Info(c.Request.Context(), "CORS 继续处理请求")
 		c.Next()
 	}
 }
@@ -96,4 +98,8 @@ func (ware *CorsWare) setCorsHeaders(c *gin.Context, origin string) {
 	c.Header("Access-Control-Expose-Headers", exposeHeaders)
 	c.Header("Access-Control-Max-Age", "172800")
 	c.Header("Access-Control-Allow-Credentials", "true")
+
+	logger.Info(c.Request.Context(), "CORS 头已设置",
+		"origin", origin,
+		"allow_credentials", "true")
 }

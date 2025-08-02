@@ -75,6 +75,15 @@ func main() {
 	router := gin.New()
 	// 注册路由规则
 	routers.InitRouters(router, handlers, middlewares)
+
+	// 简单的 CORS 测试接口
+	router.GET("/test/cors", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "CORS test",
+			"origin":  c.GetHeader("Origin"),
+		})
+	})
+
 	router.GET("/test/token", func(c *gin.Context) {
 		token := services.UserService.GenerateTestToken(c.Request.Context(), 2)
 		c.JSON(200, gin.H{
