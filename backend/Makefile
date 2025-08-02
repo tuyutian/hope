@@ -49,13 +49,10 @@ clean:
 	@rm -rf $(CURDIR)/internal $(CURDIR)/pkg $(CURDIR)/server $(CURDIR)/store $(CURDIR)/test $(CURDIR)/tmp $(CURDIR)/.git
 	@echo "clear success"
 
-# 设置GITHUB_TOKEN的帮助信息
 help:
 	@echo "Hope项目 Docker 构建帮助"
 	@echo "=========================="
 	@echo ""
-	@echo "环境准备:"
-	@echo "  export GITHUB_TOKEN=your_github_token"
 	@echo ""
 	@echo "传统构建命令:"
 	@echo "  make build       - 构建 Docker 镜像"
@@ -73,20 +70,10 @@ help:
 	@echo "  1. 配置 Docker 镜像源: ../docker-setup.sh"
 	@echo "  2. 构建并启动: make compose-up"
 
-# 检查GITHUB_TOKEN是否设置的函数
-# export GITHUB_TOKEN=$(GITHUB_TOKEN)
-check_token:
-	@if [ -z "$GITHUB_TOKEN" ]; then \
-		echo "错误: 未设置GITHUB_TOKEN环境变量"; \
-		echo "请使用以下命令设置："; \
-		echo "export GITHUB_TOKEN=your_github_token"; \
-		exit 1; \
-	fi
-
 # 构建容器镜像
-build: check_token
+build:
 	@echo "docker build start for "${IMAGE_NAME}:${VERSION}
-	@docker build --build-arg GITHUB_TOKEN="${GITHUB_TOKEN}" -t ${IMAGE_NAME}:${VERSION} . -f Dockerfile
+	@docker build --build-arg  -t ${IMAGE_NAME}:${VERSION} . -f Dockerfile
 
 # 使用 docker-compose 构建和运行
 compose-build:
