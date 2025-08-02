@@ -29,14 +29,16 @@ func (m *AppMiddleware) AppMust() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "appId is empty",
 			})
+			return
 		}
 		appDefinition, err := m.appService.GetAppConfig(ctx, appId)
-		if err != nil {
+		if err != nil || appDefinition == nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 				"message": "app is empty",
 			})
+			return
 		}
-		appData := appEntity.AppData{
+		appData := &appEntity.AppData{
 			AppID:     appDefinition.AppId,
 			AppKey:    appDefinition.ApiKey,
 			AppSecret: appDefinition.ApiSecret,

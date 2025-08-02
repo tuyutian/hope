@@ -48,7 +48,7 @@ func (s *SubscriptionService) CreateUsageSubscription(
 	isTest bool,
 ) (*userEntity.UserSubscription, string, error) {
 	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
-	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	returnUrl := s.shopifyRepo.GetReturnUrl(appData.AppID, claims.UserID)
 	// 1. 构建订阅输入
 	input := shopifyEntity.AppSubscriptionCreateInput{
