@@ -44,7 +44,7 @@ func (b *billingPeriodSummaryRepoImpl) CreateBillingPeriodSummary(ctx context.Co
 }
 
 func (b *billingPeriodSummaryRepoImpl) UpdateBillingPeriodSummary(ctx context.Context, period *billingEntity.BillingPeriodSummary) error {
-	_, err := b.db.Table(new(billingEntity.BillingPeriodSummary)).ID(period.Id).Update(period)
+	_, err := b.db.Context(ctx).Table(new(billingEntity.BillingPeriodSummary)).ID(period.Id).Update(period)
 	if err != nil {
 		return err
 	}
@@ -52,13 +52,13 @@ func (b *billingPeriodSummaryRepoImpl) UpdateBillingPeriodSummary(ctx context.Co
 }
 
 func (b *billingPeriodSummaryRepoImpl) GetByCurrentPeriod(ctx context.Context, userID int64, periodEnd int64) (*billingEntity.BillingPeriodSummary, error) {
-	var period billingEntity.BillingPeriodSummary
-	has, err := b.db.Table(&period).Where("user_id = ? and period_end = ?", userID, periodEnd).Get(&period)
+	period := &billingEntity.BillingPeriodSummary{}
+	has, err := b.db.Where("user_id = ? and period_end = ?", userID, periodEnd).Get(&period)
 	if err != nil {
 		return nil, err
 	}
 	if !has {
 		return nil, nil
 	}
-	return &period, nil
+	return period, nil
 }

@@ -222,7 +222,7 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 		var cappedAmount decimal.Decimal
 		var terms string
 		var balanceUsed decimal.Decimal
-		var currency string = "USD" // 默认货币
+		var currency = "USD" // 默认货币
 
 		if currentSubscription.IsUsageSubscription() {
 			pricingType = userEntity.PricingTypeRecurring

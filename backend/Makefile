@@ -51,8 +51,27 @@ clean:
 
 # 设置GITHUB_TOKEN的帮助信息
 help:
-	@echo "请先设置GITHUB_TOKEN环境变量，可以使用以下命令："
-	@echo "export GITHUB_TOKEN=your_github_token"
+	@echo "Hope项目 Docker 构建帮助"
+	@echo "=========================="
+	@echo ""
+	@echo "环境准备:"
+	@echo "  export GITHUB_TOKEN=your_github_token"
+	@echo ""
+	@echo "传统构建命令:"
+	@echo "  make build       - 构建 Docker 镜像"
+	@echo "  make run         - 运行容器"
+	@echo "  make stop        - 停止容器"
+	@echo "  make remove      - 删除容器"
+	@echo ""
+	@echo "Docker Compose 命令:"
+	@echo "  make compose-build  - 构建所有服务"
+	@echo "  make compose-up     - 启动所有服务"
+	@echo "  make compose-down   - 停止所有服务"
+	@echo "  make compose-logs   - 查看服务日志"
+	@echo ""
+	@echo "快速开始:"
+	@echo "  1. 配置 Docker 镜像源: ../docker-setup.sh"
+	@echo "  2. 构建并启动: make compose-up"
 
 # 检查GITHUB_TOKEN是否设置的函数
 # export GITHUB_TOKEN=$(GITHUB_TOKEN)
@@ -68,6 +87,23 @@ check_token:
 build: check_token
 	@echo "docker build start for "${IMAGE_NAME}:${VERSION}
 	@docker build --build-arg GITHUB_TOKEN="${GITHUB_TOKEN}" -t ${IMAGE_NAME}:${VERSION} . -f Dockerfile
+
+# 使用 docker-compose 构建和运行
+compose-build:
+	@echo "使用 docker-compose 构建所有服务..."
+	@cd .. && docker-compose build
+
+compose-up:
+	@echo "启动所有服务..."
+	@cd .. && docker-compose up -d
+
+compose-down:
+	@echo "停止所有服务..."
+	@cd .. && docker-compose down
+
+compose-logs:
+	@echo "查看服务日志..."
+	@cd .. && docker-compose logs -f
 
 # 运行容器
 run: run_api run_job

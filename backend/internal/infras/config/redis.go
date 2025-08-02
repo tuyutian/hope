@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	redis "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 
 	"backend/pkg/gredis"
 )

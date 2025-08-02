@@ -74,7 +74,7 @@ func (o *OrderService) Summary(ctx context.Context, userId int64, days int) (int
 
 	for _, v := range summary {
 		// 将 v.Today (时间戳) 转换为 time.Time
-		t := time.Unix(int64(v.Today), 0)
+		t := time.Unix(v.Today, 0)
 
 		// 转换到美国时区
 		t = t.In(loc)

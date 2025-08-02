@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # 后端 API 服务
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hope-go-api
+    ports:
+      - "8080:8080"
+      - "8090:8090"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/app.yaml:/app/app.yaml
+    restart: unless-stopped
+    networks:
+      - hope-network
+    command: ["api"]
+
+  # 后端 Job 服务
+  backend-job:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hope-go-job
+    ports:
+      - "8091:8090"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/app.yaml:/app/app.yaml
+    restart: unless-stopped
+    networks:
+      - hope-network
+    command: ["job"]
+    depends_on:
+      - redis
+      - mysql
+
+  # Redis 服务
+  redis:
+    image: registry.cn-hangzhou.aliyuncs.com/library/redis:7-alpine
+    container_name: hope-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=UTC
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - hope-network
+    command: redis-server --appendonly yes
+
+  # MySQL 服务
+  mysql:
+    image: registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0
+    container_name: hope-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=hope
+      - MYSQL_USER=hope
+      - MYSQL_PASSWORD=hope123
+      - TZ=UTC
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/app.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - hope-network
+    command: --default-authentication-plugin=mysql_native_password
+
+networks:
+  hope-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+  mysql-data:
+    driver: local

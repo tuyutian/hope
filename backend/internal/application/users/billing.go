@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -58,8 +57,8 @@ func (b *BillingService) BillDetails(ctx context.Context, userID int64, paginati
 func (b *BillingService) CurrentBillDetail(ctx context.Context, userID int64) *billingEntity.CurrentPeriodResponse {
 	subscription, err := b.subscriptionRepo.GetActiveSubscription(ctx, userID)
 	response := &billingEntity.CurrentPeriodResponse{
-		PeriodEnd:   "",
-		PeriodStart: "",
+		PeriodEnd:   0,
+		PeriodStart: 0,
 		Amount:      decimal.Zero,
 	}
 	if err != nil {
@@ -72,16 +71,15 @@ func (b *BillingService) CurrentBillDetail(ctx context.Context, userID int64) *b
 	if subscription.CurrentPeriodEnd == 0 {
 		return response
 	}
-	periodEnd := time.Unix(subscription.CurrentPeriodEnd, 0).Format("Jan 2, 2006")
-	periodStart := time.Unix(subscription.CurrentPeriodEnd-3600*24*30, 0).Format("Jan 2, 2006")
 	bill, err := b.billingPeriodSummaryRepo.GetByCurrentPeriod(ctx, userID, subscription.CurrentPeriodEnd)
-	response.PeriodEnd = periodEnd
-	response.PeriodStart = periodStart
 	if bill != nil {
-		response.PeriodEnd = periodEnd
-		response.PeriodStart = periodStart
 		response.Amount = bill.TotalCommissionAmount
+		response.PeriodStart = bill.BillingPeriodStart
+		response.PeriodEnd = bill.BillingPeriodEnd
 		return response
+	} else {
+		response.PeriodStart = subscription.CurrentPeriodStart
+		response.PeriodEnd = subscription.CurrentPeriodEnd
 	}
 	return response
 }
