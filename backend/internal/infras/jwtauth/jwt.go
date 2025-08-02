@@ -2,7 +2,6 @@ package jwtauth
 
 import (
 	"context"
-	"fmt"
 
 	"backend/internal/domain/repo/jwtauth"
 	"backend/pkg/crypto/bcrypt"
@@ -65,7 +64,6 @@ func (j *jwtRepoImpl) cryptoTokenParse(token string) (*jwt.BizClaims, error) {
 
 // UpdateSecret 更新 JWT 的 secret 和 manager
 func (j *jwtRepoImpl) UpdateSecret(secret string, manager *jwt.JwtManager) {
-	fmt.Printf("Updating JWT secret from %s to %s\n", j.secret[:8]+"...", secret[:8]+"...")
 	j.secret = secret
 	j.manager = manager
 }
