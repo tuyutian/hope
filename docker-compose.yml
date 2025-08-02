@@ -1,9 +1,7 @@
 services:
   # 后端 API 服务
   backend-api:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: registry.cn-hangzhou.aliyuncs.com/maxotm/hope:latest
     container_name: hope-go-api
     ports:
       - "8080:8080"
@@ -23,9 +21,7 @@ services:
 
   # 后端 Job 服务
   backend-job:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: registry.cn-hangzhou.aliyuncs.com/maxotm/hope:latest
     container_name: hope-go-job
     environment:
       - TZ=UTC
