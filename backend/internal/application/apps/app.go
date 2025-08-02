@@ -9,7 +9,6 @@ import (
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	"backend/internal/providers"
 	"backend/pkg/ctxkeys"
-	"backend/pkg/logger"
 )
 
 type AppService struct {
@@ -26,17 +25,12 @@ func (a *AppService) GetAppConfig(ctx context.Context, appId string) (*appEntity
 }
 
 func (a *AppService) GetAppID(ctx context.Context) string {
-	return ctx.Value(ctxkeys.AppID).(string)
+	return ctx.Value(ctxkeys.AppData).(appEntity.AppData).AppID
 }
 
 func (a *AppService) VerifyWebhook(ctx context.Context, signature string, body []byte) bool {
-	appID := ctx.Value(ctxkeys.AppID).(string)
-	config, err := a.GetAppConfig(ctx, appID)
-	if err != nil {
-		logger.Error(ctx, "get app config error: %s", err.Error())
-		return false
-	}
-	appSecret := config.ApiSecret
+	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	appSecret := appData.AppSecret
 	// 从配置中获取 webhook secret
 	if appSecret == "" {
 		fmt.Println("警告: Webhook secret 未配置，跳过签名验证")

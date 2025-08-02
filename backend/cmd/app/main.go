@@ -61,6 +61,7 @@ func main() {
 	middlewares := &routers.Middleware{
 		RequestWare:        &middleware.RequestWare{},
 		CorsWare:           &middleware.CorsWare{},
+		AppMiddleware:      middleware.NewAppMiddleware(services.AppService),
 		AuthWare:           middleware.NewAuthWare(services.UserService, services.AppService, repos),
 		ShopifyGraphqlWare: middleware.NewShopifyGraphqlWare(repos, services.UserService),
 	}

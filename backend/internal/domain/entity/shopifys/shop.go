@@ -102,12 +102,6 @@ type Address struct {
 	Zip           string  `json:"zip"`
 }
 
-// App 应用信息
-type App struct {
-	ID    string `json:"id"`
-	Title string `json:"title"`
-}
-
 // ShopBillingAddressInput 账单地址输入
 type ShopBillingAddressInput struct {
 	Address1     string `json:"address1"`

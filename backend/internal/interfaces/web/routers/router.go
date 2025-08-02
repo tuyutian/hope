@@ -18,6 +18,7 @@ type Middleware struct {
 	RequestWare        *middleware.RequestWare
 	CorsWare           *middleware.CorsWare
 	ShopifyGraphqlWare *middleware.ShopifyGraphqlWare
+	AppMiddleware      *middleware.AppMiddleware
 }
 
 // InitRouters 初始化router规则
@@ -44,6 +45,7 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 	// 路由找不到的情况
 	router.NoRoute(requestWare.NotFoundHandler())
 	api := router.Group("/:appId/api/v1") // 定义路由组
+	router.Use(middlewares.AppMiddleware.AppMust())
 	RegisterPluginRouter(api, handlers.SettingHandler)
 	RegisterWebhookRouter(api, handlers.WebhookHandler)
 	RegisterCommonRouter(api, handlers.CommonHandler, middlewares.AuthWare)

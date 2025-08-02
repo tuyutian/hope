@@ -7,6 +7,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
+	appEntity "backend/internal/domain/entity/apps"
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	userEntity "backend/internal/domain/entity/users"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
@@ -47,8 +48,8 @@ func (s *SubscriptionService) CreateUsageSubscription(
 	isTest bool,
 ) (*userEntity.UserSubscription, string, error) {
 	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
-	appID := ctx.Value(ctxkeys.AppID).(string)
-	returnUrl := s.shopifyRepo.GetReturnUrl(appID, claims.UserID)
+	appData := ctx.Value(ctxkeys.AppData).(appEntity.AppData)
+	returnUrl := s.shopifyRepo.GetReturnUrl(appData.AppID, claims.UserID)
 	// 1. 构建订阅输入
 	input := shopifyEntity.AppSubscriptionCreateInput{
 		Name: planName,

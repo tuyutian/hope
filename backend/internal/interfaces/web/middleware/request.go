@@ -59,8 +59,7 @@ func (ware *RequestWare) Access() gin.HandlerFunc {
 			"request_ip", ip,
 			"app_id", appId,
 		)
-		ctx = context.WithValue(ctx, ctxkeys.AppID, appId)
-		c.Request = c.Request.WithContext(ctx)
+
 		c.Next()
 
 		status := c.Writer.Status()
