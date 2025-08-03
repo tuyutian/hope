@@ -20,6 +20,7 @@ export function ShopifyAuthProvider({ children }: ShopifyAuthContextProps) {
   const [user, setUser] = useState<User>(DefaultUser);
   const { setUserGuide, setGuideShow } = getUserState();
   const shopify = useShopifyBridge();
+  const [loading, setLoading] = useState(true);
   // 初始化用户数据的异步函数
   const initializeUser = async () => {
     try {
@@ -42,14 +43,14 @@ export function ShopifyAuthProvider({ children }: ShopifyAuthContextProps) {
       if (window.hideLoadingState) {
         window.hideLoadingState();
       }
+      setLoading(false);
     }
   };
 
   // 使用 useEffect 在组件挂载时初始化用户数据
   useEffect(() => {
-    console.log(123);
     void initializeUser();
   }, []);
 
-  return <AuthContext value={{ user: user, setUser: setUser }}>{children}</AuthContext>;
+  return <AuthContext value={{ user: user, setUser: setUser }}>{!loading && children}</AuthContext>;
 }
