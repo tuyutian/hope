@@ -1,20 +1,17 @@
 {
-  "name": "hope-app",
+  "name": "protectify",
   "version": "1.0.0",
   "license": "UNLICENSED",
   "scripts": {
     "shopify": "shopify",
     "build": "shopify app build",
     "dev": "shopify app dev",
-    "dev-test": "shopify app dev -c shopify.app.insurance-test.toml",
-    "push": "shopify app push",
+    "info": "shopify app info",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy",
-    "deploy-test": "shopify app deploy  -c shopify.app.insurance-test.toml",
-    "info": "shopify app info"
+    "deploy": "shopify app deploy"
   },
   "dependencies": {
-    "@shopify/cli": "^3.83.1"
+    "@shopify/cli": "^3.83.2"
   },
   "trustedDependencies": [
     "@shopify/plugin-cloudflare"
