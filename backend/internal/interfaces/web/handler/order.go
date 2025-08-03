@@ -91,8 +91,6 @@ func (h *OrderHandler) OrderList(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("绑定成功: %+v\n", orderListParams)
-
 	claims := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 	orderListParams.UserID = claims.UserID
 

@@ -84,8 +84,7 @@ func (u *UserService) GetLoginAdminFromID(ctx context.Context, id int64) (interf
 
 // GetClaims 从 context 中获取 jwt.BizClaims
 func (u *UserService) GetClaims(ctx context.Context) *jwt.BizClaims {
-	claims, has := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
-	logger.Error(ctx, "Get claims nil at user service", zap.Bool("has", has))
+	claims, _ := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
 	return claims
 }
 
