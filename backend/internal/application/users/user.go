@@ -84,7 +84,8 @@ func (u *UserService) GetLoginAdminFromID(ctx context.Context, id int64) (interf
 
 // GetClaims 从 context 中获取 jwt.BizClaims
 func (u *UserService) GetClaims(ctx context.Context) *jwt.BizClaims {
-	claims, _ := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
+	claims, has := ctx.Value(ctxkeys.BizClaims).(*jwt.BizClaims)
+	logger.Error(ctx, "Get claims nil at user service", zap.Bool("has", has))
 	return claims
 }
 
@@ -149,8 +150,15 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	// 更新 app auth记录
 	appAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)
 	if err == nil {
+		if appAuth == nil {
+			appAuth = &appEntity.UserAppAuth{
+				UserId: user.ID,
+				AppId:  appID,
+			}
+		}
+		appAuth.Shop = user.Shop
+		appAuth.AuthToken = sessionToken.Token
 		appAuth.Scopes = sessionToken.Scope
-		appAuth.Shop = claims.Dest
 		appAuth.Status = 1
 		if appAuth.Id > 0 {
 			_, _ = u.appAuthRepo.Create(ctx, appAuth)

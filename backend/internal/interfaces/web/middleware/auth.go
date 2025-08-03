@@ -192,7 +192,6 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	}
 	// 验证claims是否合法
 	err = auth.checkClaims(ctx, token, claims)
-	logger.Warn(ctx, "check claims", zap.Any("claims", claims), zap.Error(err))
 	if err != nil {
 		return nil, err
 	}

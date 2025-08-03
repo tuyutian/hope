@@ -41,7 +41,6 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 						go utils.CallWilding(fmt.Sprintf("Painc App:%s\nInfo is: %v\nRequest is: %s\nDomain: %s", "tms-api", err, c.Request.URL, c.GetHeader("X-Shopify-Shop-Domain")))
 					}
 				}()
-				c.Next()
 			}
 		}(),
 		middleware.TimeoutHandler(40*time.Second),
