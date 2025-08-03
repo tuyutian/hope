@@ -35,6 +35,12 @@ func (w *ShopifyGraphqlWare) ShopifyGraphqlClient() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		claims := w.userService.GetClaims(ctx)
+		if claims == nil {
+			c.AbortWithStatusJSON(401, gin.H{
+				"message": "unauthorized",
+			})
+			return
+		}
 		user, _ := w.userService.GetLoginUserFromID(ctx, claims.UserID)
 		accessToken := "fooShop"
 		if user != nil {

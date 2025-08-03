@@ -3,10 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"backend/internal/application/apps"
 	"backend/internal/application/users"
@@ -190,6 +192,7 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	}
 	// 验证claims是否合法
 	err = auth.checkClaims(ctx, token, claims)
+	logger.Warn(ctx, "check claims", zap.Any("claims", claims), zap.Error(err))
 	if err != nil {
 		return nil, err
 	}
@@ -276,10 +279,12 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	if err != nil {
 		return err
 	}
+	fmt.Println("sessionStore user", user)
 	if user != nil {
 		claims.UserID = user.ID
 		return nil
 	}
+	logger.Warn(ctx, "sessionStore user is nil", zap.Any("claims", claims))
 	return message.ErrInvalidAccount
 }
 
