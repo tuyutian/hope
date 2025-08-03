@@ -1,5 +1,2 @@
 packages:
-  - extensions/*
-
-onlyBuiltDependencies:
-  - esbuild
+ - 'extensions/*'
