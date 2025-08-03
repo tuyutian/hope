@@ -80,13 +80,7 @@ configure_build_sources() {
     else
         echo "⚠️  后端 Dockerfile 不存在"
     fi
-    
-    # 检查是否存在 frontend/Dockerfile
-    if [[ -f "frontend/Dockerfile" ]]; then
-        echo "✅ 前端 Dockerfile 已存在，包含 npm 镜像源配置"
-    else
-        echo "⚠️  前端 Dockerfile 不存在"
-    fi
+
 }
 
 # 验证配置
@@ -94,14 +88,14 @@ verify_configuration() {
     echo "🔍 验证 Docker 配置..."
     
     # 测试拉取镜像
-    echo "测试拉取阿里云镜像..."
-    docker pull registry.cn-hangzhou.aliyuncs.com/library/alpine:latest
+    echo "测试拉取镜像..."
+    docker pull alpine:latest
     
     if [[ $? -eq 0 ]]; then
         echo "✅ 镜像拉取测试成功"
-        docker rmi registry.cn-hangzhou.aliyuncs.com/library/alpine:latest
+        docker rmi alpine:latest
     else
-        echo "❌ 镜像拉取测试失败"
+        echo "❌ 镜像拉取测试失败，请检查网络或镜像源配置"
     fi
     
     # 显示当前配置

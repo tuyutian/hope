@@ -122,12 +122,17 @@ docker run -d -p 8091:8090 --name hope-job hope-backend job
 
 ### 基础镜像源
 
-项目 Dockerfile 中使用的基础镜像均来自阿里云镜像仓库：
+项目使用的基础镜像：
 
+**后端构建镜像（在 Dockerfile 中）：**
 - Go: `registry.cn-hangzhou.aliyuncs.com/library/golang:1.21-alpine`
 - Alpine: `registry.cn-hangzhou.aliyuncs.com/library/alpine:latest`
-- Redis: `registry.cn-hangzhou.aliyuncs.com/library/redis:7-alpine`
-- MySQL: `registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0`
+
+**服务运行镜像（在 docker-compose 中）：**
+- Redis: `redis:7-alpine`
+- MySQL: `mysql:8.0`
+
+**说明：** 服务镜像使用 Docker Hub 官方镜像，通过配置 Docker Registry 镜像源来加速拉取。
 
 ### 包管理器镜像源
 
@@ -157,17 +162,27 @@ time docker pull registry.cn-hangzhou.aliyuncs.com/library/alpine:latest
 
 ### 常见问题
 
-1. **镜像拉取仍然很慢**
+1. **镜像拉取访问被拒绝错误**
+   ```
+   Error response from daemon: pull access denied for registry.cn-hangzhou.aliyuncs.com/library/redis
+   ```
+   **解决方案：** 
+   - 使用 Docker Hub 官方镜像（如 `redis:7-alpine`、`mysql:8.0`）
+   - 配置 Docker Registry 镜像源加速拉取
+   - 运行 `./docker-setup.sh` 自动配置镜像源
+
+2. **镜像拉取仍然很慢**
    - 检查网络连接
    - 尝试不同的镜像源
    - 确认 Docker 配置是否生效
+   - 重启 Docker 服务
 
-2. **构建失败**
+3. **构建失败**
    - 检查 Dockerfile 语法
    - 确认网络访问权限
    - 查看构建日志定位问题
 
-3. **权限问题**
+4. **权限问题**
    - 确保 Docker 服务正在运行
    - 检查用户是否在 docker 组中
 

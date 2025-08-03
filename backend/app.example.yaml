@@ -1,35 +1,52 @@
 app_conf:
-  app_debug: true # 是否开启调试模式
+  app_debug: false # 是否开启调试模式
   app_env: prod # prod,test,local,dev
   app_port: 8080
   monitor_port: 8090 # pprof性能监控和prometheus监控端口，这是通过http服务访问
   graceful_wait: 5s # 平滑退出等待时间，单位s
-  log_level: info
+  log_level: warn
   # shopify 配置
   shopify:
-    app_key:
-    app_secret:
-
+    webhook_host: webhook.protectifyapp.com
   # jwt 配置项
   jwt:
-    secret_key: xxxxxxxx
-    access_expiration: 24h # access token 过期时间
-    refresh_expiration: 25h # refresh token 过期时间
+    secret_key: SbODEPq7EpEl3ByfL0MP67+9IJA8e7leVUK0SABdBM8=
+    access_expiration: 168h # access token 过期时间
+    refresh_expiration: 168h # refresh token 过期时间
+
 
 # redis配置
 redis_conf:
-  Address: "127.0.0.1:6379" # host:port address.
+  Address: "redis:6379" # host:port address.
   Password:
   MaxIdle: 150
   Active: 150
   IdleTimeout: 200s
-  Prefix: "protectify_api_"
+  Prefix: "hope_api_"
 
 # mysql配置
 db_conf:
-  Dsn: "shopify:shopify_test@tcp(127.0.0.1:3306)/shopify_test?charset=utf8mb4&parseTime=True&loc=Local"
+  DbBaseConf:
+    Ip: mysql
+    Port: 3306
+    User: hope
+    Password: hope123
+    Database: hope
+    Charset: "utf8mb4"
+    Collation: "utf8mb4_general_ci"
+    ParseTime: true
+    Loc: Local
+    Timeout: 10s #  Dial timeout
+    ReadTimeout: 10s # I/O read timeout
+    WriteTimeout: 10s # I/O write timeout
   UsePool: true
-  MaxIdleConn: 100  #设置连接池的空闲数大小
-  MaxOpenConn: 600  #最大open connection个数
+  MaxIdleConns: 50  #设置连接池的空闲数大小
+  MaxOpenConns: 600  #最大open connection个数
   MaxLifetime: 1800s
   ShowSql: true
+
+aliyun_oss:
+  endpoint: YouOption
+  access_key_id: YouOption
+  access_key_secret: YouOption
+  bucket_name: YouOption

@@ -3,10 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"backend/internal/application/apps"
 	"backend/internal/application/users"
@@ -179,12 +181,6 @@ func (auth *AuthWare) checkJwt(c *gin.Context) (*jwt.BizClaims, error) {
 	if len(token) == 0 {
 		return nil, errJwtTokenEmpty
 	}
-
-	// 包含 bcrypt.EncryptedPrefix 前缀，为新版 JWT 生成的 token
-	if strings.HasPrefix(token, bcrypt.EncryptedPrefix) {
-		// strings.TrimPrefix 底层使用的是切片截取
-		token = token[len(bcrypt.EncryptedPrefix):]
-	}
 	// token 校验失败
 	claims, err := auth.jwtRepo.Verify(ctx, token)
 	if err != nil {
@@ -282,10 +278,12 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	if err != nil {
 		return err
 	}
+	fmt.Println("sessionStore user", user)
 	if user != nil {
 		claims.UserID = user.ID
 		return nil
 	}
+	logger.Warn(ctx, "sessionStore user is nil", zap.Any("claims", claims))
 	return message.ErrInvalidAccount
 }
 

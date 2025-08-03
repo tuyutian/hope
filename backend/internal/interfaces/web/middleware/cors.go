@@ -3,6 +3,8 @@ package middleware
 import (
 	"net/http"
 
+	"backend/pkg/logger"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,32 +16,77 @@ type CorsWare struct {
 func (ware *CorsWare) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		ware.setCorsHeaders(c, origin)
 
-		if origin != "" {
-			// 接收客户端发送的origin （重要！）
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			// 设置缓存时间
-			c.Header("Access-Control-Max-Age", "172800")
-			//
-			// c.Header("Content-Type", "application/json")
+		// 添加调试日志
+		logger.Info(c.Request.Context(), "CORS 请求",
+			"origin", origin,
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path)
+
+		// 如果是直接访问（没有 Origin 头），允许通过
+		if origin == "" {
+			logger.Info(c.Request.Context(), "CORS 直接访问，允许通过")
+			c.Next()
+			return
 		}
 
-		// 允许类型校验
+		// 检查是否允许该域名
+		if ware.isAllowedOrigin(origin) {
+			ware.setCorsHeaders(c, origin)
+			logger.Info(c.Request.Context(), "CORS 允许", "origin", origin)
+		} else {
+			logger.Warn(c.Request.Context(), "CORS 拒绝", "origin", origin)
+		}
+
+		// 处理预检请求
 		if c.Request.Method == "OPTIONS" {
+			logger.Info(c.Request.Context(), "CORS 预检请求", "origin", origin)
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 
+		logger.Info(c.Request.Context(), "CORS 继续处理请求")
 		c.Next()
 	}
+}
 
+// isAllowedOrigin 检查是否允许该域名
+func (ware *CorsWare) isAllowedOrigin(origin string) bool {
+	if origin == "" {
+		return false
+	}
+
+	// 如果配置了允许的域名列表，使用配置的列表
+	if len(ware.AllowedOrigins) > 0 {
+		for _, allowed := range ware.AllowedOrigins {
+			if origin == allowed {
+				return true
+			}
+		}
+		return false
+	}
+
+	// 默认允许的域名列表
+	allowedOrigins := []string{
+		"https://s.protectifyapp.com",
+		"https://protectifyapp.com",
+		"http://localhost:9527",
+		"http://127.0.0.1:9527",
+	}
+
+	for _, allowed := range allowedOrigins {
+		if origin == allowed {
+			return true
+		}
+	}
+
+	return false
 }
 
 var (
 	allowMethod  = "POST,GET,OPTIONS,PUT,DELETE,UPDATE"
 	allowHeaders = "Content-Type,AccessToken,Authorization,Cookie,cookie,Content-Length,X-CSRF-Token," +
-		"Token,session,ignorecanceltoken"
+		"Token,session,ignorecanceltoken,X-Requested-With"
 	exposeHeaders = "Content-Length,Access-Control-Allow-Origin,Access-Control-Allow-Headers,Content-Type"
 )
 
@@ -51,4 +98,8 @@ func (ware *CorsWare) setCorsHeaders(c *gin.Context, origin string) {
 	c.Header("Access-Control-Expose-Headers", exposeHeaders)
 	c.Header("Access-Control-Max-Age", "172800")
 	c.Header("Access-Control-Allow-Credentials", "true")
+
+	logger.Info(c.Request.Context(), "CORS 头已设置",
+		"origin", origin,
+		"allow_credentials", "true")
 }

@@ -44,7 +44,7 @@ function App() {
 
     // 重定向逻辑
     if (!isShopifyEmbedded() && isProductionEnv() && !useAdminToken && !useAuthToken) {
-      let redirectUrl = "https://api.insurance.com/insurance";
+      let redirectUrl = `${import.meta.env.VITE_API_BASE_URL}/protectify/api/`;
       if (shop) {
         redirectUrl += `?shop=${shop}`;
       }

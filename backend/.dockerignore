@@ -27,5 +27,3 @@ Makefile
 # 环境文件
 .env*
 
-# 脚本
-scripts/

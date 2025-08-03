@@ -10,6 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
+	appEntity "backend/internal/domain/entity/apps"
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	"backend/internal/domain/entity/users"
 	userEntity "backend/internal/domain/entity/users"
@@ -66,14 +67,14 @@ func (u *UserService) GetLoginUserFromID(ctx context.Context, id int64) (*users.
 }
 
 func (u *UserService) GetUserFromShopID(ctx context.Context, shopID int64) (*users.User, error) {
-	appId := ctx.Value(ctxkeys.AppID).(string)
-	user, err := u.userRepo.GetActiveUserByShopID(ctx, appId, shopID)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
+	user, err := u.userRepo.GetActiveUserByShopID(ctx, appData.AppID, shopID)
 	return user, err
 }
 
 func (u *UserService) GetLoginUserFromShop(ctx context.Context, shop string) (*users.User, error) {
-	appId := ctx.Value(ctxkeys.AppID).(string)
-	user, err := u.userRepo.GetActiveUserByShop(ctx, appId, shop)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
+	user, err := u.userRepo.GetActiveUserByShop(ctx, appData.AppID, shop)
 	return user, err
 }
 
@@ -94,7 +95,7 @@ func (u *UserService) GetShopifyClient(ctx context.Context) *shopify_graphql.Gra
 }
 
 func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopifyEntity.Token, claims *jwt.BizClaims) (*users.User, error) {
-	appID := ctx.Value(ctxkeys.AppID).(string)
+	appData := ctx.Value(ctxkeys.AppData).(*appEntity.AppData)
 	shopName, err := utils.GetShopName(claims.Dest)
 	if err != nil {
 		return nil, err
@@ -105,6 +106,7 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	if err != nil {
 		logger.Error(ctx, "shopify_graphql_repo.GetShopInfo", zap.Error(err))
 	}
+	appID := appData.AppID
 	// 恢复用户数据
 	user, _ := u.userRepo.GetByShop(ctx, appID, claims.Dest)
 	if user == nil {
@@ -147,8 +149,15 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	// 更新 app auth记录
 	appAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)
 	if err == nil {
+		if appAuth == nil {
+			appAuth = &appEntity.UserAppAuth{
+				UserId: user.ID,
+				AppId:  appID,
+			}
+		}
+		appAuth.Shop = user.Shop
+		appAuth.AuthToken = sessionToken.Token
 		appAuth.Scopes = sessionToken.Scope
-		appAuth.Shop = claims.Dest
 		appAuth.Status = 1
 		if appAuth.Id > 0 {
 			_, _ = u.appAuthRepo.Create(ctx, appAuth)

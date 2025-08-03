@@ -32,8 +32,10 @@ func main() {
 	appConf := config.InitAppConfig()
 	// 日志输出采用zap框架实现日志json格式输出
 	logger.Default(
-		logger.WriteToFile(true), logger.WithStdout(true), // 将日志写到stdout
-		logger.WithAddCaller(true), logger.WithLogLevel(appConf.GetLogLevel()),
+		logger.WriteToFile(true),
+		logger.WithStdout(false), // 生产环境不输出到控制台，减少日志量
+		logger.WithAddCaller(true),
+		logger.WithLogLevel(appConf.GetLogLevel()),
 	)
 
 	logger.Info(context.Background(), "starting server", zap.Int("pid", pid))
@@ -50,6 +52,9 @@ func main() {
 		log.Fatalf("oss init error:%v", err)
 	}
 	asynqClient, err := config.NewAsynqClient("redis_conf")
+	if err != nil {
+		log.Fatalf("asynq client init error:%v", err)
+	}
 	// 初始化repos
 	repos := providers.NewRepositories(db, redisClient, appConf, providers.WithOssRepo(ossClient, bucketName), providers.WithAsynqRepo(asynqClient))
 	// 初始化服务
@@ -61,6 +66,8 @@ func main() {
 	middlewares := &routers.Middleware{
 		RequestWare:        &middleware.RequestWare{},
 		CorsWare:           &middleware.CorsWare{},
+		CspWare:            middleware.NewCspMiddleware(true), // 设置为嵌入式应用
+		AppMiddleware:      middleware.NewAppMiddleware(services.AppService, repos.JwtRepo, appConf.JWT),
 		AuthWare:           middleware.NewAuthWare(services.UserService, services.AppService, repos),
 		ShopifyGraphqlWare: middleware.NewShopifyGraphqlWare(repos, services.UserService),
 	}
@@ -68,6 +75,15 @@ func main() {
 	router := gin.New()
 	// 注册路由规则
 	routers.InitRouters(router, handlers, middlewares)
+
+	// 简单的 CORS 测试接口
+	router.GET("/test/cors", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "CORS test",
+			"origin":  c.GetHeader("Origin"),
+		})
+	})
+
 	router.GET("/test/token", func(c *gin.Context) {
 		token := services.UserService.GenerateTestToken(c.Request.Context(), 2)
 		c.JSON(200, gin.H{
@@ -88,10 +104,10 @@ func main() {
 	server := &http.Server{
 		Handler:           router,
 		Addr:              fmt.Sprintf("0.0.0.0:%d", appConf.AppPort),
-		IdleTimeout:       20 * time.Second, // tcp idle time
-		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout:       10 * time.Second,
-		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second, // 增加空闲超时时间
+		ReadHeaderTimeout: 30 * time.Second, // 增加读取头部超时时间
+		ReadTimeout:       60 * time.Second, // 增加读取超时时间
+		WriteTimeout:      60 * time.Second, // 增加写入超时时间
 	}
 
 	// 在独立携程中运行
