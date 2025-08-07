@@ -527,3 +527,6 @@ CREATE TABLE `app_definition`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';
 
+
+alter table `user_product` add image_id bigint unsigned not null default 0 comment '产品图片 id' after image_url;
+

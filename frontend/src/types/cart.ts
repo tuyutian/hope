@@ -70,7 +70,7 @@ export interface WidgetStyleCardProps {
   icons: IconType[];
   onWidgetSettingsChange: (value: Partial<WidgetSettings>) => void;
   onIconClick: (id: number) => void;
-  onIconUpload: (file: File) => void;
+  onIconUpload: (file: File) => Promise<void>;
 }
 
 export interface ContentCardProps {

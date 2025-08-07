@@ -16,6 +16,7 @@ type UserProduct struct {
 	Option2     string `xorm:"'option_2' varchar(255) notnull default '' comment('产品属性2')" json:"option_2"`
 	Option3     string `xorm:"'option_3' varchar(255) notnull default '' comment('产品属性3')" json:"option_3"`
 	ImageUrl    string `xorm:"'image_url' varchar(500) notnull comment('封面图')" json:"image_url"`
+	ImageID     int64  `xorm:"'image_id' bigint(20) notnull  comment('封面图ID')" json:"image_id"`
 	Status      int    `xorm:"'status' tinyint(1) notnull default 0 comment('发布Shopify：0:未发布 1:已发布 2:正在发布中 3:shopify平台已删除')" json:"is_publish"`
 	PublishTime int64  `xorm:"'publish_time' bigint(20) notnull default 0 comment('发布时间')" json:"publish_time"`
 	IsDel       int    `xorm:"'is_del' tinyint(1) notnull default 0 comment('删除状态 0 正常 1 已删除')" json:"is_del"`

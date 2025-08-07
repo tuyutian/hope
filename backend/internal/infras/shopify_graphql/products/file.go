@@ -142,3 +142,54 @@ query GetMediaByID($id:ID!) {
 	}
 	return nil, errors.New("file not found")
 }
+
+func (c *productGraphqlRepoImpl) FileUpdate(ctx context.Context, input productEntity.FileUpdateInput) (*[]productEntity.FileUpdated, error) {
+	// 执行 GraphQL 请求
+	mutation := `
+mutation fileUpdate($files: [FileUpdateInput!]!) {
+  fileUpdate(files: $files) {
+    files {
+		id
+		fileStatus
+		alt
+		createdAt
+		preview {
+			image {
+				id
+				url
+				altText
+				}
+			status
+		}
+		fileErrors{
+			code
+			message
+			details
+		}
+	}
+    userErrors {
+      field
+      message
+      code
+    }
+  }
+}`
+	variables := map[string]interface{}{
+		"files": []productEntity.FileUpdateInput{
+			input,
+		},
+	}
+	var response productEntity.FileUpdateResponse
+	err := c.Client.Mutate(ctx, mutation, variables, &response)
+	if err != nil {
+		logger.Error(ctx, "fileUpdate error: "+err.Error(), zap.Any("response", response))
+		return nil, err
+	}
+	if len(response.FileUpdate.UserErrors) > 0 {
+		logger.Error(ctx, "fileCreate error: "+response.FileUpdate.UserErrors[0].Message, zap.Any("response", response))
+		return nil, errors.New(response.FileUpdate.UserErrors[0].Message)
+	}
+	logger.Info(ctx, "fileCreate success", zap.Any("response", response))
+
+	return &response.FileUpdate.Files, nil
+}

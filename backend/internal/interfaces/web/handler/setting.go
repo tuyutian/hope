@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"slices"
 
@@ -12,7 +11,6 @@ import (
 	"backend/internal/application/products"
 	"backend/internal/application/settings"
 	"backend/internal/application/users"
-	productEntity "backend/internal/domain/entity/products"
 	settingEntity "backend/internal/domain/entity/settings"
 	"backend/pkg/logger"
 	"backend/pkg/response"
@@ -68,22 +66,6 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 	uid := claims.UserID
 
 	settingToggleReq.UserID = uid
-	productCollection, err := json.Marshal(settingToggleReq.SelectedCollections)
-	if err != nil {
-		fmt.Println(err.Error())
-		s.Error(ctx, code.BadRequest, message.ErrorBadRequest.Error(), nil)
-		return
-	}
-	// 上传产品操作
-	err = s.productService.UploadProduct(ctxWithTrace, &productEntity.ProductReq{
-		UserID:     uid,
-		Collection: string(productCollection),
-	})
-
-	if err != nil {
-		utils.CallWilding(err.Error())
-		return
-	}
 
 	err = s.cartSettingService.SetCartSetting(ctxWithTrace, settingToggleReq)
 
@@ -91,7 +73,22 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 		utils.CallWilding(err.Error())
 		return
 	}
+	var selectIconUrl string
+	for _, icon := range settingToggleReq.Icons {
+		if icon.Selected {
+			selectIconUrl = icon.Src
+		}
+	}
+	if selectIconUrl != "" {
+		// 上传产品操作
+		err = s.productService.UploadProduct(ctxWithTrace, uid, selectIconUrl)
+	}
 
+	if err != nil {
+		utils.CallWilding(err.Error())
+		logger.Error(ctx, "Update product error: ", err.Error())
+		return
+	}
 	s.Success(ctx, "", nil)
 }
 
@@ -145,13 +142,19 @@ func (s *SettingHandler) UploadLogo(c *gin.Context) {
 		return
 	}
 
-	imageUrl, err := s.fileService.UploadProductImageToShopify(ctx, image, "Protectify product icon")
-	fmt.Println("imageUrl:", imageUrl)
+	imageMedia, err := s.fileService.UploadProductImageToShopify(ctx, image, "Protectify product icon")
+	fmt.Println("imageUrl:", imageMedia)
 	if err != nil {
 		s.Error(c, code.BadRequest, message.ErrUploadFailed.Error(), "")
 		return
 	}
-	s.Success(c, "", imageUrl)
+	s.Success(c, "", struct {
+		ID  int64  `json:"id"`
+		Src string `json:"src"`
+	}{
+		ID:  utils.GetIdFromShopifyGraphqlId(imageMedia.ID),
+		Src: imageMedia.Image.URL,
+	})
 }
 
 // 判断是否允许的图片类型

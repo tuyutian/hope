@@ -48,8 +48,7 @@ export function useCartSettings(): CartSettingsHook {
   const [productSettings, setProductSettings] = useState<ProductSettings>({
     selectedCollections: [],
     icons: [
-      { id: 1, src: "https://img.icons8.com/color/48/shield.png", selected: true },
-      { id: 2, src: "https://maxst.icons8.com/vue-static/faceswapper/hero/faces/2.jpg", selected: false },
+      { id: 1, src: "https://s.protectifyapp.com/logo.png", selected: true },
     ],
     onlyInCollection: false,
   });

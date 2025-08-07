@@ -60,9 +60,9 @@ type CountryHarmonizedSystemCodeInput struct {
 
 // CreateMediaInput 最新版本的媒体输入结构
 type CreateMediaInput struct {
-	Alt              string `json:"alt,omitempty"`    // 替代文本
-	MediaContentType string `json:"mediaContentType"` // 媒体类型：IMAGE, VIDEO, EXTERNAL_VIDEO, MODEL_3D
-	OriginalSource   string `json:"originalSource"`   // 图片URL或上传后的资源URL
+	Alt              string                     `json:"alt,omitempty"`    // 替代文本
+	MediaContentType FileCreateInputContentType `json:"mediaContentType"` // 媒体类型：IMAGE, VIDEO, EXTERNAL_VIDEO, MODEL_3D
+	OriginalSource   string                     `json:"originalSource"`   // 图片URL或上传后的资源URL
 }
 
 // OptionCreateInput 选项创建输入结构（完善版）
@@ -90,45 +90,55 @@ type MetafieldInput struct {
 type ProductUpdateInput struct {
 	Id              string   `json:"id"`
 	Status          string   `json:"status,omitempty"`
-	Title           string   `json:"title"`
+	Title           string   `json:"title,omitempty"`
 	DescriptionHtml string   `json:"descriptionHtml,omitempty"`
 	ProductType     string   `json:"productType,omitempty"`
 	Tags            []string `json:"tags,omitempty"`
 	Vendor          string   `json:"vendor,omitempty"`
 }
-type ProductImageInput struct {
-	Src string `json:"src"`
-	Alt string `json:"altText,omitempty"`
+
+type MutationProduct struct {
+	Product struct {
+		ID        string `json:"id"`
+		Title     string `json:"title"`
+		Handle    string `json:"handle"`
+		Status    string `json:"status"`
+		CreatedAt string `json:"createdAt"`
+
+		// 新版本使用 media 字段
+		Media struct {
+			Nodes []MediaNode `json:"nodes"`
+		} `json:"media,omitempty"`
+
+		Variants struct {
+			Nodes []struct {
+				ID    string `json:"id"`
+				SKU   string `json:"sku"`
+				Price string `json:"price"`
+			} `json:"nodes"`
+		} `json:"variants,omitempty"`
+	} `json:"product"`
 }
 
 // ProductCreateResponse 响应结构也需要更新
 type ProductCreateResponse struct {
 	ProductCreate struct {
-		Product struct {
-			ID        string `json:"id"`
-			Title     string `json:"title"`
-			Handle    string `json:"handle"`
-			Status    string `json:"status"`
-			CreatedAt string `json:"createdAt"`
-
-			// 新版本使用 media 字段
-			Media struct {
-				Nodes []MediaNode `json:"nodes"`
-			} `json:"media,omitempty"`
-
-			Variants struct {
-				Nodes []struct {
-					ID    string `json:"id"`
-					SKU   string `json:"sku"`
-					Price string `json:"price"`
-				} `json:"nodes"`
-			} `json:"variants,omitempty"`
-		} `json:"product"`
+		MutationProduct
 		UserErrors []struct {
 			Field   []string `json:"field"`
 			Message string   `json:"message"`
 		} `json:"userErrors"`
 	} `json:"productCreate"`
+}
+
+type ProductUpdateResponse struct {
+	ProductUpdate struct {
+		MutationProduct
+		UserErrors []struct {
+			Field   []string `json:"field"`
+			Message string   `json:"message"`
+		}
+	} `json:"productUpdate"`
 }
 
 type Product struct {
@@ -162,11 +172,12 @@ type Product struct {
 }
 
 type ProductResponse struct {
-	Product Product `json:"product"`
+	Product *Product `json:"product"`
 }
 
 // MediaNode 结构
 type MediaNode struct {
+	ID               string `json:"id"`
 	Alt              string `json:"alt"`
 	MediaContentType string `json:"mediaContentType"`
 	Preview          struct {

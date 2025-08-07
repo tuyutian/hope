@@ -12,6 +12,7 @@ import (
 
 	"backend/internal/domain/entity/jobs"
 	productEntity "backend/internal/domain/entity/products"
+	cartEntity "backend/internal/domain/entity/settings"
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	"backend/internal/domain/repo/carts"
 	jobRepo "backend/internal/domain/repo/jobs"
@@ -132,7 +133,37 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 	shopName, _ := utils.GetShopName(user.Shop)
 	client := shopify_graphql.NewGraphqlClient(shopName, user.AccessToken)
 	p.productGraphqlRepo.WithClient(client)
-	if productId == 0 {
+	productExist := true
+
+	if productId != 0 {
+		productRep, err := p.productGraphqlRepo.GetProduct(ctx, productId)
+		fmt.Println(&productRep)
+		if productRep == nil || productRep.Product == nil || err != nil {
+			productExist = false
+		}
+	} else {
+		productExist = false
+	}
+	cartSetting, err := p.cartSettingRepo.First(ctx, uid)
+	if err != nil {
+		return err
+	}
+	iconJson := cartSetting.IconUrl // 解析 Icons
+	var icons []cartEntity.IconReq
+	if err := json.Unmarshal([]byte(iconJson), &icons); err != nil {
+		logger.Error(ctx, "get-cart 解析 IconUrl 失败", "Err:", err.Error())
+		return fmt.Errorf("解析 IconUrl 失败: %w", err)
+	}
+	var productImageUrl string
+	for _, icon := range icons {
+		if icon.Selected {
+			productImageUrl = icon.Src
+			break
+		}
+	}
+	fmt.Println(productImageUrl)
+	var imageMediaId int64
+	if !productExist {
 		var variantId int64
 		// 创建产品
 		shopifyProductResp, err := p.productGraphqlRepo.CreateProductWithMedia(ctx, shopifyEntity.ProductCreateInput{
@@ -154,8 +185,8 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		}, []shopifyEntity.CreateMediaInput{
 			{
 				Alt:              "image-1",
-				OriginalSource:   product.ImageUrl,
-				MediaContentType: "IMAGE",
+				OriginalSource:   productImageUrl,
+				MediaContentType: shopifyEntity.ImageType,
 			},
 		}) // 通过 client 调用方法
 
@@ -164,6 +195,8 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		}
 		shopifyProduct := shopifyProductResp.ProductCreate.Product
 		productId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.ID)
+		imageMediaId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.Media.Nodes[0].ID)
+		productImageUrl = shopifyProduct.Media.Nodes[0].Preview.Url
 		variantId = utils.GetIdFromShopifyGraphqlId(shopifyProduct.Variants.Nodes[0].ID)
 		// 删除默认变体
 		err = p.productGraphqlRepo.DeleteVariant(ctx, productId, variantId)
@@ -198,15 +231,6 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			return p.fail(ctx, job.Id, "创建变体失败", err)
 		}
 
-		// 填补数据库里的产品ID和变体ID
-		if err := p.productRepo.UpdateProduct(ctx, payload.UserProductId, uid, &productEntity.UserProduct{
-			ProductId:   productId,
-			Status:      1,
-			PublishTime: time.Now().Unix(),
-		}); err != nil {
-			return p.fail(ctx, job.Id, "更新产品信息失败", err)
-		}
-
 		for _, item := range gqlVariants {
 			sku := item["sku"].(string)             // 确保 item["sku"] 是 string 类型
 			dbVariantId, exists := variantDbId[sku] // 使用 sku 来获取存储的 Id
@@ -223,24 +247,31 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 
 	} else {
 		// 修改Shopify 产品及变体
-		err = p.productGraphqlRepo.UpdateProduct(ctx, payload.ShopifyProductId, shopifyEntity.ProductUpdateInput{
-			Status: "ACTIVE",
-			Title:  product.Title,
-			//DescriptionHtml: product.Description,
-			ProductType: product.ProductType,
-			//Tags:            strings.Split(product.Tags, ","),
-			//Vendor: product.Vendor,
-		}, []shopifyEntity.CreateMediaInput{
-			//{
-			//	Alt:              "image-1",
-			//	MediaContentType: "IMAGE",
-			//	OriginalSource:   product.ImageUrl,
-			//},
+		err := p.productGraphqlRepo.UpdateProductComprehensive(ctx, productId,
+			shopifyEntity.ProductUpdateInput{
+				Status:          "ACTIVE",
+				Title:           product.Title,
+				DescriptionHtml: product.Description,
+				ProductType:     product.ProductType,
+				Tags:            strings.Split(product.Tags, ","),
+				Vendor:          product.Vendor,
+			})
+		if err != nil {
+			return p.fail(ctx, job.Id, "修改产品失败", err)
+		}
+		// 更新图片
+		fileUpdates, err := p.productGraphqlRepo.FileUpdate(ctx, shopifyEntity.FileUpdateInput{
+			ID:             fmt.Sprintf("gid://shopify/MediaImage/%d", product.ImageID),
+			OriginalSource: productImageUrl,
 		})
 		if err != nil {
-			return p.fail(ctx, job.Id, "修改Shopify产品失败", err)
+			return p.fail(ctx, job.Id, "修改Shopify产品图片失败", err)
 		}
-
+		imageMediaId = utils.GetIdFromShopifyGraphqlId((*fileUpdates)[0].ID)
+		imageUpdated := (*fileUpdates)[0].Preview.Image
+		if imageUpdated != nil {
+			productImageUrl = imageUpdated.URL
+		}
 	}
 
 	logger.Warn(ctx, "开始上传产品:", productId, "商店ID：", user.PublishId)
@@ -251,10 +282,21 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			logger.Error(ctx, fmt.Sprintf("上传产品失败:%d 商店ID：%d error:%s", productId, user.PublishId, err.Error()))
 		}
 	}
-
+	err = p.productRepo.UpdateProduct(ctx, payload.UserProductId, uid, &productEntity.UserProduct{
+		ProductId:   productId,
+		ImageID:     imageMediaId,
+		ImageUrl:    productImageUrl,
+		PublishTime: time.Now().Unix(),
+		Status:      1,
+	})
+	if err != nil {
+		logger.Warn(ctx, "save product error:"+err.Error())
+		return err
+	}
 	return p.ok(ctx, job.Id)
 }
 
+// HandleShopifyProduct Shopify product update job
 func (p *ProductService) HandleShopifyProduct(ctx context.Context, t *asynq.Task) error {
 	var payload jobs.ShopifyProductPayload
 
@@ -297,14 +339,14 @@ func (p *ProductService) HandleShopifyProduct(ctx context.Context, t *asynq.Task
 	productId := product.ProductId
 
 	// 继续同步Shopify 产品及变体
-	err = p.productGraphqlRepo.UpdateProduct(ctx, productId, shopifyEntity.ProductUpdateInput{
+	err = p.productGraphqlRepo.UpdateProductComprehensive(ctx, productId, shopifyEntity.ProductUpdateInput{
 		Title:           product.Title,
 		Status:          "ACTIVE",
 		DescriptionHtml: product.Description,
 		ProductType:     product.ProductType,
 		Tags:            strings.Split(product.Tags, ","),
 		Vendor:          product.Vendor,
-	}, []shopifyEntity.CreateMediaInput{})
+	})
 
 	if err != nil {
 		logger.Error(ctx, "shopify_product_queue:修改Shopify产品失败", err)

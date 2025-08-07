@@ -39,9 +39,9 @@ func NewProductService(
 	}
 }
 
-func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.ProductReq) error {
+func (p *ProductService) UploadProduct(ctx context.Context, userID int64, iconUrl string) error {
 	// 查询产品
-	product, err := p.productRepo.First(ctx, req.UserID)
+	product, err := p.productRepo.First(ctx, userID)
 
 	if err != nil {
 		logger.Error(ctx, "upload-product-db异常", "Err:", err.Error())
@@ -53,13 +53,13 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 	if product == nil {
 		// 创建产品
 		userProductId, err = p.productRepo.CreateProduct(ctx, &productEntity.UserProduct{
-			UserID:      req.UserID,
+			UserID:      userID,
 			Title:       "Protectify",
 			Vendor:      "Protectify",
 			Tags:        "Protectify",
 			Description: "Protectify",
 			Option1:     "Title",
-			ImageUrl:    "https://img0.baidu.com/it/u=1868319137,207061070&fm=253&fmt=auto?w=1431&h=800",
+			ImageUrl:    iconUrl,
 		})
 
 		// 创建变体
@@ -69,7 +69,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 		for i := 0; i < 100; i++ {
 			variant := &productEntity.UserVariant{
 				// 根据你的 productEntity.UserVariants 结构体，填充字段
-				UserID:        req.UserID,
+				UserID:        userID,
 				UserProductId: userProductId,
 				SkuName:       fmt.Sprintf("%.2f", price),
 				Sku1:          fmt.Sprintf("ZIK%d", i),
@@ -98,7 +98,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 	}
 
 	jobId, err := p.jobProductRepo.Create(ctx, &jobs.JobProduct{
-		UserID:        req.UserID,
+		UserID:        userID,
 		UserProductId: userProductId,
 	})
 	if err != nil {
@@ -111,7 +111,6 @@ func (p *ProductService) UploadProduct(ctx context.Context, req *productEntity.P
 		logger.Error(ctx, "upload-product-db推送asynq异常", "Err:", err.Error())
 		return err
 	}
-
 	return nil
 }
 

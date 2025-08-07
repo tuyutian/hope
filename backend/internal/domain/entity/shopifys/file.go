@@ -34,6 +34,15 @@ type FileCreateInput struct {
 	// 文件名，包括扩展名。可选
 	Filename *string `json:"filename,omitempty"`
 }
+type FileUpdateInput struct {
+	ID                 string   `json:"id"`
+	Alt                string   `json:"alt,omitempty"`
+	FileName           string   `json:"filename,omitempty"`
+	OriginalSource     string   `json:"originalSource,omitempty"`
+	PreviewImageSource string   `json:"previewImageSource,omitempty"`
+	ReferencesToAdd    []string `json:"referencesToAdd,omitempty"`    //要添加到文件的参考文献 ID。目前仅接受产品 ID。
+	ReferencesToRemove []string `json:"referencesToRemove,omitempty"` //要从文件中删除的参考 ID。目前仅接受产品 ID。
+}
 
 // FileCreateResponse 表示文件创建响应
 type FileCreateResponse struct {
@@ -43,10 +52,27 @@ type FileCreateResponse struct {
 	} `json:"fileCreate"`
 }
 
+// FileUpdateResponse 表示文件创建响应
+type FileUpdateResponse struct {
+	FileUpdate struct {
+		Files      []FileUpdated `json:"files"`
+		UserErrors []UserError   `json:"userErrors"`
+	} `json:"fileUpdate"`
+}
+
 type FileCreated struct {
 	ID         string      `json:"id"`
 	Alt        *string     `json:"alt,omitempty"`
 	FileStatus string      `json:"fileStatus"`
+	FileErrors []FileError `json:"fileErrors"`
+	UpdatedAt  string      `json:"updatedAt,omitempty"`
+	CreatedAt  string      `json:"createdAt,omitempty"`
+}
+type FileUpdated struct {
+	ID         string      `json:"id"`
+	Alt        *string     `json:"alt,omitempty"`
+	FileStatus string      `json:"fileStatus"`
+	Preview    FilePreview `json:"preview,omitempty"`
 	FileErrors []FileError `json:"fileErrors"`
 	UpdatedAt  string      `json:"updatedAt,omitempty"`
 	CreatedAt  string      `json:"createdAt,omitempty"`
@@ -75,11 +101,11 @@ type FilePreview struct {
 
 // Image 预览图片（部分 File 类型会有该字段，如图片/视频封面等）
 type Image struct {
-	Alt    *string `json:"alt,omitempty"`
-	URL    string  `json:"url"`
-	Width  int     `json:"width"`
-	Height int     `json:"height"`
-	ID     string  `json:"id"`
+	AltText *string `json:"altText,omitempty"`
+	URL     string  `json:"url"`
+	Width   int     `json:"width"`
+	Height  int     `json:"height"`
+	ID      string  `json:"id"`
 }
 type StagedUploadInput struct {
 	Filename   string `json:"filename"`

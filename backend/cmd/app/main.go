@@ -33,7 +33,7 @@ func main() {
 	// 日志输出采用zap框架实现日志json格式输出
 	logger.Default(
 		logger.WriteToFile(true),
-		logger.WithStdout(false), // 生产环境不输出到控制台，减少日志量
+		logger.WithStdout(true), // 生产环境不输出到控制台，减少日志量
 		logger.WithAddCaller(true),
 		logger.WithLogLevel(appConf.GetLogLevel()),
 	)

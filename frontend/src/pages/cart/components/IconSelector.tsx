@@ -1,4 +1,4 @@
-import React, { useCallback, useTransition } from "react";
+import React, { useCallback, useState } from "react";
 import { DropZone, Icon, InlineStack, Spinner, Text, Thumbnail } from "@shopify/polaris";
 
 interface Icon {
@@ -10,15 +10,19 @@ interface Icon {
 interface IconSelectorProps {
   icons: Icon[];
   onIconClick: (id: number) => void;
-  onIconUpload: (file: File) => void;
+  onIconUpload: (file: File) => Promise<void>;
 }
 
 const IconSelector: React.FC<IconSelectorProps> = ({ icons, onIconClick, onIconUpload }) => {
-  const [uploading, startTransition] = useTransition();
-  const handleDropZoneDrop = useCallback((_dropFiles: File[], acceptedFiles: File[], _rejectedFiles: File[]) => {
-    startTransition(() => {
-      onIconUpload(acceptedFiles[0]);
-    });
+  const [uploading, setUploading] = useState(false);
+  const handleDropZoneDrop = useCallback(async (_dropFiles: File[], acceptedFiles: File[], _rejectedFiles: File[]) => {
+    setUploading(true);
+    try {
+      await onIconUpload(acceptedFiles[0]);
+    } catch (e) {
+      console.log(e);
+    }
+    setUploading(false);
   }, []);
 
   return (
