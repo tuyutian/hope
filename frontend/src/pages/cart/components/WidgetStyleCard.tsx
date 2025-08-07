@@ -2,6 +2,8 @@ import { WidgetStyleCardProps } from "@/types/cart.ts";
 import { BlockStack, Box, Card, InlineStack, Select, Text } from "@shopify/polaris";
 import IconSelector from "@/pages/cart/components/IconSelector.tsx";
 import SketchPickerWithInput from "@/components/form/SketchPickerWithInput.tsx";
+import CustomSwitch from "@/pages/cart/components/CustomSwitch.tsx";
+import React from "react";
 
 export default function WidgetStyleCard({
   widgetSettings,
@@ -16,16 +18,17 @@ export default function WidgetStyleCard({
         <Text variant="headingSm" as="h6">
           Widget Style
         </Text>
-
-        <Select
-          label="Icon Visibility"
-          options={[
-            { label: "Show Icon", value: "1" },
-            { label: "Hide Icon", value: "0" },
-          ]}
-          value={widgetSettings.iconVisibility}
-          onChange={value => onWidgetSettingsChange({ iconVisibility: value })}
-        />
+        <Box>
+          <InlineStack gap="200" align="space-between">
+            <Text as="p" variant="bodyMd" fontWeight="medium">
+              Icon visibility
+            </Text>
+            <CustomSwitch
+              onChange={value => onWidgetSettingsChange({ iconVisibility: value ? "1" : "0" })}
+              checked={widgetSettings.iconVisibility === "1"}
+            />
+          </InlineStack>
+        </Box>
 
         <IconSelector icons={icons} onIconClick={onIconClick} onIconUpload={onIconUpload} />
 
