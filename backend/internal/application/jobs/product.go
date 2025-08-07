@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -116,18 +117,24 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		return p.fail(ctx, job.Id, "更新Job时间失败", err)
 	}
 
-	user, err := p.userRepo.Get(ctx, uid)
-	if err != nil || user == nil {
+	user, errs := p.userRepo.Get(ctx, uid)
+
+	if user == nil {
 		return p.fail(ctx, job.Id, "查询用户信息失败", err)
 	}
 	product, err := p.productRepo.FirstProductByID(ctx, payload.UserProductId, uid)
-	if err != nil || product == nil {
+	errs = errors.Join(errs, err)
+	if product == nil {
 		return p.fail(ctx, job.Id, "查询产品信息失败", err)
 	}
 
 	variants, err := p.variantRepo.FindID(ctx, payload.UserProductId)
-	if err != nil || variants == nil {
+	errs = errors.Join(errs, err)
+	if variants == nil {
 		return p.fail(ctx, job.Id, "查询变体失败", err)
+	}
+	if errs != nil {
+		return p.fail(ctx, job.Id, "Update job failed", errs)
 	}
 	productId := payload.ShopifyProductId
 	shopName, _ := utils.GetShopName(user.Shop)
