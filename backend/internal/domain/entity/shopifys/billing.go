@@ -3,8 +3,6 @@ package shopifys
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/shopspring/decimal"
 )
 
 // AppUsageRecordCreateResponse appUsageRecordCreate 响应结构
@@ -55,8 +53,8 @@ type AppPlanInput struct {
 
 // MoneyInput 金额设置
 type MoneyInput struct {
-	Amount       decimal.Decimal `json:"amount"`
-	CurrencyCode string          `json:"currencyCode"`
+	Amount       float64 `json:"amount"`
+	CurrencyCode string  `json:"currencyCode"`
 }
 
 // AppUsagePricingDetailsInput 用量定价详情输入

@@ -3,8 +3,6 @@ package users
 import (
 	"context"
 
-	"github.com/shopspring/decimal"
-
 	"backend/internal/domain/entity"
 	billingEntity "backend/internal/domain/entity/billings"
 	"backend/internal/domain/repo/billings"
@@ -59,7 +57,7 @@ func (b *BillingService) CurrentBillDetail(ctx context.Context, userID int64) *b
 	response := &billingEntity.CurrentPeriodResponse{
 		PeriodEnd:   0,
 		PeriodStart: 0,
-		Amount:      decimal.Zero,
+		Amount:      0,
 	}
 	if err != nil {
 		return response

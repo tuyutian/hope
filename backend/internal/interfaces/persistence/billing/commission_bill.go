@@ -10,6 +10,7 @@ import (
 	"backend/internal/domain/entity"
 	billingEntity "backend/internal/domain/entity/billings"
 	"backend/internal/domain/repo/billings"
+	"backend/pkg/utils"
 )
 
 var _ billings.CommissionBillRepository = (*commissionBillRepoImpl)(nil)
@@ -30,18 +31,16 @@ func (c *commissionBillRepoImpl) CreateCommission(ctx context.Context, userID in
 		ChargeId:         0,
 		UserId:           userID,
 		UserOrderId:      orderID,
-		CommissionAmount: amount,
+		CommissionAmount: utils.DecimalToFloat(amount), // 转换为 float64 存储
 		ChargeStatus:     billingEntity.ChargeStatusPending,
 		CreateTime:       time.Now().Unix(),
 		UpdateTime:       time.Now().Unix(),
 	}
 	ID, err := c.db.Table(bill.TableName()).Insert(bill)
-	// 2. 保存到数据库
 	if err != nil {
 		return 0, err
 	}
 	return ID, nil
-
 }
 
 func (c *commissionBillRepoImpl) UpdateCommission(ctx context.Context, id int64, chargeId int64, chargeStatus string) error {

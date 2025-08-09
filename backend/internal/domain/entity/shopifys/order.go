@@ -1,5 +1,7 @@
 package shopifys
 
+import "github.com/shopspring/decimal"
+
 type Order struct {
 	ID                     string `json:"id"`
 	Name                   string `json:"name"`
@@ -9,8 +11,8 @@ type Order struct {
 	DisplayFinancialStatus string `json:"displayFinancialStatus"`
 	TotalPriceSet          struct {
 		ShopMoney struct {
-			Amount       string `json:"amount"`
-			CurrencyCode string `json:"currencyCode"`
+			Amount       decimal.Decimal `json:"amount"`
+			CurrencyCode string          `json:"currencyCode"`
 		} `json:"shopMoney"`
 	} `json:"totalPriceSet"`
 	LineItems struct {
@@ -24,8 +26,8 @@ type Order struct {
 				} `json:"variant"`
 				OriginalUnitPriceSet struct {
 					ShopMoney struct {
-						Amount       string `json:"amount"`
-						CurrencyCode string `json:"currencyCode"`
+						Amount       decimal.Decimal `json:"amount"`
+						CurrencyCode string          `json:"currencyCode"`
 					} `json:"shopMoney"`
 				} `json:"originalUnitPriceSet"`
 			} `json:"node"`
@@ -36,8 +38,8 @@ type Order struct {
 		CreatedAt        string `json:"createdAt"`
 		TotalRefundedSet struct {
 			ShopMoney struct {
-				Amount       string `json:"amount"`
-				CurrencyCode string `json:"currencyCode"`
+				Amount       decimal.Decimal `json:"amount"`
+				CurrencyCode string          `json:"currencyCode"`
 			} `json:"shopMoney"`
 		} `json:"totalRefundedSet"`
 		RefundLineItems struct {
@@ -53,8 +55,8 @@ type Order struct {
 					Quantity    int `json:"quantity"`
 					SubtotalSet struct {
 						ShopMoney struct {
-							Amount       string `json:"amount"`
-							CurrencyCode string `json:"currencyCode"`
+							Amount       decimal.Decimal `json:"amount"`
+							CurrencyCode string          `json:"currencyCode"`
 						} `json:"shopMoney"`
 					} `json:"subtotalSet"`
 				} `json:"node"`
