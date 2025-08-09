@@ -168,7 +168,6 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			break
 		}
 	}
-	fmt.Println(productImageUrl)
 	var imageMediaId int64
 	if !productExist {
 		var variantId int64
@@ -267,18 +266,23 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			return p.fail(ctx, job.Id, "修改产品失败", err)
 		}
 		// 更新图片
-		fileUpdates, err := p.productGraphqlRepo.FileUpdate(ctx, shopifyEntity.FileUpdateInput{
-			ID:             fmt.Sprintf("gid://shopify/MediaImage/%d", product.ImageID),
-			OriginalSource: productImageUrl,
-		})
-		if err != nil {
-			return p.fail(ctx, job.Id, "修改Shopify产品图片失败", err)
+		if productImageUrl != product.ImageUrl {
+			fileUpdates, err := p.productGraphqlRepo.FileUpdate(ctx, shopifyEntity.FileUpdateInput{
+				ID:             fmt.Sprintf("gid://shopify/MediaImage/%d", product.ImageID),
+				OriginalSource: productImageUrl,
+			})
+			if err != nil {
+				return p.fail(ctx, job.Id, "修改Shopify产品图片失败", err)
+			}
+			imageMediaId = utils.GetIdFromShopifyGraphqlId((*fileUpdates)[0].ID)
+			imageUpdated := (*fileUpdates)[0].Preview.Image
+			if imageUpdated != nil {
+				productImageUrl = imageUpdated.URL
+			}
+		} else {
+			imageMediaId = product.ImageID
 		}
-		imageMediaId = utils.GetIdFromShopifyGraphqlId((*fileUpdates)[0].ID)
-		imageUpdated := (*fileUpdates)[0].Preview.Image
-		if imageUpdated != nil {
-			productImageUrl = imageUpdated.URL
-		}
+
 	}
 
 	logger.Warn(ctx, "开始上传产品:", productId, "商店ID：", user.PublishId)
