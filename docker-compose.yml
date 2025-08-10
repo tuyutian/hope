@@ -56,7 +56,7 @@ services:
 
   # Redis 服务
   redis:
-    image: redis
+    image: redis:alpine
     container_name: hope-redis
     ports:
       - "6379:6379"
