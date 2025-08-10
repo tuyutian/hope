@@ -1,5 +1,5 @@
 import React, { useTransition } from "react";
-import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Box, Card, Layout, Link, Page, Text } from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
@@ -14,12 +14,15 @@ import { ResourceItem } from "@/types/cart.ts";
 import { userService } from "@/services/user";
 import { getMessageState } from "@/stores/messageStore.ts";
 import { cartService } from "@/services/cart";
+import FulfillmentCard from "@/pages/cart/components/FulfillmentCard.tsx";
+import { handleContact } from "@/utils/app.ts";
 
 export default function ShippingProtectionSettings() {
   const {
     widgetSettings,
     pricingSettings,
     productSettings,
+    fulfillmentSettings,
     moneySymbol,
     errors,
     isLoading,
@@ -27,6 +30,7 @@ export default function ShippingProtectionSettings() {
     setWidgetSettings,
     setPricingSettings,
     setProductSettings,
+    setFulfillmentSettings,
     setErrors,
     saveSettings,
     hasSubscribe,
@@ -56,45 +60,44 @@ export default function ShippingProtectionSettings() {
     }));
   };
 
-  const handleIconUpload = (file: File) => {
+  const handleIconUpload = async (file: File) => {
     const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
     const maxSize = 10 * 1024 * 1024; // 10MB
-
+    const emptyPromise = new Promise<void>(resolve => {
+      resolve();
+    });
     if (!validImageTypes.includes(file.type)) {
       toastMessage("Please upload an image file (JPG, PNG or GIF)", 5000, true);
-      return;
+      return emptyPromise;
     }
 
     if (file.size > maxSize) {
       toastMessage("Image size should be less than 10MB", 5000, true);
-      return;
+      return emptyPromise;
     }
 
-    void cartService.uploadLogo(file).then(res => {
-      if (res.code === 0&&res.data) {
-        // 找到最大的 id
-        const maxId = Math.max(...productSettings.icons.map(icon => icon.id), 0);
-        const newUrl = res.data;
-        if (res.data.length <= 0) {
-          toastMessage("Upload failed", 5000, true);
-          return;
-        }
-        setProductSettings(prev => ({
-          ...prev,
-          icons: [
-            ...prev.icons.map(icon => ({
-              ...icon,
-              selected: false, // 将所有图标的 selected 设置为 false
-            })),
-            {
-              id: maxId + 1,
-              src: newUrl, // 假设上传接口返回的图片 URL 在 res.data 中
-              selected: true, // 新图标的 selected 设置为 true
-            },
-          ],
-        }));
+    const res = await cartService.uploadLogo(file);
+    if (res.code === 0 && res.data) {
+      const data = res.data;
+      if (data && data.id <= 0) {
+        toastMessage("Upload failed", 5000, true);
+        return;
       }
-    });
+      setProductSettings(prev => ({
+        ...prev,
+        icons: [
+          ...prev.icons.map(icon => ({
+            ...icon,
+            selected: false, // 将所有图标的 selected 设置为 false
+          })),
+          {
+            id: data.id,
+            src: data.src, // 假设上传接口返回的图片 URL 在 res.data 中
+            selected: true, // 新图标的 selected 设置为 true
+          },
+        ],
+      }));
+    }
   };
 
   // 定价表格处理器
@@ -223,7 +226,7 @@ export default function ShippingProtectionSettings() {
       title="Create Protection Plan (Cart Page)"
       primaryAction={{
         content: "Save Changes",
-        disabled: isPending||!dirty,
+        disabled: isPending || !dirty,
         onAction: () => startTransition(saveSettings),
         loading: isPending,
       }}
@@ -288,6 +291,33 @@ export default function ShippingProtectionSettings() {
                   onRemoveCollection={handleRemoveCollection}
                   onCollectionChange={handleCollectionChange}
                 />
+                <FulfillmentCard
+                  fulfillmentSettings={fulfillmentSettings}
+                  onFulfillmentTypeChange={handleFieldChange(
+                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentType: value })),
+                    "content"
+                  )}
+                />
+                <Card>
+                  <Box paddingBlockEnd="300">
+                    <Text as="h2" variant="headingSm">
+                      CSS
+                    </Text>
+                  </Box>
+                  <BlockStack gap="300">
+                    <Text as="p" variant="bodyMd">
+                      If you would like to adjust the styling of the widgets in your store,{" "}
+                      <Link onClick={handleContact}>contact us</Link> and we will add CSS code here to make custom
+                      changes. This won&#39;t affect your store theme.{" "}
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      To add custom CSS, go to{" "}
+                      <Text as="span" variant="bodyMd" fontWeight="bold">
+                        Theme Editor
+                      </Text>
+                    </Text>
+                  </BlockStack>
+                </Card>
               </BlockStack>
             </div>
           </Layout.Section>

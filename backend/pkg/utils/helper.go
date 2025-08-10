@@ -7,11 +7,10 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 )
 
@@ -55,23 +54,35 @@ func SetContextValue(ctx context.Context,
 	return context.WithValue(ctx, key, val)
 }
 func CallWilding(error string) {
-	secret := "SEC3283300ab92509db664438f325b85331f316580e1c6691d442ebd827fea5a504"
-	timestamp := time.Now().UnixMilli()
-	// 将timestamp和secret拼接成签名字符串
-	signStr := strconv.FormatInt(timestamp, 10) + "\n" + secret
-	// 使用HmacSHA256算法计算签名
-	hmacSha256 := hmac.New(sha256.New, []byte(secret))
-	hmacSha256.Write([]byte(signStr))
-	signBytes := hmacSha256.Sum(nil)
-	// 进行Base64 encode
-	signBase64 := base64.StdEncoding.EncodeToString(signBytes)
-	// 进行urlEncode
-	signUrlEncode := url.QueryEscape(signBase64)
+	secret := "O6yErxY6HoHV6Ym5BPZEK"
+	timestamp := time.Now().Unix()
+	//timestamp + key 做sha256, 再进行base64 encode
+	stringToSign := fmt.Sprintf("%v", timestamp) + "\n" + secret
+	var data []byte
+	h := hmac.New(sha256.New, []byte(stringToSign))
+	_, err := h.Write(data)
+	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
 
 	// 发送markdown消息
-	urlP := fmt.Sprintf("https://oapi.dingtalk.com/robot/send?access_token=a843ec588eba6834b25f0dd8125f4a28503d431393041cbfea653a7d687e6ccf&timestamp=%d&sign=%s", timestamp, signUrlEncode)
-	requestBody := fmt.Sprintf(`{"msgtype": "text","text": {"content":"%s"}}`, error)
-	var jsonStr = []byte(requestBody)
+	urlP := "https://open.feishu.cn/open-apis/bot/v2/hook/e3421807-ddaf-4aa2-a3d3-697ef93516bb"
+	requestBody := struct {
+		Timestamp int64  `json:"timestamp"`
+		Sign      string `json:"sign"`
+		MsgType   string `json:"msg_type"`
+		Content   struct {
+			Text string `json:"text"`
+		} `json:"content"`
+	}{
+		Timestamp: timestamp,
+		Sign:      signature,
+		MsgType:   "text",
+		Content: struct {
+			Text string `json:"text"`
+		}{
+			Text: error,
+		},
+	}
+	jsonStr, _ := json.Marshal(requestBody)
 	req, err := http.NewRequest("POST", urlP, bytes.NewBuffer(jsonStr))
 	if req == nil {
 		fmt.Println(err)

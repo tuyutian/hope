@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -42,7 +43,7 @@ func NewSubscriptionService(
 func (s *SubscriptionService) CreateUsageSubscription(
 	ctx context.Context,
 	planName string,
-	cappedAmount decimal.Decimal,
+	cappedAmount float64,
 	currency string,
 	terms string,
 	isTest bool,
@@ -86,10 +87,10 @@ func (s *SubscriptionService) CreateUsageSubscription(
 		SubscriptionStatus:     subscription.Status,
 		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
-		CappedAmount:           &cappedAmount,
+		CappedAmount:           cappedAmount,
 		Currency:               currency,
-		BalanceUsed:            &decimal.Zero,
-		Price:                  &decimal.Zero,
+		BalanceUsed:            0,
+		Price:                  0,
 		Terms:                  terms,
 		CurrentPeriodStart:     time.Now().Unix(),
 		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),
@@ -112,7 +113,7 @@ func (s *SubscriptionService) CreateRecurringSubscription(
 	userID int64,
 	shopDomain string,
 	planName string,
-	price decimal.Decimal,
+	price float64,
 	currency string,
 	interval string, // EVERY_30_DAYS, ANNUAL
 	returnURL string,
@@ -155,10 +156,10 @@ func (s *SubscriptionService) CreateRecurringSubscription(
 		SubscriptionStatus:     subscription.Status,
 		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
-		Price:                  &price, // 对于循环订阅，这里存储价格
+		Price:                  price, // 对于循环订阅，这里存储价格
 		Currency:               currency,
-		CappedAmount:           &decimal.Zero,
-		BalanceUsed:            &decimal.Zero,
+		CappedAmount:           0,
+		BalanceUsed:            0,
 		Terms:                  fmt.Sprintf("Recurring charge - %s", interval),
 		CurrentPeriodStart:     time.Now().Unix(),
 		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),
@@ -220,24 +221,24 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 
 		// 确定定价类型和相关信息
 		var pricingType string
-		var cappedAmount decimal.Decimal
+		var cappedAmount float64
 		var terms string
-		var balanceUsed decimal.Decimal
+		var balanceUsed float64
 		var currency = "USD" // 默认货币
 
 		if currentSubscription.IsUsageSubscription() {
 			pricingType = userEntity.PricingTypeRecurring
 			usagePricing, _ := currentSubscription.GetUsagePricing()
-			cappedAmount, _ = decimal.NewFromString(usagePricing.CappedAmount.Amount)
+			cappedAmount, _ = strconv.ParseFloat(usagePricing.CappedAmount.Amount, 64)
 			terms = usagePricing.Terms
-			balanceUsed, _ = decimal.NewFromString(usagePricing.BalanceUsed.Amount)
+			balanceUsed, _ = strconv.ParseFloat(usagePricing.BalanceUsed.Amount, 64)
 			currency = usagePricing.CappedAmount.CurrencyCode
 		} else if currentSubscription.IsRecurringSubscription() {
 			pricingType = userEntity.PricingTypeRecurring
 			recurringPricing, _ := currentSubscription.GetRecurringPricing()
-			cappedAmount, _ = decimal.NewFromString(recurringPricing.Price.Amount)
+			cappedAmount, _ = strconv.ParseFloat(recurringPricing.Price.Amount, 64)
 			terms = fmt.Sprintf("Recurring subscription with %s interval", recurringPricing.Interval)
-			balanceUsed = decimal.Zero
+			balanceUsed = 0
 			currency = recurringPricing.Price.CurrencyCode
 		}
 
@@ -250,9 +251,9 @@ func (s *SubscriptionService) SyncSubscriptionStatus(ctx context.Context, user *
 			SubscriptionStatus:     currentSubscription.Status,
 			SubscriptionLineItemID: lineItemID,
 			PricingType:            pricingType,
-			CappedAmount:           &cappedAmount,
+			CappedAmount:           cappedAmount,
 			Currency:               currency,
-			BalanceUsed:            &balanceUsed,
+			BalanceUsed:            balanceUsed,
 			Terms:                  terms,
 			CurrentPeriodStart:     utils.ParseShopifyTime(currentSubscription.CreatedAt),
 			CurrentPeriodEnd:       utils.ParseShopifyTime(currentSubscription.CurrentPeriodEnd),
@@ -300,8 +301,8 @@ func (s *SubscriptionService) VerifyPayment(ctx context.Context, user *userEntit
 		return nil, fmt.Errorf("fetch subscription failed")
 	}
 	usagePrice, _ := subscription.GetUsagePricing()
-	CappedAmount, _ := decimal.NewFromString(usagePrice.CappedAmount.Amount)
-	BalanceUsed, _ := decimal.NewFromString(usagePrice.BalanceUsed.Amount)
+	CappedAmount, _ := strconv.ParseFloat(usagePrice.CappedAmount.Amount, 64)
+	BalanceUsed, _ := strconv.ParseFloat(usagePrice.BalanceUsed.Amount, 64)
 	Terms := usagePrice.Terms
 	fmt.Println(subscription.LineItems[0].ID)
 	// 3. 保存到本地数据库
@@ -313,9 +314,9 @@ func (s *SubscriptionService) VerifyPayment(ctx context.Context, user *userEntit
 		SubscriptionStatus:     subscription.Status,
 		SubscriptionLineItemID: subscription.LineItems[0].ID,
 		PricingType:            userEntity.PricingTypeRecurring,
-		CappedAmount:           &CappedAmount, // 对于循环订阅，这里存储价格
+		CappedAmount:           CappedAmount, // 对于循环订阅，这里存储价格
 		Currency:               usagePrice.CappedAmount.CurrencyCode,
-		BalanceUsed:            &BalanceUsed,
+		BalanceUsed:            BalanceUsed,
 		Terms:                  Terms,
 		CurrentPeriodStart:     time.Now().Unix(),
 		CurrentPeriodEnd:       utils.ParseShopifyTime(subscription.CurrentPeriodEnd),

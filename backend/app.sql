@@ -245,7 +245,7 @@ CREATE TABLE `user_product`
     `product_id`   bigint unsigned NOT NULL DEFAULT 0 COMMENT 'shopify上传成功的产品ID',
     `handle`       varchar(255)    NOT NULL DEFAULT '' COMMENT '产品handle',
     `title`        varchar(255)    NOT NULL COMMENT '标题',
-    `product_type` varchar(255)    NOT NULL COMMENT '产品类型',
+    `product_type` varchar(50)    NOT NULL COMMENT '产品类型',
     `vendor`       varchar(255)    NOT NULL COMMENT 'vendor',
     `collection`   varchar(100)    NOT NULL COMMENT '集合',
     `tags`         varchar(500)    NOT NULL DEFAULT '' COMMENT '产品标签',
@@ -527,3 +527,8 @@ CREATE TABLE `app_definition`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';
 
+
+alter table `user_product` add image_id bigint unsigned not null default 0 comment '产品图片 id' after image_url;
+alter table `user_cart_setting` add all_tiers_set decimal(12,2) not null default 0.00 comment '所有订单适用固定百分比' after tiers_select;
+alter table `user_cart_setting` add all_price_set decimal(12,2) not null default 0.00 comment '所有订单适用固定金额' after tiers_select;
+alter table `user_cart_setting` add pricing_rule  tinyint         NOT NULL DEFAULT 0 COMMENT '金额计算方式 0 统一设置 1单独设置' after pricing_type;

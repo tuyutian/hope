@@ -12,12 +12,14 @@ import (
 	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/providers"
 	"backend/pkg/logger"
+	"backend/pkg/utils"
 )
 
 type CartSettingService struct {
 	cartSettingRepo cartSettingRepo.CartSettingRepository
 	userRepo        userRepo.UserRepository
 	variantRepo     products.VariantRepository
+	productRepo     products.ProductRepository
 }
 
 func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
@@ -25,6 +27,7 @@ func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
 		cartSettingRepo: repos.CartSettingRepo,
 		userRepo:        repos.UserRepo,
 		variantRepo:     repos.VariantRepo,
+		productRepo:     repos.ProductRepo,
 	}
 }
 
@@ -96,6 +99,9 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		PriceSelect:       prices,
 		TiersSelect:       tiers,
 		PricingType:       cartSetting.PricingType,
+		PricingRule:       cartSetting.PricingRule,
+		AllPrice:          cartSetting.AllPriceSet,
+		AllTiers:          cartSetting.AllTiersSet,
 	}, nil
 }
 
@@ -115,7 +121,6 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		logger.Error(ctx, "set-cart 购物车图片json异常", "Err:", err.Error())
 		return err
 	}
-
 	iconStr := string(jsonIcon)
 
 	// 转成 JSON
@@ -173,8 +178,10 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		PricingSelect:     priceStr,
 		TiersSelect:       tiersStr,
 		PricingType:       req.PricingType,
+		PricingRule:       req.PricingRule,
+		AllPriceSet:       utils.ParseMoneyFloat(req.AllPrice),
+		AllTiersSet:       utils.ParseMoneyFloat(req.AllTiers),
 	}
-	fmt.Println(userCartSetting)
 	if cartSetting == nil {
 		// 创建购物车
 		userCartSetting.UserID = req.UserID

@@ -20,7 +20,6 @@ interface CartDemoProps {
   checkboxInput: boolean;
   optInColor: string;
   optOutColor: string;
-  onCheckboxChange: () => void;
 }
 
 const CartDemo: React.FC<CartDemoProps> = ({
@@ -35,7 +34,6 @@ const CartDemo: React.FC<CartDemoProps> = ({
   checkboxInput,
   optInColor,
   optOutColor,
-  onCheckboxChange,
 }) => {
   const [checked, setChecked] = React.useState(false);
   const renderSelectionControl = () => {
@@ -52,14 +50,40 @@ const CartDemo: React.FC<CartDemoProps> = ({
     } else {
       return (
         <label className="custom-checkbox">
-          <input type="checkbox" checked={checkboxInput} onChange={onCheckboxChange} />
+          <input type="checkbox" className="absolute" checked={checked} onChange={e => setChecked(e.target.checked)} />
           <span
             className="checkmark"
             style={{
-              backgroundColor: checkboxInput ? optInColor : optOutColor,
-              borderColor: checkboxInput ? optInColor : optOutColor,
+              backgroundColor: checked ? optInColor : optOutColor,
+              borderColor: checked ? optInColor : optOutColor,
+              transition: "all 0.2s ease-in-out",
+              boxShadow: checked ? `0 0 5px ${optInColor}40` : `0 0 5px ${optOutColor}40`,
+              transform: checked ? "scale(1.05)" : "scale(1)",
+              width: "20px",
+              height: "20px",
+              borderRadius: "4px",
+              display: "inline-block",
+              position: "relative",
+              cursor: "pointer",
             }}
-          />
+          >
+            {checked && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "45%", // 调整到略微靠上的位置
+                  left: "50%",
+                  transform: "translate(-50%, -50%) rotate(-45deg)", // 合并旋转到 transform 中
+                  width: "12px", // 调整勾选标记的宽度
+                  height: "7px", // 调整勾选标记的高度
+                  borderLeft: "2px solid white",
+                  borderBottom: "2px solid white",
+                  display: "block", // 确保显示为块级元素
+                  margin: "0 auto", // 水平居中
+                }}
+              />
+            )}
+          </span>
         </label>
       );
     }
@@ -146,7 +170,7 @@ const CartDemo: React.FC<CartDemoProps> = ({
           </Card>
 
           {/* Checkout Button */}
-          <Button fullWidth size="large">
+          <Button fullWidth size="large" variant="primary">
             Checkout {checked || checkboxInput ? "22.00 USD" : "20.00 USD"}
           </Button>
         </BlockStack>

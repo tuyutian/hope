@@ -34,6 +34,7 @@ func (c *productGraphqlRepoImpl) CreateProductWithMedia(ctx context.Context, pro
                     createdAt
                     media(first: 10) {
 						nodes {
+							id
 							alt
 							mediaContentType
 							preview {
@@ -81,7 +82,9 @@ func (c *productGraphqlRepoImpl) CreateProductWithMedia(ctx context.Context, pro
 }
 
 // GetProduct 查询产品
-func (c *productGraphqlRepoImpl) GetProduct(ctx context.Context, productID string) (*productEntity.ProductResponse, error) {
+func (c *productGraphqlRepoImpl) GetProduct(ctx context.Context, productID int64) (*productEntity.ProductResponse, error) {
+	shopifyProductID := fmt.Sprintf("gid://shopify/Product/%d", productID)
+
 	query := `
         query getProduct($id: ID!) {
             product(id: $id) {
@@ -121,7 +124,7 @@ func (c *productGraphqlRepoImpl) GetProduct(ctx context.Context, productID strin
     `
 
 	variables := map[string]interface{}{
-		"id": productID,
+		"id": shopifyProductID,
 	}
 
 	var response productEntity.ProductResponse
@@ -131,57 +134,6 @@ func (c *productGraphqlRepoImpl) GetProduct(ctx context.Context, productID strin
 	}
 
 	return &response, nil
-}
-
-// AddProductImages 为产品添加图片
-func (c *productGraphqlRepoImpl) AddProductImages(ctx context.Context, productID string, images []productEntity.ProductImageInput) error {
-	mutation := `
-        mutation productImageUpdate($productId: ID!, $images: [ImageInput!]!) {
-            productImageUpdate(productId: $productId, images: $images) {
-                product {
-                    id
-                    images(first: 20) {
-                        edges {
-                            node {
-                                id
-                                url
-                                altText
-                            }
-                        }
-                    }
-                }
-                userErrors {
-                    field
-                    message
-                }
-            }
-        }
-    `
-
-	variables := map[string]interface{}{
-		"productId": productID,
-		"images":    images,
-	}
-
-	var response struct {
-		ProductImageUpdate struct {
-			UserErrors []struct {
-				Field   []string `json:"field"`
-				Message string   `json:"message"`
-			} `json:"userErrors"`
-		} `json:"productImageUpdate"`
-	}
-
-	err := c.Client.Mutate(ctx, mutation, variables, &response)
-	if err != nil {
-		return fmt.Errorf("添加产品图片失败: %w", err)
-	}
-
-	if len(response.ProductImageUpdate.UserErrors) > 0 {
-		return fmt.Errorf("添加产品图片错误: %s", response.ProductImageUpdate.UserErrors[0].Message)
-	}
-
-	return nil
 }
 
 func (c *productGraphqlRepoImpl) DeleteVariant(ctx context.Context, productID int64, variantID int64) error {
@@ -292,23 +244,28 @@ func (c *productGraphqlRepoImpl) CreateVariants(ctx context.Context, productID i
 	return variants, nil
 }
 
-func (c *productGraphqlRepoImpl) UpdateProduct(ctx context.Context, productID int64, product productEntity.ProductUpdateInput, media []productEntity.CreateMediaInput) error {
-
-	product.Id = fmt.Sprintf("gid://shopify/Product/%d", productID)
-
+func (c *productGraphqlRepoImpl) UpdateProduct(ctx context.Context, product productEntity.ProductUpdateInput, media []productEntity.CreateMediaInput) (*productEntity.MutationProduct, error) {
 	mutation := `
-		mutation UpdateProductWithNewMedia($product: ProductUpdateInput!, $media: [CreateMediaInput!]) {
-		  productUpdate(product: $product, media: $media) {
-			product {
-			  id
-			}
-			userErrors {
-			  field
-			  message
-			}
-		  }
-		}
-	`
+mutation UpdateProductWithNewMedia($product: ProductUpdateInput!, $media: [CreateMediaInput!]) {
+  productUpdate(product: $product, media: $media) {
+    product {
+      id
+      media(first: 10) {
+        nodes {
+          alt
+          mediaContentType
+          preview {
+            status
+          }
+        }
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`
 	variables := map[string]interface{}{
 		"product": product,
 		//"media":   media,
@@ -316,6 +273,38 @@ func (c *productGraphqlRepoImpl) UpdateProduct(ctx context.Context, productID in
 
 	if len(media) > 0 {
 		variables["media"] = media
+	}
+
+	var response productEntity.ProductUpdateResponse
+	err := c.Client.Mutate(ctx, mutation, variables, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(response.ProductUpdate.UserErrors) > 0 {
+		return nil, fmt.Errorf("error updating product: %v", response.ProductUpdate.UserErrors[0].Message)
+	}
+	return &productEntity.MutationProduct{Product: response.ProductUpdate.Product}, nil
+}
+func (c *productGraphqlRepoImpl) UpdateProductComprehensive(ctx context.Context, productID int64, product productEntity.ProductUpdateInput) error {
+
+	product.Id = fmt.Sprintf("gid://shopify/Product/%d", productID)
+
+	mutation := `
+mutation UpdateProductComprehensive($product: ProductUpdateInput!) {
+  productUpdate(product: $product) {
+    userErrors {
+      field
+      message
+    }
+    product {
+      id
+    }
+  }
+}
+	`
+	variables := map[string]interface{}{
+		"product": product,
 	}
 
 	var response struct {
@@ -342,7 +331,7 @@ func (c *productGraphqlRepoImpl) UpdateProduct(ctx context.Context, productID in
 
 func (c *productGraphqlRepoImpl) PublishProduct(ctx context.Context, productID int64, publicationID int64) error {
 	shopifyProductID := fmt.Sprintf("gid://shopify/Product/%d", productID)
-	shopifyPublicationID := fmt.Sprintf("gid://shopify/Product/%d", publicationID)
+	shopifyPublicationID := fmt.Sprintf("gid://shopify/Publication/%d", publicationID)
 
 	mutation := `mutation publishablePublish($id: ID!, $input: [PublicationInput!]!) {
 		publishablePublish(id: $id, input: $input) {

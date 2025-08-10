@@ -2,15 +2,20 @@ package jobs
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"strconv"
+	"time"
 
-	"github.com/hibiken/asynq"
+	cartEntity "backend/internal/domain/entity/settings"
+	cartSettingRepo "backend/internal/domain/repo/carts"
 
+	"backend/internal/domain/entity/billings"
 	"backend/internal/domain/entity/jobs"
 	"backend/internal/domain/entity/orders"
 	"backend/internal/domain/entity/shopifys"
+	billingsRepo "backend/internal/domain/repo/billings"
 	jobRepo "backend/internal/domain/repo/jobs"
 	orderRepo "backend/internal/domain/repo/orders"
 	"backend/internal/domain/repo/products"
@@ -21,28 +26,38 @@ import (
 	"backend/internal/providers"
 	"backend/pkg/logger"
 	"backend/pkg/utils"
+
+	"github.com/hibiken/asynq"
+	"github.com/shopspring/decimal"
 )
 
 type OrderService struct {
-	orderRepo        orderRepo.OrderRepository
-	orderInfoRepo    orderRepo.OrderInfoRepository
-	orderSummaryRepo orderRepo.OrderSummaryRepository
-	jobOrderRepo     jobRepo.OrderRepository
-	userRepo         users.UserRepository
-	variantRepo      products.VariantRepository
-	orderGraphqlRepo shopifyRepo.OrderGraphqlRepository
-	shopifyRepo      shopifyRepo.ShopifyRepository
+	orderRepo         orderRepo.OrderRepository
+	orderInfoRepo     orderRepo.OrderInfoRepository
+	orderSummaryRepo  orderRepo.OrderSummaryRepository
+	jobOrderRepo      jobRepo.OrderRepository
+	userRepo          users.UserRepository
+	variantRepo       products.VariantRepository
+	orderGraphqlRepo  shopifyRepo.OrderGraphqlRepository
+	shopifyRepo       shopifyRepo.ShopifyRepository
+	subscriptionRepo  users.UserSubscriptionRepository
+	billingPeriodRepo billingsRepo.BillingPeriodSummaryRepository
+	cartSettingRepo   cartSettingRepo.CartSettingRepository
 }
 
 func NewOrderService(repos *providers.Repositories) *OrderService {
 	return &OrderService{
-		orderRepo:        repos.OrderRepo,
-		orderInfoRepo:    repos.OrderInfoRep,
-		orderSummaryRepo: repos.OrderSummaryRepo,
-		jobOrderRepo:     repos.JobOrderRepo,
-		userRepo:         repos.UserRepo,
-		orderGraphqlRepo: repos.OrderGraphqlRepo,
-		shopifyRepo:      repos.ShopifyRepo,
+		orderRepo:         repos.OrderRepo,
+		orderInfoRepo:     repos.OrderInfoRep,
+		orderSummaryRepo:  repos.OrderSummaryRepo,
+		jobOrderRepo:      repos.JobOrderRepo,
+		userRepo:          repos.UserRepo,
+		orderGraphqlRepo:  repos.OrderGraphqlRepo,
+		shopifyRepo:       repos.ShopifyRepo,
+		subscriptionRepo:  repos.UserSubscriptionRepo,
+		billingPeriodRepo: repos.BillingPeriodSummaryRepo,
+		variantRepo:       repos.VariantRepo,
+		cartSettingRepo:   repos.CartSettingRepo,
 	}
 }
 
@@ -128,6 +143,7 @@ func (o *OrderService) processOrderJob(ctx context.Context, jobId int64) error {
 	return o.ok(ctx, job.Id)
 }
 
+// order.go
 func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64, userID int64, data *shopifys.OrderResponse, variantIDMap map[int64]struct{}) error {
 	// 获取订单详情里的已有变体
 	existingVariantIDs, err := o.orderInfoRepo.GetOrderDetailVariantIDs(ctx, dbOrderId, userID)
@@ -148,7 +164,8 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 
 	var userOrderInfos []*orders.UserOrderInfo
 	var skuNum int
-	var insuranceAmount float64
+
+	var insuranceAmountDecimal decimal.Decimal
 
 	for _, lineItem := range data.Order.LineItems.Edges {
 		variantID := utils.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
@@ -160,19 +177,20 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 			o.orderInfoRepo.UpdateShopifyVariants(ctx, dbOrderId, variantID, &orders.UserOrderInfo{RefundNum: refundQuantity})
 		} else {
 			// 新增订单详情
-			price := o.parsePrice(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
+			price := lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount
 			isProtectify := 0
 			if _, ok := variantIDMap[variantID]; ok {
 				isProtectify = 1
-				insuranceAmount += price
+				insuranceAmountDecimal = insuranceAmountDecimal.Add(price)
 			}
+
 			userOrderInfos = append(userOrderInfos, &orders.UserOrderInfo{
 				UserID:          userID,
 				Sku:             lineItem.Node.Sku,
 				VariantId:       variantID,
 				VariantTitle:    lineItem.Node.VariantTitle,
 				Quantity:        lineItem.Node.Quantity,
-				UnitPriceAmount: price,
+				UnitPriceAmount: utils.DecimalToFloat(price), // 转换为 float64 存储
 				Currency:        data.Order.TotalPriceSet.ShopMoney.CurrencyCode,
 				RefundNum:       refundQuantity,
 				IsProtectify:    isProtectify,
@@ -182,12 +200,17 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 	}
 
 	userOrder.SkuNum = skuNum
-	userOrder.ProtectifyAmount = insuranceAmount
+	userOrder.ProtectifyAmount = utils.DecimalToFloat(insuranceAmountDecimal)
 	o.orderRepo.UpdateShopifyOrderId(ctx, userOrder)
 
 	// 插入新增的变体
 	if len(userOrderInfos) > 0 {
 		return o.orderInfoRepo.Create(ctx, userOrderInfos)
+	}
+
+	// 更新订单后更新账单相关记录
+	if err := o.updateBillingRecords(ctx, userID, userOrder, userOrderInfos); err != nil {
+		return fmt.Errorf("更新账单记录失败: %w", err)
 	}
 
 	return nil
@@ -196,7 +219,7 @@ func (o *OrderService) updateExistingOrder(ctx context.Context, dbOrderId int64,
 func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *shopifys.OrderResponse, variantIDMap map[int64]struct{}) error {
 	refundMap, refundAmount := o.parseRefundInfo(data)
 
-	total := o.parsePrice(data.Order.TotalPriceSet.ShopMoney.Amount)
+	total := data.Order.TotalPriceSet.ShopMoney.Amount
 	createdAt := utils.PaseTimeToStamp(data.Order.CreatedAt)
 	processedAt := utils.PaseTimeToStamp(data.Order.ProcessedAt)
 
@@ -207,7 +230,7 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 		OrderCreatedAt:    createdAt,
 		OrderCompletionAt: processedAt,
 		FinancialStatus:   data.Order.DisplayFinancialStatus,
-		TotalPriceAmount:  total,
+		TotalPriceAmount:  utils.DecimalToFloat(total),
 		RefundPriceAmount: refundAmount,
 		ProtectifyAmount:  0,
 		Currency:          data.Order.TotalPriceSet.ShopMoney.CurrencyCode,
@@ -220,7 +243,7 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 
 	for _, lineItem := range data.Order.LineItems.Edges {
 		variantID := utils.GetIdFromShopifyGraphqlId(lineItem.Node.Variant.ID)
-		price := o.parsePrice(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
+		price := utils.DecimalToFloat(lineItem.Node.OriginalUnitPriceSet.ShopMoney.Amount)
 		refundQuantity := refundMap[variantID]
 		isProtectify := 0
 		if _, ok := variantIDMap[variantID]; ok {
@@ -253,7 +276,14 @@ func (o *OrderService) createNewOrder(ctx context.Context, userID int64, data *s
 		userOrderInfos[i].UserOrderId = dbOrderId
 	}
 
-	return o.orderInfoRepo.Create(ctx, userOrderInfos)
+	err = o.orderInfoRepo.Create(ctx, userOrderInfos)
+
+	// 创建订单后更新账单相关记录
+	if err := o.updateBillingRecords(ctx, userID, userOrder, userOrderInfos); err != nil {
+		return fmt.Errorf("更新账单记录失败: %w", err)
+	}
+
+	return err
 }
 
 func (o *OrderService) sliceToMap(slice []int64) map[int64]struct{} {
@@ -271,18 +301,13 @@ func (o *OrderService) parseRefundInfo(data *shopifys.OrderResponse) (map[int64]
 		for _, item := range refund.RefundLineItems.Edges {
 			variantID := utils.GetIdFromShopifyGraphqlId(item.Node.LineItem.Variant.ID)
 			quantity := item.Node.Quantity
-			price := o.parsePrice(item.Node.SubtotalSet.ShopMoney.Amount)
+			price := utils.DecimalToFloat(item.Node.SubtotalSet.ShopMoney.Amount)
 
 			refundMap[variantID] += quantity
 			refundAmount += price
 		}
 	}
 	return refundMap, refundAmount
-}
-
-func (o *OrderService) parsePrice(amount string) float64 {
-	price, _ := strconv.ParseFloat(amount, 64)
-	return price
 }
 
 func (o *OrderService) HandleOrderStatistics(ctx context.Context, t *asynq.Task) error {
@@ -383,5 +408,152 @@ func (o *OrderService) fail(ctx context.Context, jobId int64, msg string, err er
 func (o *OrderService) skip(ctx context.Context, jobId int64, reason string) error {
 	logger.Info(ctx, fmt.Sprintf("order_queue: JobId: %d => 跳过: %s", jobId, reason))
 	_ = o.jobOrderRepo.UpdateStatus(ctx, jobId, 2) // 2 表示跳过
+	return nil
+}
+
+// calculateCommission 根据用户设置计算佣金
+func (o *OrderService) calculateCommission(ctx context.Context, userID int64, protectifyAmount float64, orderTotalAmount float64) (float64, float64, error) {
+	// 获取用户的购物车设置
+	cartSetting, err := o.cartSettingRepo.First(ctx, userID)
+	if err != nil {
+		return 0, 0, fmt.Errorf("获取用户购物车设置失败: %w", err)
+	}
+	totalAmount := decimal.NewFromFloat(orderTotalAmount)
+	var commissionAmount decimal.Decimal
+	var commissionRate decimal.Decimal
+	// 解析 PricingSelect
+	var prices []cartEntity.PriceSelectReq
+	if err := json.Unmarshal([]byte(cartSetting.PricingSelect), &prices); err != nil {
+		logger.Error(ctx, "get-cart 解析 PricingSelect 失败", "Err:", err.Error())
+		return 0, 0, fmt.Errorf("解析 PricingSelect 失败: %w", err)
+	}
+
+	// 解析 TiersSelect
+	var tiers []cartEntity.TierSelectReq
+	if err := json.Unmarshal([]byte(cartSetting.TiersSelect), &tiers); err != nil {
+		logger.Error(ctx, "get-cart 解析 TiersSelect 失败", "Err:", err.Error())
+		return 0, 0, fmt.Errorf("解析 TiersSelect 失败: %w", err)
+	}
+	protectifyPrice := decimal.NewFromFloat(protectifyAmount)
+	if cartSetting.PricingRule == 0 {
+		if cartSetting.PricingType == 0 {
+			commissionRate = decimal.NewFromFloat(cartSetting.AllPriceSet).Div(protectifyPrice)
+		}
+	} else {
+		// 按金额计算
+		if cartSetting.PricingType == 0 {
+			for _, priceRange := range prices {
+				minRange := utils.ParseMoneyDecimal(priceRange.Min)
+				maxRange := utils.ParseMoneyDecimal(priceRange.Max)
+				if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
+					commissionAmount := utils.ParseMoneyDecimal(priceRange.Price)
+					// 计算实际费率
+					if protectifyAmount > 0 {
+						commissionRate = commissionAmount.Div(protectifyPrice)
+					}
+					break
+				}
+			}
+		} else { // 按比例计算
+			for _, tier := range tiers {
+				minRange := utils.ParseMoneyDecimal(tier.Min)
+				maxRange := utils.ParseMoneyDecimal(tier.Max)
+				if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
+					percentage := utils.ParseMoneyDecimal(tier.Percentage)
+					commissionRate = percentage.Div(decimal.NewFromInt(100)) // 转换百分比为小数
+					commissionAmount = protectifyPrice.Mul(commissionRate)
+					break
+				}
+			}
+		}
+	}
+
+	// 如果没有找到匹配的价格区间或比例区间
+	if commissionAmount == decimal.Zero && commissionRate == decimal.Zero {
+		return 0, 0, fmt.Errorf("未找到匹配的价格或比例区间")
+	}
+
+	return utils.DecimalToFloat(commissionAmount), utils.DecimalToFloat(commissionRate), nil
+}
+
+// updateBillingRecords 更新订单相关的账单记录和周期汇总
+func (o *OrderService) updateBillingRecords(ctx context.Context, userID int64, order *orders.UserOrder, orderInfo []*orders.UserOrderInfo) error {
+	// 1. 获取用户当前的订阅信息
+	subscription, err := o.subscriptionRepo.GetActiveSubscription(ctx, userID)
+	if err != nil {
+		return fmt.Errorf("获取用户订阅信息失败: %w", err)
+	}
+
+	// 2. 计算佣金金额
+	commissionAmount, commissionRate, err := o.calculateCommission(ctx, userID, order.ProtectifyAmount, order.TotalPriceAmount)
+	if err != nil {
+		return fmt.Errorf("计算佣金失败: %w", err)
+	}
+
+	// 3. 计算账单周期
+	now := time.Now().Unix()
+	billCycle := time.Unix(now, 0).Format("2006-01")
+	businessMonth := billCycle
+
+	// 4. 创建commission_bill记录
+	_ = &billings.CommissionBill{
+		UserId:                userID,
+		UserOrderId:           order.Id,
+		OrderName:             order.OrderName,
+		BillCycle:             billCycle,
+		CommissionAmount:      commissionAmount,
+		CommissionRate:        commissionRate,
+		Currency:              order.Currency,
+		SubscriptionId:        subscription.ID,
+		OrderProtectifyAmount: order.ProtectifyAmount,
+		OrderTotalAmount:      order.TotalPriceAmount,
+		ChargeStatus:          0, // 待提交
+		CreateTime:            now,
+		UpdateTime:            now,
+	}
+
+	// 5. 更新billing_period_summary
+	periodEnd := time.Date(time.Now().Year(), time.Now().Month()+1, 1, 0, 0, 0, 0, time.UTC).Unix() - 1
+	summary, err := o.billingPeriodRepo.GetByCurrentPeriod(ctx, userID, periodEnd)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// 创建新的周期汇总
+			summary = &billings.BillingPeriodSummary{
+				UserId:                userID,
+				BillingPeriodEnd:      periodEnd,
+				BillingPeriodStart:    time.Date(time.Now().Year(), time.Now().Month(), 1, 0, 0, 0, 0, time.UTC).Unix(),
+				BillCycle:             billCycle,
+				BusinessMonth:         businessMonth,
+				Currency:              order.Currency,
+				OrderCount:            1,
+				BillCount:             1,
+				TotalCommissionAmount: commissionAmount,
+				PendingAmount:         commissionAmount,
+				TotalProtectifyAmount: order.ProtectifyAmount,
+				TotalOrderAmount:      order.TotalPriceAmount,
+				TotalRefundAmount:     order.RefundPriceAmount,
+				Version:               1,
+			}
+			_, err = o.billingPeriodRepo.CreateBillingPeriodSummary(ctx, summary)
+		} else {
+			return fmt.Errorf("查询账期汇总失败: %w", err)
+		}
+	} else {
+		// 更新现有周期汇总
+		summary.OrderCount += 1
+		summary.BillCount += 1
+		summary.TotalCommissionAmount += commissionAmount
+		summary.PendingAmount += commissionAmount
+		summary.TotalProtectifyAmount += order.ProtectifyAmount
+		summary.TotalOrderAmount += order.TotalPriceAmount
+		summary.TotalRefundAmount += order.RefundPriceAmount
+		summary.Version += 1
+
+		err = o.billingPeriodRepo.UpdateBillingPeriodSummary(ctx, summary)
+	}
+	if err != nil {
+		return fmt.Errorf("更新账期汇总失败: %w", err)
+	}
+
 	return nil
 }

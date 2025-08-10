@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { cartService, userService } from "@/api";
-import type { WidgetSettings, PricingSettings, ProductSettings, CartSettingsHook } from "@/types/cart";
+import type {
+  WidgetSettings,
+  PricingSettings,
+  ProductSettings,
+  CartSettingsHook,
+  FulfillmentSettings,
+} from "@/types/cart";
 import { getMessageState } from "@/stores/messageStore";
 
 export function useCartSettings(): CartSettingsHook {
@@ -47,13 +53,26 @@ export function useCartSettings(): CartSettingsHook {
 
   const [productSettings, setProductSettings] = useState<ProductSettings>({
     selectedCollections: [],
-    icons: [
-      { id: 1, src: "https://img.icons8.com/color/48/shield.png", selected: true },
-      { id: 2, src: "https://maxst.icons8.com/vue-static/faceswapper/hero/faces/2.jpg", selected: false },
-    ],
+    icons: [{ id: 1, src: "https://s.protectifyapp.com/logo.png", selected: true }],
     onlyInCollection: false,
   });
-
+  const [fulfillmentSettings, setFulfillmentSettings] = useState<FulfillmentSettings>({
+    fulfillmentType: "0",
+    fulfillmentOptions: [
+      {
+        label: "Mark as fulfilled when first item(s) are fulfilled",
+        value: "0",
+      },
+      {
+        label: "Mark as fulfilled when other items fulfilled",
+        value: "1",
+      },
+      {
+        label: "Mark as fulfilled immediately after purchase",
+        value: "2",
+      },
+    ],
+  });
   const [moneySymbol, setMoneySymbol] = useState("$");
   const [hasSubscribe, setHasSubscribe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -179,7 +198,7 @@ export function useCartSettings(): CartSettingsHook {
     setPricingSettings(prev => ({
       ...prev,
       pricingType: String(data.pricing_type),
-      pricingRule: String(data.price_rule),
+      pricingRule: String(data.pricing_rule),
       priceSelect: Array.isArray(data.price_select) ? data.price_select : prev.priceSelect,
       tiersSelect: Array.isArray(data.tiers_select) ? data.tiers_select : prev.tiersSelect,
       restValuePrice: String(data.other_money),
@@ -193,6 +212,12 @@ export function useCartSettings(): CartSettingsHook {
       selectedCollections: Array.isArray(data.product_collection) ? data.product_collection : prev.selectedCollections,
       icons: Array.isArray(data.icons) && data.icons.length > 0 ? data.icons : prev.icons,
       onlyInCollection: data.in_collection,
+    }));
+
+    //更新 fulfillment设置
+    setFulfillmentSettings(prev => ({
+      ...prev,
+      fulfillmentType: String(data.fulfillment_type),
     }));
   };
 
@@ -317,6 +342,7 @@ export function useCartSettings(): CartSettingsHook {
     widgetSettings,
     pricingSettings,
     productSettings,
+    fulfillmentSettings,
     moneySymbol,
     hasSubscribe,
     errors,
@@ -327,6 +353,7 @@ export function useCartSettings(): CartSettingsHook {
     setWidgetSettings,
     setPricingSettings,
     setProductSettings,
+    setFulfillmentSettings,
     setErrors,
 
     // 操作函数

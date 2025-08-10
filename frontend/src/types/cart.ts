@@ -1,3 +1,7 @@
+import { OptionType } from "dayjs";
+import { SelectOption } from "@shopify/polaris";
+import { Choice } from "@/types/form.ts";
+
 export interface WidgetSettings {
   planTitle: string;
   iconVisibility: string;
@@ -28,6 +32,11 @@ export interface ProductSettings {
   onlyInCollection: boolean;
 }
 
+export interface FulfillmentSettings {
+  fulfillmentType: string;
+  fulfillmentOptions: Choice[];
+}
+
 export interface PriceRange {
   min: string;
   max: string;
@@ -50,6 +59,7 @@ export interface CartSettingsHook {
   widgetSettings: WidgetSettings;
   pricingSettings: PricingSettings;
   productSettings: ProductSettings;
+  fulfillmentSettings: FulfillmentSettings;
   moneySymbol: string;
   errors: Record<string, string>;
   isLoading: boolean;
@@ -58,6 +68,7 @@ export interface CartSettingsHook {
   setWidgetSettings: (setter: (prev: WidgetSettings) => WidgetSettings) => void;
   setPricingSettings: (setter: (prev: PricingSettings) => PricingSettings) => void;
   setProductSettings: (setter: (prev: ProductSettings) => ProductSettings) => void;
+  setFulfillmentSettings: (setter: (prev: FulfillmentSettings) => FulfillmentSettings) => void;
   setErrors: (setter: (prev: Record<string, string>) => Record<string, string>) => void;
   saveSettings: () => Promise<void>;
   discardChanges: () => void;
@@ -70,7 +81,7 @@ export interface WidgetStyleCardProps {
   icons: IconType[];
   onWidgetSettingsChange: (value: Partial<WidgetSettings>) => void;
   onIconClick: (id: number) => void;
-  onIconUpload: (file: File) => void;
+  onIconUpload: (file: File) => Promise<void>;
 }
 
 export interface ContentCardProps {
@@ -96,7 +107,10 @@ export interface ProductCardProps {
   onRemoveCollection: (value: number) => void;
   onCollectionChange?: (resources: Array<ResourceItem>) => void;
 }
-
+export interface FulfillmentCardProps {
+  fulfillmentSettings: FulfillmentSettings;
+  onFulfillmentTypeChange: (value: string) => void;
+}
 export interface CartSettingsData {
   plan_title: string;
   addon_title: string;
@@ -110,7 +124,7 @@ export interface CartSettingsData {
   show_cart_icon: number;
   select_button: number;
   pricing_type: number;
-  price_rule: number;
+  pricing_rule: number;
   price_select: any[];
   tiers_select: any[];
   other_money: number;
@@ -119,6 +133,7 @@ export interface CartSettingsData {
   product_collection: any[];
   icons: any[];
   in_collection: boolean;
+  fulfillment_type: number;
 }
 
 export interface UpdateCartSettingsParams {

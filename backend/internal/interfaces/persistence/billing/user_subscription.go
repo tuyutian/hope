@@ -7,7 +7,6 @@ import (
 	billingEntity "backend/internal/domain/entity/users"
 	"backend/internal/domain/repo/users"
 
-	"github.com/shopspring/decimal"
 	"xorm.io/xorm"
 )
 
@@ -68,9 +67,9 @@ func (u *userSubscriptionRepoImpl) UpsertUserSubscription(ctx context.Context, s
 }
 
 // UpdateSubscriptionBalance 更新订阅余额
-func (u *userSubscriptionRepoImpl) UpdateSubscriptionBalance(ctx context.Context, id int64, balanceUsed decimal.Decimal) error {
+func (u *userSubscriptionRepoImpl) UpdateSubscriptionBalance(ctx context.Context, id int64, balanceUsed float64) error {
 	_, err := u.db.ID(id).Update(&billingEntity.UserSubscription{
-		BalanceUsed: &balanceUsed,
+		BalanceUsed: balanceUsed,
 	})
 	return err
 }

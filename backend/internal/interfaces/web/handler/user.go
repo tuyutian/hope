@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/shopspring/decimal"
 
 	"backend/internal/application"
 	"backend/internal/application/users"
@@ -85,7 +84,7 @@ func (u *UserHandler) CreateSubscribe(c *gin.Context) {
 	subscription, confirmUrl, err := u.subscriptionService.CreateUsageSubscription(
 		ctx,
 		"Protectify tax",
-		decimal.NewFromInt(200),
+		200,
 		"USD",
 		"every paid order with insurance product will be taxed",
 		true,

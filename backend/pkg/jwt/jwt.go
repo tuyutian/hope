@@ -129,7 +129,7 @@ func (m *JwtManager) VerifyToken(accessToken string) (*CustomClaims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return m.secretKey, nil
-	})
+	}, jwt.WithLeeway(60))
 
 	if err != nil {
 		return nil, parseValidationError(err)

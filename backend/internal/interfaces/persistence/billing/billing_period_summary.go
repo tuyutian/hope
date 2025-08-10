@@ -62,3 +62,11 @@ func (b *billingPeriodSummaryRepoImpl) GetByCurrentPeriod(ctx context.Context, u
 	}
 	return period, nil
 }
+
+func (b *billingPeriodSummaryRepoImpl) UpdateBillingPeriod(ctx context.Context, period *billingEntity.BillingPeriodSummary) error {
+	_, err := b.db.Context(ctx).Table(new(billingEntity.BillingPeriodSummary)).ID(period.Id).Update(period)
+	if err != nil {
+		return err
+	}
+	return nil
+}

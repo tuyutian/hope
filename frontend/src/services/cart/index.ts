@@ -17,7 +17,7 @@ export class CartService extends BaseApiService {
     return this.post("cart", params);
   }
 
-  uploadLogo(image: File): Promise<ApiResponse<string>> {
+  uploadLogo(image: File): Promise<ApiResponse<{ id: number; src: string }>> {
     const formData = new FormData();
     formData.append("image", image);
     return this.post("upload_logo", formData, {

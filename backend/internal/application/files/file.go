@@ -33,20 +33,20 @@ func NewFileService(repos *providers.Repositories) *FileService {
 }
 
 // UploadProductImageToShopify 上传文件到 Shopify
-func (s *FileService) UploadProductImageToShopify(ctx context.Context, fileHeader *multipart.FileHeader, altText string) (string, error) {
+func (s *FileService) UploadProductImageToShopify(ctx context.Context, fileHeader *multipart.FileHeader, altText string) (*shopifyEntity.ImageMedia, error) {
 	// 从上下文获取 Shopify GraphQL 客户端
 	client := ctx.Value(ctxkeys.ShopifyGraphqlClient).(*shopify_graphql.GraphqlClient)
 	// 1. 获取文件基本信息
 	file, err := fileHeader.Open()
 	if err != nil {
-		return "", fmt.Errorf("打开文件失败: %w", err)
+		return nil, fmt.Errorf("打开文件失败: %w", err)
 	}
 	defer file.Close()
 
 	// 读取文件内容
 	fileContent, err := io.ReadAll(file)
 	if err != nil {
-		return "", fmt.Errorf("读取文件失败: %w", err)
+		return nil, fmt.Errorf("读取文件失败: %w", err)
 	}
 	contentType := fileHeader.Header.Get("Content-Type")
 	fileName := utils.Uuid()
@@ -62,16 +62,16 @@ func (s *FileService) UploadProductImageToShopify(ctx context.Context, fileHeade
 
 	stagedTargets, err := s.productGraphqlRepo.StagedUploadsCreate(ctx, stagedInput)
 	if err != nil {
-		return "", fmt.Errorf("创建 staged upload 失败: %w", err)
+		return nil, fmt.Errorf("创建 staged upload 失败: %w", err)
 	}
 	if stagedTargets == nil {
-		return "", fmt.Errorf("stagedTargets is nil")
+		return nil, fmt.Errorf("stagedTargets is nil")
 	}
 	// 3. 上传文件到预签名 URL
 	stagedTarget := (*stagedTargets)[0]
 	location, err := uploadToSignedURL(ctx, stagedTarget, fileContent)
 	if err != nil {
-		return "", fmt.Errorf("上传到临时存储失败: %w", err)
+		return nil, fmt.Errorf("上传到临时存储失败: %w", err)
 	}
 	originSource := stagedTarget.ResourceURL
 	if location != "" {
@@ -86,7 +86,7 @@ func (s *FileService) UploadProductImageToShopify(ctx context.Context, fileHeade
 
 	files, err := s.productGraphqlRepo.FileCreate(ctx, fileInput)
 	if err != nil {
-		return "", fmt.Errorf("创建文件记录失败: %w", err)
+		return nil, fmt.Errorf("创建文件记录失败: %w", err)
 	}
 	fmt.Println("files:", zap.Any("files", files))
 	// 返回文件 ID 或预览 URL
@@ -96,19 +96,19 @@ func (s *FileService) UploadProductImageToShopify(ctx context.Context, fileHeade
 		if uploadFile.FileStatus == "UPLOADED" {
 			mediaImage, err := s.productGraphqlRepo.GetImageMedia(ctx, uploadFile.ID)
 			if err != nil {
-				return "", fmt.Errorf("can't get image media: %s", err.Error())
+				return nil, fmt.Errorf("can't get image media: %s", err.Error())
 			}
 			for mediaImage.FileStatus == "PROCESSING" {
 				time.Sleep(1 * time.Second)
 				mediaImage, err = s.productGraphqlRepo.GetImageMedia(ctx, uploadFile.ID)
 				if err != nil {
-					return "", fmt.Errorf("can't get image media: %s", err.Error())
+					return nil, fmt.Errorf("can't get image media: %s", err.Error())
 				}
 			}
-			return mediaImage.Image.URL, nil
+			return mediaImage, nil
 		}
 	}
-	return "", fmt.Errorf("未获取到上传文件信息")
+	return nil, fmt.Errorf("未获取到上传文件信息")
 }
 
 // uploadToSignedURL 上传文件到预签名 URL
