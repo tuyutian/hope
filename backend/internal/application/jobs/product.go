@@ -176,9 +176,10 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 			Title:           product.Title,
 			Status:          "ACTIVE",
 			DescriptionHtml: product.Description,
-			ProductType:     product.ProductType,
-			Tags:            strings.Split(product.Tags, ","),
-			Vendor:          product.Vendor,
+			ProductType:     "Protectify",
+			//Category:        "gid://shopify/TaxonomyCategory/gc",
+			Tags:   strings.Split(product.Tags, ","),
+			Vendor: product.Vendor,
 			ProductOptions: []shopifyEntity.ProductOptionInput{
 				{
 					Name:     "Protectify",
@@ -227,6 +228,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 					SKU:     item.SkuName,
 					Tracked: false,
 				},
+				RequiresShipping: false,
 			}
 			variantCreateInput = append(variantCreateInput, gqlVariant)
 		}
@@ -255,10 +257,11 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		// 修改Shopify 产品及变体
 		err := p.productGraphqlRepo.UpdateProductComprehensive(ctx, productId,
 			shopifyEntity.ProductUpdateInput{
-				Status:          "ACTIVE",
+				Status: "ACTIVE",
+				//Category:        "gid://shopify/TaxonomyCategory/gc",
+				ProductType:     "Protectify",
 				Title:           product.Title,
 				DescriptionHtml: product.Description,
-				ProductType:     product.ProductType,
 				Tags:            strings.Split(product.Tags, ","),
 				Vendor:          product.Vendor,
 			})
@@ -304,6 +307,7 @@ func (p *ProductService) UploadProduct(ctx context.Context, t *asynq.Task) error
 		logger.Warn(ctx, "save product error:"+err.Error())
 		return err
 	}
+
 	return p.ok(ctx, job.Id)
 }
 

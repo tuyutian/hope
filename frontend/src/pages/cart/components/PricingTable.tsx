@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, DataTable, TextField } from "@shopify/polaris";
+import { PlusIcon } from "@shopify/polaris-icons";
 
 interface PriceTier {
   min: string;
@@ -53,7 +54,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`min-${index}`}
               value={tier.min}
-              onChange={(value) => onTierChange(index, "min", value, `tier_min_${index}`)}
+              onChange={value => onTierChange(index, "min", value, `tier_min_${index}`)}
               prefix={moneySymbol}
               error={errors[`tier_min_${index}`]}
             />,
@@ -62,7 +63,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`max-${index}`}
               value={tier.max}
-              onChange={(value) => onTierChange(index, "max", value, `tier_max_${index}`)}
+              onChange={value => onTierChange(index, "max", value, `tier_max_${index}`)}
               prefix={moneySymbol}
               error={errors[`tier_max_${index}`]}
             />,
@@ -71,21 +72,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`percentage-${index}`}
               value={tier.percentage}
-              onChange={(value) => onTierChange(index, "percentage", value, `tier_percentage_${index}`)}
+              onChange={value => onTierChange(index, "percentage", value, `tier_percentage_${index}`)}
               prefix="%"
               error={errors[`tier_percentage_${index}`]}
             />,
-            <Button
-              key={`delete-${index}`}
-              onClick={() => onDeleteTier(index)}
-              variant="plain"
-              tone="critical"
-            >
+            <Button key={`delete-${index}`} onClick={() => onDeleteTier(index)} variant="plain" tone="critical">
               Delete
             </Button>,
           ])}
         />
-        <Button onClick={onAddTier}>Add Tier</Button>
+        <div>
+          <Button icon={PlusIcon} onClick={onAddTier}>
+            Add Tier
+          </Button>
+        </div>
       </>
     );
   } else {
@@ -101,7 +101,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`min-${index}`}
               value={tier.min}
-              onChange={(value) => onPriceChange(index, "min", value, `price_min_${index}`)}
+              onChange={value => onPriceChange(index, "min", value, `price_min_${index}`)}
               prefix={moneySymbol}
               error={errors[`price_min_${index}`]}
             />,
@@ -110,7 +110,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`max-${index}`}
               value={tier.max}
-              onChange={(value) => onPriceChange(index, "max", value, `price_max_${index}`)}
+              onChange={value => onPriceChange(index, "max", value, `price_max_${index}`)}
               prefix={moneySymbol}
               error={errors[`price_max_${index}`]}
             />,
@@ -119,21 +119,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
               autoComplete="off"
               key={`price-${index}`}
               value={tier.price}
-              onChange={(value) => onPriceChange(index, "price", value, `price_price_${index}`)}
+              onChange={value => onPriceChange(index, "price", value, `price_price_${index}`)}
               prefix={moneySymbol}
               error={errors[`price_price_${index}`]}
             />,
-            <Button
-              key={`delete-${index}`}
-              onClick={() => onDeletePrice(index)}
-              variant="plain"
-              tone="critical"
-            >
+            <Button key={`delete-${index}`} onClick={() => onDeletePrice(index)} variant="plain" tone="critical">
               Delete
             </Button>,
           ])}
         />
-        <Button onClick={onAddPrice}>Add Price</Button>
+        <div>
+          <Button icon={PlusIcon} onClick={onAddPrice}>
+            Add Price
+          </Button>
+        </div>
       </>
     );
   }

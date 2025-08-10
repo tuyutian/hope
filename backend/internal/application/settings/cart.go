@@ -12,6 +12,7 @@ import (
 	userRepo "backend/internal/domain/repo/users"
 	"backend/internal/providers"
 	"backend/pkg/logger"
+	"backend/pkg/utils"
 )
 
 type CartSettingService struct {
@@ -98,6 +99,9 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		PriceSelect:       prices,
 		TiersSelect:       tiers,
 		PricingType:       cartSetting.PricingType,
+		PricingRule:       cartSetting.PricingRule,
+		AllPrice:          cartSetting.AllPriceSet,
+		AllTiers:          cartSetting.AllTiersSet,
 	}, nil
 }
 
@@ -174,6 +178,9 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		PricingSelect:     priceStr,
 		TiersSelect:       tiersStr,
 		PricingType:       req.PricingType,
+		PricingRule:       req.PricingRule,
+		AllPriceSet:       utils.ParseMoneyFloat(req.AllPrice),
+		AllTiersSet:       utils.ParseMoneyFloat(req.AllTiers),
 	}
 	if cartSetting == nil {
 		// 创建购物车

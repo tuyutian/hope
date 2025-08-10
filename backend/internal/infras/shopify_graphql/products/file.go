@@ -186,10 +186,10 @@ mutation fileUpdate($files: [FileUpdateInput!]!) {
 		return nil, err
 	}
 	if len(response.FileUpdate.UserErrors) > 0 {
-		logger.Error(ctx, "fileCreate error: "+response.FileUpdate.UserErrors[0].Message, zap.Any("response", response))
+		logger.Error(ctx, "fileUpdated error: "+response.FileUpdate.UserErrors[0].Message, zap.Any("response", response))
 		return nil, errors.New(response.FileUpdate.UserErrors[0].Message)
 	}
-	logger.Info(ctx, "fileCreate success", zap.Any("response", response))
+	logger.Info(ctx, "fileUpdated success", zap.Any("response", response))
 
 	return &response.FileUpdate.Files, nil
 }

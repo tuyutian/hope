@@ -1,5 +1,5 @@
 import { ProductCardProps } from "@/types/cart.ts";
-import { BlockStack, Button, Card, Checkbox, FormLayout, InlineStack, Tag } from "@shopify/polaris";
+import { BlockStack, Box, Button, Card, Checkbox, FormLayout, InlineStack, Tag, Text } from "@shopify/polaris";
 import { useShopifyBridge } from "@/hooks/useShopifyBridge.ts";
 import { useCallback } from "react";
 
@@ -56,25 +56,35 @@ export default function ProductCard({
 
   return (
     <Card padding="400">
+      <Box paddingBlockEnd="300">
+        <Text variant="headingSm" as="h6">
+          Exclusions
+        </Text>
+      </Box>
       <FormLayout>
         <BlockStack gap="200">
-          <InlineStack gap="200">
-            <Checkbox
-              onChange={handleSelect}
-              checked={productSettings.onlyInCollection}
-              label="By product collections"
-            />
-            <Button onClick={handleCollectionPicker}>Browse</Button>
-          </InlineStack>
-          {productSettings.selectedCollections.length > 0 && (
-            <InlineStack gap="100" wrap>
-              {productSettings.selectedCollections.map(item => (
-                <Tag key={item.id} onRemove={() => onRemoveCollection(item.id)}>
-                  {item.title}
-                </Tag>
-              ))}
+          <BlockStack gap="100">
+            <Text as="p" variant="bodyMd">
+              Apply exclusion criteria to filter out non-compliant products
+            </Text>
+            <InlineStack gap="200">
+              <Checkbox
+                onChange={handleSelect}
+                checked={productSettings.onlyInCollection}
+                label="By product collections"
+              />
+              <Button onClick={handleCollectionPicker}>Browse</Button>
             </InlineStack>
-          )}
+            {productSettings.selectedCollections.length > 0 && (
+              <InlineStack gap="100" wrap>
+                {productSettings.selectedCollections.map(item => (
+                  <Tag key={item.id} onRemove={() => onRemoveCollection(item.id)}>
+                    {item.title}
+                  </Tag>
+                ))}
+              </InlineStack>
+            )}
+          </BlockStack>
         </BlockStack>
       </FormLayout>
     </Card>

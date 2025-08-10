@@ -1,5 +1,5 @@
 import React, { useTransition } from "react";
-import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Box, Card, Layout, Link, Page, Text } from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
@@ -14,12 +14,15 @@ import { ResourceItem } from "@/types/cart.ts";
 import { userService } from "@/services/user";
 import { getMessageState } from "@/stores/messageStore.ts";
 import { cartService } from "@/services/cart";
+import FulfillmentCard from "@/pages/cart/components/FulfillmentCard.tsx";
+import { handleContact } from "@/utils/app.ts";
 
 export default function ShippingProtectionSettings() {
   const {
     widgetSettings,
     pricingSettings,
     productSettings,
+    fulfillmentSettings,
     moneySymbol,
     errors,
     isLoading,
@@ -27,6 +30,7 @@ export default function ShippingProtectionSettings() {
     setWidgetSettings,
     setPricingSettings,
     setProductSettings,
+    setFulfillmentSettings,
     setErrors,
     saveSettings,
     hasSubscribe,
@@ -287,6 +291,33 @@ export default function ShippingProtectionSettings() {
                   onRemoveCollection={handleRemoveCollection}
                   onCollectionChange={handleCollectionChange}
                 />
+                <FulfillmentCard
+                  fulfillmentSettings={fulfillmentSettings}
+                  onFulfillmentTypeChange={handleFieldChange(
+                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentType: value })),
+                    "content"
+                  )}
+                />
+                <Card>
+                  <Box paddingBlockEnd="300">
+                    <Text as="h2" variant="headingSm">
+                      CSS
+                    </Text>
+                  </Box>
+                  <BlockStack gap="300">
+                    <Text as="p" variant="bodyMd">
+                      If you would like to adjust the styling of the widgets in your store,{" "}
+                      <Link onClick={handleContact}>contact us</Link> and we will add CSS code here to make custom
+                      changes. This won&#39;t affect your store theme.{" "}
+                    </Text>
+                    <Text as="p" variant="bodyMd">
+                      To add custom CSS, go to{" "}
+                      <Text as="span" variant="bodyMd" fontWeight="bold">
+                        Theme Editor
+                      </Text>
+                    </Text>
+                  </BlockStack>
+                </Card>
               </BlockStack>
             </div>
           </Layout.Section>

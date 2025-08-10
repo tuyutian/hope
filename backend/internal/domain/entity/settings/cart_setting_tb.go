@@ -20,8 +20,11 @@ type UserCartSetting struct {
 	InCollection      int     `xorm:"'in_collection' tinyint(1) default 0 not null comment('是否启用集合筛选 0 关闭 1 打开')" json:"in_collection"`
 	ProductCollection string  `xorm:"'product_collection' varchar(100) notnull default '' comment('产品选中集合')" json:"product_collection"`
 	PricingType       int     `xorm:"'pricing_type' tinyint(1) default 0 notnull comment('购物车图标 0 金额 1百分比')" json:"pricing_type"`
+	PricingRule       int     `xorm:"'pricing_rule' tinyint(1) default 0 notnull comment('金额计算方式 0 统一设置 1单独设置')" json:"pricing_rule"`
 	PricingSelect     string  `xorm:"'pricing_select' text comment('金额计算范围')" json:"pricing_select"`
 	TiersSelect       string  `xorm:"'tiers_select' text comment('百分比计算范围')" json:"tiers_select"`
+	AllTiersSet       float64 `xorm:"'all_tiers_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定百分比') " json:"all_tiers_set"`
+	AllPriceSet       float64 `xorm:"'all_price_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定金额') " json:"all_price_set"`
 	CreateTime        int64   `xorm:"created 'create_time' bigint(20) notnull comment('创建时间')" json:"create_time"`
 	UpdateTime        int64   `xorm:"updated 'update_time' bigint(20) notnull comment('修改时间')" json:"update_time"`
 }

@@ -435,29 +435,35 @@ func (o *OrderService) calculateCommission(ctx context.Context, userID int64, pr
 		return 0, 0, fmt.Errorf("解析 TiersSelect 失败: %w", err)
 	}
 	protectifyPrice := decimal.NewFromFloat(protectifyAmount)
-	// 按金额计算
-	if cartSetting.PricingType == 0 {
-		for _, priceRange := range prices {
-			minRange := utils.ParseMoneyDecimal(priceRange.Min)
-			maxRange := utils.ParseMoneyDecimal(priceRange.Max)
-			if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
-				commissionAmount := utils.ParseMoneyDecimal(priceRange.Price)
-				// 计算实际费率
-				if protectifyAmount > 0 {
-					commissionRate = commissionAmount.Div(protectifyPrice)
-				}
-				break
-			}
+	if cartSetting.PricingRule == 0 {
+		if cartSetting.PricingType == 0 {
+			commissionRate = decimal.NewFromFloat(cartSetting.AllPriceSet).Div(protectifyPrice)
 		}
-	} else { // 按比例计算
-		for _, tier := range tiers {
-			minRange := utils.ParseMoneyDecimal(tier.Min)
-			maxRange := utils.ParseMoneyDecimal(tier.Max)
-			if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
-				percentage := utils.ParseMoneyDecimal(tier.Percentage)
-				commissionRate = percentage.Div(decimal.NewFromInt(100)) // 转换百分比为小数
-				commissionAmount = protectifyPrice.Mul(commissionRate)
-				break
+	} else {
+		// 按金额计算
+		if cartSetting.PricingType == 0 {
+			for _, priceRange := range prices {
+				minRange := utils.ParseMoneyDecimal(priceRange.Min)
+				maxRange := utils.ParseMoneyDecimal(priceRange.Max)
+				if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
+					commissionAmount := utils.ParseMoneyDecimal(priceRange.Price)
+					// 计算实际费率
+					if protectifyAmount > 0 {
+						commissionRate = commissionAmount.Div(protectifyPrice)
+					}
+					break
+				}
+			}
+		} else { // 按比例计算
+			for _, tier := range tiers {
+				minRange := utils.ParseMoneyDecimal(tier.Min)
+				maxRange := utils.ParseMoneyDecimal(tier.Max)
+				if totalAmount.GreaterThanOrEqual(minRange) && (totalAmount.LessThanOrEqual(maxRange) || maxRange.Equal(decimal.Zero)) {
+					percentage := utils.ParseMoneyDecimal(tier.Percentage)
+					commissionRate = percentage.Div(decimal.NewFromInt(100)) // 转换百分比为小数
+					commissionAmount = protectifyPrice.Mul(commissionRate)
+					break
+				}
 			}
 		}
 	}

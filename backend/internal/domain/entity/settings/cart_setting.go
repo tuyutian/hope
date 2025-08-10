@@ -19,9 +19,12 @@ type SettingConfigReq struct {
 	OptInColor           string           `json:"optInColor" binding:"required,max=50"`
 	OptOutColor          string           `json:"optOutColor" binding:"required,max=50"`
 	PricingType          int              `json:"pricingType,omitempty" binding:"oneof=0 1"`
+	PricingRule          int              `json:"pricingRule,omitempty" binding:"oneof=0 1"`
 	PriceSelect          []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
 	TiersSelect          []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
 	RestValuePrice       string           `json:"restValuePrice" binding:"required"`
+	AllTiers             string           `json:"allTiers"`
+	AllPrice             string           `json:"allPrice"`
 	InCollection         bool             `json:"onlyInCollection"`
 	SelectedCollections  []CollectionItem `json:"selectedCollections"`
 	Icons                []IconReq        `json:"icons" binding:"required,dive"`
@@ -53,11 +56,14 @@ type CartSettingData struct {
 	// 购物车图标 0 滑动 1 勾选
 	SelectButton int `json:"select_button"`
 	// 产品type
-	ProductType string `json:"product_type"`
+	ProductType string  `json:"product_type"`
+	AllTiers    float64 `json:"all_tiers"`
+	AllPrice    float64 `json:"all_price"`
 	// 产品选中集合
 	ProductCollection []CollectionItem `json:"product_collection"`
 	InCollection      bool             `json:"in_collection"`
 	PricingType       int              `json:"pricing_type"`
+	PricingRule       int              `json:"pricing_rule"`
 	PriceSelect       []PriceSelectReq `json:"price_select"`
 	TiersSelect       []TierSelectReq  `json:"tiers_select"`
 	Icons             []IconReq        `json:"icons"`

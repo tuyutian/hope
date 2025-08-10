@@ -4,6 +4,7 @@ package shopifys
 type ProductCreateInput struct {
 	Title           string               `json:"title,omitempty"`
 	BodyHTML        string               `json:"bodyHtml,omitempty"`
+	Category        string               `json:"category,omitempty"`
 	DescriptionHtml string               `json:"descriptionHtml,omitempty"`
 	Vendor          string               `json:"vendor,omitempty"`
 	ProductType     string               `json:"productType,omitempty"`
@@ -90,6 +91,7 @@ type MetafieldInput struct {
 type ProductUpdateInput struct {
 	Id              string   `json:"id"`
 	Status          string   `json:"status,omitempty"`
+	Category        string   `json:"category,omitempty"`
 	Title           string   `json:"title,omitempty"`
 	DescriptionHtml string   `json:"descriptionHtml,omitempty"`
 	ProductType     string   `json:"productType,omitempty"`
