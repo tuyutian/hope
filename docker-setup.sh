@@ -15,6 +15,30 @@ esac
 
 echo "检测到操作系统: ${MACHINE}"
 
+# 检查并设置环境变量配置
+setup_environment() {
+    echo "🔧 检查环境变量配置..."
+    
+    if [[ ! -f ".env" ]]; then
+        if [[ -f "env.example" ]]; then
+            echo "📝 创建 .env 文件..."
+            cp env.example .env
+            echo "✅ .env 文件已创建，请编辑该文件设置您的配置"
+            echo "⚠️  重要：请修改 .env 文件中的默认密码！"
+        else
+            echo "❌ 未找到 env.example 文件"
+            return 1
+        fi
+    else
+        echo "✅ .env 文件已存在"
+    fi
+    
+    # 检查是否使用了默认密码
+    if grep -q "change_me_please\|CHANGE_ME_USE_ENV" .env 2>/dev/null; then
+        echo "⚠️  警告：检测到默认密码，请修改 .env 文件中的敏感信息！"
+    fi
+}
+
 # 配置 Docker Registry 镜像源
 configure_docker_registry() {
     echo "📦 配置 Docker Registry 镜像源..."
@@ -107,9 +131,16 @@ verify_configuration() {
 show_usage() {
     echo ""
     echo "🎯 使用说明:"
-    echo "1. 构建后端镜像: cd backend && docker build -t hope-backend ."
-    echo "2. 构建前端镜像: cd frontend && docker build -t hope-frontend ."
-    echo "3. 使用 docker-compose: docker-compose up -d"
+    echo "1. 编辑 .env 文件设置您的配置"
+    echo "2. 构建后端镜像: cd backend && docker build -t hope-backend ."
+    echo "3. 构建前端镜像: cd frontend && docker build -t hope-frontend ."
+    echo "4. 开发环境: docker-compose up -d"
+    echo "5. 生产环境: docker-compose -f docker-compose.prod.yml up -d"
+    echo ""
+    echo "🔐 环境变量配置:"
+    echo "- 复制 env.example 为 .env"
+    echo "- 修改 .env 文件中的密码和密钥"
+    echo "- 查看 ENV-README.md 了解详细配置说明"
     echo ""
     echo "📚 常用的中国镜像源:"
     echo "- 腾讯云: https://mirror.ccs.tencentyun.com"
@@ -127,6 +158,7 @@ show_usage() {
 
 # 主执行流程
 main() {
+    setup_environment
     configure_docker_registry
     configure_build_sources
     verify_configuration

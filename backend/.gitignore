@@ -23,6 +23,7 @@
 .env.local
 .env.*.local
 app.yaml
+seeder.sql
 
 # 临时工作和构建目录
 /tmp/

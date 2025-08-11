@@ -38,9 +38,9 @@ fi
 echo
 
 echo "8. 检查证书文件..."
-if [ -d "/etc/letsencrypt/live/api.protectifyapp.com" ]; then
+if [ -d "/etc/nginx/ssl/api.protectifyapp.com" ]; then
     echo "证书目录存在"
-    ls -la /etc/letsencrypt/live/api.protectifyapp.com/
+    ls -la /etc/nginx/ssl/api.protectifyapp.com/
 else
     echo "证书目录不存在"
 fi

@@ -8,29 +8,27 @@ app_conf:
   # shopify 配置
   shopify:
     webhook_host: webhook.protectifyapp.com
-  # jwt 配置项
   jwt:
-    secret_key: SbODEPq7EpEl3ByfL0MP67+9IJA8e7leVUK0SABdBM8=
+    secret_key: "CHANGE_ME_USE_ENV" # 强烈建议通过环境变量覆盖，而不是写死
     access_expiration: 168h # access token 过期时间
     refresh_expiration: 168h # refresh token 过期时间
 
-
-# redis配置
+# redis配置（使用环境变量覆盖: APP_REDIS_CONF_PASSWORD）
 redis_conf:
   Address: "redis:6379" # host:port address.
-  Password:
+  Password: "" # 留空，生产用环境变量覆盖
   MaxIdle: 150
   Active: 150
   IdleTimeout: 200s
   Prefix: "hope_api_"
 
-# mysql配置
+# mysql配置（使用环境变量覆盖: APP_DB_CONF_DBASECONF_PASSWORD）
 db_conf:
   DbBaseConf:
     Ip: mysql
     Port: 3306
     User: hope
-    Password: hope123
+    Password: "" # 留空，生产用环境变量覆盖
     Database: hope
     Charset: "utf8mb4"
     Collation: "utf8mb4_general_ci"
@@ -43,7 +41,7 @@ db_conf:
   MaxIdleConns: 50  #设置连接池的空闲数大小
   MaxOpenConns: 600  #最大open connection个数
   MaxLifetime: 1800s
-  ShowSql: true
+  ShowSql: false
 
 aliyun_oss:
   endpoint: YouOption

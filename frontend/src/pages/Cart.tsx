@@ -336,7 +336,6 @@ export default function ShippingProtectionSettings() {
                 optInColor={widgetSettings.optInColor}
                 optOutColor={widgetSettings.optOutColor}
                 checkboxInput={false}
-                onCheckboxChange={() => {}}
               />
             </div>
           </Layout.Section>

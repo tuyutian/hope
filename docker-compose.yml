@@ -26,6 +26,24 @@ services:
       - "8090:8090"
     environment:
       - TZ=UTC
+      # 数据库配置
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-hope}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+      - DB_DATABASE=${DB_DATABASE:-hope}
+      # Redis配置
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      # JWT配置
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_USE_ENV}
+      # 应用配置
+      - APP_ENV=${APP_ENV:-prod}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    env_file:
+      - .env
     volumes:
       - ./backend/logs:/app/logs
       - ./backend/app.yaml:/app/app.yaml
@@ -43,6 +61,24 @@ services:
     container_name: hope-go-job
     environment:
       - TZ=UTC
+      # 数据库配置
+      - DB_HOST=${DB_HOST:-mysql}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-hope}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+      - DB_DATABASE=${DB_DATABASE:-hope}
+      # Redis配置
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      # JWT配置
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_USE_ENV}
+      # 应用配置
+      - APP_ENV=${APP_ENV:-prod}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    env_file:
+      - .env
     volumes:
       - ./backend/logs:/app/logs
       - ./backend/app.yaml:/app/app.yaml
@@ -54,9 +90,9 @@ services:
       - redis
       - mysql
 
-  # Redis 服务
+  # Redis 服务（生产不要对外暴露6379端口）
   redis:
-    image: redis
+    image: redis:7-alpine
     container_name: hope-redis
     ports:
       - "6379:6379"
@@ -67,26 +103,26 @@ services:
     restart: unless-stopped
     networks:
       - hope-network
-    command: redis-server --appendonly yes
+    command: sh -c "redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}"
 
-  # MySQL 服务
+  # MySQL 服务（生产不要对外暴露3306端口）
   mysql:
     image: mysql:8.0
     container_name: hope-mysql
     ports:
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=root123
-      - MYSQL_DATABASE=hope
-      - MYSQL_USER=hope
-      - MYSQL_PASSWORD=hope123
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root123}
+      - MYSQL_DATABASE=${DB_DATABASE:-hope}
+      - MYSQL_USER=${DB_USER:-hope}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-change_me}
       - TZ=UTC
     volumes:
       - mysql-data:/var/lib/mysql
     restart: unless-stopped
     networks:
       - hope-network
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=caching_sha2_password
 
 networks:
   hope-network:

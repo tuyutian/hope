@@ -34,9 +34,9 @@ sudo certbot certonly --standalone -d api.protectifyapp.com
 echo
 
 echo "4. 检查证书文件..."
-if [ -f "/etc/letsencrypt/live/api.protectifyapp.com/fullchain.pem" ]; then
+if [ -f "/etc/nginx/ssl/api.protectifyapp.com/fullchain.pem" ]; then
     echo "证书获取成功！"
-    ls -la /etc/letsencrypt/live/api.protectifyapp.com/
+    ls -la /etc/nginx/ssl/api.protectifyapp.com/
 else
     echo "证书获取失败，请检查错误信息"
     exit 1
