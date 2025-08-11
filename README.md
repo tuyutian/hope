@@ -1,5 +1,57 @@
+# Hope - Shopify 产品保险服务应用
+
+## 🚀 快速开始
+
+### 环境要求
+- Docker & Docker Compose
+- Git
+
+### 1. 克隆项目
+```bash
+git clone <repository-url>
+cd hope
+```
+
+### 2. 配置环境变量
+```bash
+# 复制环境变量模板
+cp env.example .env
+
+# 编辑 .env 文件，设置您的配置
+# 重要：请修改默认密码！
+```
+
+### 3. 启动服务
+```bash
+# 开发环境
+docker-compose up -d
+
+# 生产环境（推荐）
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 4. 访问应用
+- 前端应用：http://localhost
+- API文档：http://localhost:8080
+- 监控面板：http://localhost:8090
+
 ## 📋 系统概述
 这是一个为 Shopify 商家提供**产品保险服务**的应用，允许商家在其店铺中销售保险产品，并跟踪相关的订单和收益数据。
+
+## 🔐 环境变量配置
+
+本项目使用环境变量管理敏感配置信息。详细配置说明请查看 [ENV-README.md](./ENV-README.md)。
+
+### 必需配置
+- `DB_PASSWORD`: 数据库密码
+- `REDIS_PASSWORD`: Redis密码
+- `MYSQL_ROOT_PASSWORD`: MySQL root密码
+
+### 安全建议
+1. 使用强密码
+2. 生产环境使用 `docker-compose.prod.yml`
+3. 定期更换密码
+4. 不要将 `.env` 文件提交到版本控制
 
 ## 🗂️ 表结构分析和数据存储时机
 

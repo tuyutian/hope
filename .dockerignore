@@ -26,3 +26,5 @@ logs/
 # Development
 node_modules/
 coverage/
+
+.env
