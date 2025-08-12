@@ -36,6 +36,14 @@ const CartDemo: React.FC<CartDemoProps> = ({
   optOutColor,
 }) => {
   const [checked, setChecked] = React.useState(false);
+
+  const handleViewInStore = function () {
+    const appID: string = import.meta.env.VITE_SHOPIFY_APP_KEY;
+    window.open(
+      `shopify://admin/themes/current/editor?context=apps&template=\${template}&activateAppId=${appID}/protectify-cart`,
+      "_blank"
+    );
+  };
   const renderSelectionControl = () => {
     if (selectButton === "0") {
       return (
@@ -96,7 +104,9 @@ const CartDemo: React.FC<CartDemoProps> = ({
           <Text as="h6" variant="bodyMd" fontWeight="semibold">
             Cart Page Demo
           </Text>
-          <Button variant="tertiary">View in store</Button>
+          <Button onClick={handleViewInStore} variant="tertiary">
+            View in store
+          </Button>
         </InlineStack>
       </Box>
       <Box padding="400">
@@ -104,18 +114,27 @@ const CartDemo: React.FC<CartDemoProps> = ({
           {/* Mock Products */}
           {[1, 2].map((item, idx) => (
             <Box key={idx} padding="300" background="bg-fill-secondary">
-              <InlineStack gap="300" align="start">
-                <Thumbnail
-                  source="https://img.icons8.com/plasticine/100/cat-footprint.png"
-                  alt="Cat Slippers"
-                  size="medium"
-                />
-                <BlockStack>
-                  <Text as="p" variant="bodyMd" fontWeight="medium">
-                    Cute Cat Slippers
-                  </Text>
-                  <Text as="span">$10.00</Text>
-                </BlockStack>
+              <InlineStack gap="300" blockAlign="center" align="space-between">
+                <InlineStack gap="300" align="start">
+                  <Thumbnail
+                    source={item === 1 ? "/images/cart/shoes_white.png" : "/images/cart/shoes_black.png"}
+                    alt="Cat Slippers"
+                    size="medium"
+                  />
+                  <BlockStack gap="100">
+                    <Text as="p" variant="bodyMd" fontWeight="medium">
+                      Cute Cat Slippers
+                    </Text>
+                    <Text as="span" tone="subdued">
+                      $10.00
+                    </Text>
+                  </BlockStack>
+                </InlineStack>
+                <Box padding="400">
+                  <div className="rounded-xs flex justify-center bg-white w-6 h-6 border border-b-1 border-[#9FA5AB]">
+                    {item}
+                  </div>
+                </Box>
               </InlineStack>
             </Box>
           ))}
@@ -150,12 +169,14 @@ const CartDemo: React.FC<CartDemoProps> = ({
                         <Text variant="bodySm" as="span">
                           <a
                             title={footerUrl || ""}
+                            href={footerUrl || "#"}
                             style={{
                               color: "#0070f3",
                               textDecoration: "none",
                               cursor: "pointer",
                             }}
-                            onClick={e => e.preventDefault()}
+                            target="_blank"
+                            rel="noreferrer"
                           >
                             {footerText}
                           </a>
