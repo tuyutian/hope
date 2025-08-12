@@ -33,19 +33,10 @@ yarn.lock
 .DS_Store
 Thumbs.db
 
-# IDE 配置
-.vscode/
-.idea/
-
 # 测试覆盖率
 coverage/
 .nyc_output/
 
-# 静态资源
-public/
-assets/
-*.min.js
-*.min.css
 
 # 配置文件
 *.config.js
