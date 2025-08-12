@@ -38,11 +38,7 @@ const CartDemo: React.FC<CartDemoProps> = ({
   const [checked, setChecked] = React.useState(false);
 
   const handleViewInStore = function () {
-    const appID: string = import.meta.env.VITE_SHOPIFY_APP_KEY;
-    window.open(
-      `shopify://admin/themes/current/editor?context=apps&template=\${template}&activateAppId=${appID}/protectify-cart`,
-      "_blank"
-    );
+    window.open(`shopify://admin/themes/current/editor?context=apps&template=\${template}`, "_blank");
   };
   const renderSelectionControl = () => {
     if (selectButton === "0") {
