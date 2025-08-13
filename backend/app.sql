@@ -254,6 +254,7 @@ CREATE TABLE `user_product`
     `option_2`     varchar(255)    NOT NULL DEFAULT '' COMMENT '产品属性2',
     `option_3`     varchar(255)    NOT NULL DEFAULT '' COMMENT '产品属性3',
     `image_url`    varchar(500)    NOT NULL COMMENT '封面图',
+    `image_id` bigint unsigned not null default 0 comment '产品图片 id',
     `status`       tinyint         NOT NULL DEFAULT 0 COMMENT '发布Shopify：0:未发布 1:已发布 2:正在发布中 3:shopify平台已删除',
     `publish_time` bigint unsigned NOT NULL DEFAULT 0 COMMENT '发布时间',
     `is_del`       tinyint         NOT NULL DEFAULT 0 COMMENT '删除状态 0 正常 1 已删除',
@@ -322,8 +323,11 @@ CREATE TABLE `user_cart_setting`
     `in_collection`      tinyint         NOT NULL DEFAULT 0 COMMENT '是否启用集合筛选 0 关闭 1启用',
     `product_collection` varchar(100)    NOT NULL DEFAULT '' COMMENT '产品选中集合',
     `pricing_type`       tinyint         NOT NULL DEFAULT 0 COMMENT '购物车图标 0 金额 1百分比',
+    `pricing_rule`  tinyint         NOT NULL DEFAULT 0 COMMENT '金额计算方式 0 统一设置 1单独设置',
     `pricing_select`     text COMMENT '金额计算范围',
     `tiers_select`       text COMMENT '百分比计算范围',
+    `all_tiers_set` decimal(12,2) not null default 0.00 comment '所有订单适用固定百分比',
+    `all_price_set` decimal(12,2) not null default 0.00 comment '所有订单适用固定金额',
     `create_time`        bigint unsigned NOT NULL COMMENT '创建时间',
     `update_time`        bigint unsigned NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
@@ -469,6 +473,7 @@ CREATE TABLE `user_app_auth`
     `id`               bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `user_id`          bigint unsigned NOT NULL COMMENT '用户ID',
     `app_id`           varchar(50)     NOT NULL COMMENT 'App标识',
+    `installation_id` bigint unsigned not null default 0 comment '用户安装app id',
     `shop`             varchar(100)    NOT NULL DEFAULT '' COMMENT 'my shopify Domain网站域名',
     `auth_token`       varchar(255)    NOT NULL DEFAULT '' COMMENT '授权token',
     `refresh_token`    varchar(255)    NOT NULL DEFAULT '' COMMENT '刷新token',
@@ -526,9 +531,3 @@ CREATE TABLE `app_definition`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';
-
-
-alter table `user_product` add image_id bigint unsigned not null default 0 comment '产品图片 id' after image_url;
-alter table `user_cart_setting` add all_tiers_set decimal(12,2) not null default 0.00 comment '所有订单适用固定百分比' after tiers_select;
-alter table `user_cart_setting` add all_price_set decimal(12,2) not null default 0.00 comment '所有订单适用固定金额' after tiers_select;
-alter table `user_cart_setting` add pricing_rule  tinyint         NOT NULL DEFAULT 0 COMMENT '金额计算方式 0 统一设置 1单独设置' after pricing_type;

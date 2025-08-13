@@ -10,6 +10,7 @@ type UserAppAuth struct {
 	UserId         int64  `xorm:"notnull 'user_id' comment('用户ID')"`
 	Shop           string `xorm:"notnull varchar(100) default '' 'shop' comment('my shopify Domain网站域名')"`
 	AppId          string `xorm:"notnull varchar(50) 'app_id' comment('App标识')"`
+	InstallationId int64  `xorm:"notnull bigint unsigned default 0 'installation_id' comment('用户安装app id')"`
 	AuthToken      string `xorm:"varchar(255) default '' 'auth_token' comment('授权token')"`
 	RefreshToken   string `xorm:"varchar(255) default '' 'refresh_token' comment('刷新token')"`
 	TokenExpiresAt int64  `xorm:"default 0 'token_expires_at' comment('token过期时间')"`
