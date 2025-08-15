@@ -22,9 +22,15 @@ func NewShopGraphqlRepository() shopifyRepo.ShopGraphqlRepository {
 }
 
 // GetShopInfo 获取店铺信息
-func (c *shopGraphqlRepoImpl) GetShopInfo(ctx context.Context) (*shopifyEntity.Shop, error) {
+func (c *shopGraphqlRepoImpl) GetShopInfo(ctx context.Context) (*shopifyEntity.Shop, *shopifyEntity.CurrentAppInstallation, error) {
 	query := `
 		query {
+			currentAppInstallation {
+				id
+				accessScopes {
+				  handle
+				}
+			  }
 			shop {
 				id
 				name
@@ -78,10 +84,10 @@ func (c *shopGraphqlRepoImpl) GetShopInfo(ctx context.Context) (*shopifyEntity.S
 	var response shopifyEntity.ShopResponse
 	err := c.Client.Query(ctx, query, variables, &response)
 	if err != nil {
-		return nil, fmt.Errorf("查询店铺信息失败: %w", err)
+		return nil, nil, fmt.Errorf("查询店铺信息失败: %w", err)
 	}
 
-	return &response.Shop, nil
+	return &response.Shop, &response.CurrentAppInstallation, nil
 }
 
 // UpdateShopBillingAddress 更新店铺账单地址

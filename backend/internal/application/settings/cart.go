@@ -16,18 +16,20 @@ import (
 )
 
 type CartSettingService struct {
-	cartSettingRepo cartSettingRepo.CartSettingRepository
-	userRepo        userRepo.UserRepository
-	variantRepo     products.VariantRepository
-	productRepo     products.ProductRepository
+	cartSettingRepo  cartSettingRepo.CartSettingRepository
+	userRepo         userRepo.UserRepository
+	variantRepo      products.VariantRepository
+	productRepo      products.ProductRepository
+	subscriptionRepo userRepo.UserSubscriptionRepository
 }
 
 func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
 	return &CartSettingService{
-		cartSettingRepo: repos.CartSettingRepo,
-		userRepo:        repos.UserRepo,
-		variantRepo:     repos.VariantRepo,
-		productRepo:     repos.ProductRepo,
+		cartSettingRepo:  repos.CartSettingRepo,
+		userRepo:         repos.UserRepo,
+		variantRepo:      repos.VariantRepo,
+		productRepo:      repos.ProductRepo,
+		subscriptionRepo: repos.UserSubscriptionRepo,
 	}
 }
 
@@ -158,6 +160,10 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		inCollection = 1
 	} else {
 		inCollection = 0
+	}
+	subscribe, _ := s.subscriptionRepo.GetActiveSubscription(ctx, req.UserID)
+	if subscribe == nil {
+		req.ProtectifyVisibility = 0
 	}
 	userCartSetting := cartEntity.UserCartSetting{
 		PlanTitle:         req.PlanTitle,

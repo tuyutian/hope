@@ -221,6 +221,14 @@ export default function ShippingProtectionSettings() {
     }));
   }
 
+  function handleEnableEmbed() {
+    const appID: string = import.meta.env.VITE_SHOPIFY_APP_KEY;
+    window.open(
+      `shopify://admin/themes/current/editor?context=apps&template=\${template}&activateAppId=${appID}/protectify-cart`,
+      "_blank"
+    );
+  }
+
   return (
     <Page
       title="Create Protection Plan (Cart Page)"
@@ -233,7 +241,11 @@ export default function ShippingProtectionSettings() {
     >
       <PageSaveBar dirty={dirty} onSave={saveSettings} onDiscard={discardChanges} />
       <BlockStack gap="400">
-        <Banner title="App embed is not enabled" tone="warning" secondaryAction={{ content: "Enable embed" }}>
+        <Banner
+          title="App embed is not enabled"
+          tone="warning"
+          secondaryAction={{ onAction: handleEnableEmbed, content: "Enable embed" }}
+        >
           <Text as="p">
             Shipping Protection widget were published, but the app embed does not appear to be enabled. Please enable
             that to display the widget on your storefront cart.

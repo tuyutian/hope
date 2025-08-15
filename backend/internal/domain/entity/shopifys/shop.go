@@ -58,10 +58,17 @@ type Shop struct {
 	URL                      string   `json:"url"`
 	WeightUnit               string   `json:"weightUnit"`
 }
+type CurrentAppInstallation struct {
+	ID           string `json:"id"`
+	AccessScopes []struct {
+		Handle string `json:"handle"`
+	} `json:"accessScopes"`
+}
 
 // ShopResponse 店铺信息响应
 type ShopResponse struct {
-	Shop Shop `json:"shop"`
+	Shop                   Shop                   `json:"shop"`
+	CurrentAppInstallation CurrentAppInstallation `json:"currentAppInstallation"`
 }
 
 // Domain 域名信息

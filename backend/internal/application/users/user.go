@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -102,7 +103,7 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	}
 	client := shopify_graphql.NewGraphqlClient(shopName, sessionToken.Token)
 	u.shopGraphqlRepo.WithClient(client)
-	shop, err := u.shopGraphqlRepo.GetShopInfo(ctx)
+	shop, currentInstallation, err := u.shopGraphqlRepo.GetShopInfo(ctx)
 	if err != nil {
 		logger.Error(ctx, "shopify_graphql_repo.GetShopInfo", zap.Error(err))
 	}
@@ -147,23 +148,9 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 		}
 	}
 	// 更新 app auth记录
-	appAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)
-	if err == nil {
-		if appAuth == nil {
-			appAuth = &appEntity.UserAppAuth{
-				UserId: user.ID,
-				AppId:  appID,
-			}
-		}
-		appAuth.Shop = user.Shop
-		appAuth.AuthToken = sessionToken.Token
-		appAuth.Scopes = sessionToken.Scope
-		appAuth.Status = 1
-		if appAuth.Id > 0 {
-			_, _ = u.appAuthRepo.Create(ctx, appAuth)
-		} else {
-			_ = u.appAuthRepo.Update(ctx, appAuth)
-		}
+	err = u.UpsertUserAppAuth(ctx, user, currentInstallation)
+	if err != nil {
+		return user, err
 	}
 	// 注册必要地初始化数据
 
@@ -335,13 +322,13 @@ func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, plan
 	u.shopGraphqlRepo.WithClient(u.GetShopifyClient(ctx))
 
 	// 拿到Token 需要去获取用户基本信息
-	shopInfo, err := u.shopGraphqlRepo.GetShopInfo(ctx) // 通过 client 调用方法
+	shopInfo, currentInstallation, err := u.shopGraphqlRepo.GetShopInfo(ctx) // 通过 client 调用方法
 
 	if err != nil {
 		return fmt.Errorf("获取店铺信息异常: %w", err)
 	}
 
-	var userModel users.User
+	var userModel = &users.User{}
 	userModel.ID = user.ID
 	userModel.City = shopInfo.BillingAddress.City
 	userModel.CountryCode = shopInfo.BillingAddress.CountryCodeV2
@@ -350,8 +337,41 @@ func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, plan
 	userModel.MoneyFormat = u.shopifyRepo.ExtractCurrencySymbol(shopInfo.CurrencyFormats.MoneyFormat)
 	userModel.PlanDisplayName = shopInfo.Plan.DisplayName
 
-	_ = u.userRepo.Update(ctx, &userModel)
+	_ = u.userRepo.Update(ctx, userModel)
+	err = u.UpsertUserAppAuth(ctx, userModel, currentInstallation)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (u *UserService) UpsertUserAppAuth(ctx context.Context, user *users.User, currentInstallation *shopifyEntity.CurrentAppInstallation) error {
+	scopes := make([]string, 0, len(currentInstallation.AccessScopes))
+	for _, scope := range currentInstallation.AccessScopes {
+		scopes = append(scopes, scope.Handle)
+	}
+	scopeStr := strings.Join(scopes, ",")
+	appID := ctx.Value(ctxkeys.AppData).(*appEntity.AppData).AppID
+	userAppAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)
+	if err != nil {
+		return err
+	}
+	userAppAuth.UserId = user.ID
+	userAppAuth.Shop = user.Shop
+	userAppAuth.Status = 1
+	userAppAuth.AuthToken = user.AccessToken
+	userAppAuth.Scopes = scopeStr
+	userAppAuth.AppId = ctx.Value(ctxkeys.AppData).(*appEntity.AppData).AppID
+	userAppAuth.InstallationId = utils.GetIdFromShopifyGraphqlId(currentInstallation.ID)
+	if userAppAuth.Id == 0 {
+		_, err = u.appAuthRepo.Create(ctx, userAppAuth)
+	} else {
+		err = u.appAuthRepo.Update(ctx, userAppAuth)
+	}
+	if err != nil {
+		logger.Error(ctx, "upsert user_app_auth error", zap.Error(err))
+		return err
+	}
 	return nil
 }
 

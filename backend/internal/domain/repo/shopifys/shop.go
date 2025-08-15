@@ -26,7 +26,7 @@ var (
 // ShopGraphqlRepository 店铺GraphQL仓储接口
 type ShopGraphqlRepository interface {
 	BaseGraphqlRepository
-	GetShopInfo(ctx context.Context) (*shopifys.Shop, error)
+	GetShopInfo(ctx context.Context) (*shopifys.Shop, *shopifys.CurrentAppInstallation, error)
 	UpdateShopBillingAddress(ctx context.Context, input shopifys.ShopBillingAddressInput) error
 	UpdateShopSettings(ctx context.Context, input shopifys.ShopSettingsInput) error
 	GetShopPolicies(ctx context.Context) (*shopifys.ShopPoliciesResponse, error)

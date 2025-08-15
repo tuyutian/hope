@@ -1,5 +1,3 @@
-import { OptionType } from "dayjs";
-import { SelectOption } from "@shopify/polaris";
 import { Choice } from "@/types/form.ts";
 
 export interface WidgetSettings {
