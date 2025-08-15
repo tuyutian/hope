@@ -17,7 +17,7 @@ export default function FulfillmentCard({ fulfillmentSettings, onFulfillmentType
         allowMultiple={false}
         onChange={handleChoiceChange}
         choices={fulfillmentSettings.fulfillmentOptions}
-        selected={[fulfillmentSettings.fulfillmentType]}
+        selected={[fulfillmentSettings.fulfillmentRule]}
       />
     </Card>
   );

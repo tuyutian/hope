@@ -1,5 +1,5 @@
 import React, { useTransition } from "react";
-import { Banner, BlockStack, Box, Card, Layout, Link, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
@@ -15,7 +15,7 @@ import { userService } from "@/services/user";
 import { getMessageState } from "@/stores/messageStore.ts";
 import { cartService } from "@/services/cart";
 import FulfillmentCard from "@/pages/cart/components/FulfillmentCard.tsx";
-import { handleContact } from "@/utils/app.ts";
+import CSSCard from "@/pages/cart/components/CSSCard.tsx";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -306,30 +306,17 @@ export default function ShippingProtectionSettings() {
                 <FulfillmentCard
                   fulfillmentSettings={fulfillmentSettings}
                   onFulfillmentTypeChange={handleFieldChange(
-                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentType: value })),
+                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentRule: value })),
                     "content"
                   )}
                 />
-                <Card>
-                  <Box paddingBlockEnd="300">
-                    <Text as="h2" variant="headingSm">
-                      CSS
-                    </Text>
-                  </Box>
-                  <BlockStack gap="300">
-                    <Text as="p" variant="bodyMd">
-                      If you would like to adjust the styling of the widgets in your store,{" "}
-                      <Link onClick={handleContact}>contact us</Link> and we will add CSS code here to make custom
-                      changes. This won&#39;t affect your store theme.{" "}
-                    </Text>
-                    <Text as="p" variant="bodyMd">
-                      To add custom CSS, go to{" "}
-                      <Text as="span" variant="bodyMd" fontWeight="bold">
-                        Theme Editor
-                      </Text>
-                    </Text>
-                  </BlockStack>
-                </Card>
+                <CSSCard
+                  widgetSettings={widgetSettings}
+                  onFieldChange={handleFieldChange(
+                    (value: any) => setWidgetSettings(prev => ({ ...prev, ...value })),
+                    "css"
+                  )}
+                />
               </BlockStack>
             </div>
           </Layout.Section>

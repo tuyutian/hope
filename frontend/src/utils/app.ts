@@ -3,6 +3,6 @@ export const isProductionEnv = function () {
   return import.meta.env.PROD;
 };
 
-export const handleContact = function (message?: string) {
+export const handleContact = function (message: string = "") {
   return open(`mailto:support@protectifyapp.com?subject=Contact&body=${message}`);
 };

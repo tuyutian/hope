@@ -12,6 +12,7 @@ export interface WidgetSettings {
   footerUrl: string;
   optInColor: string;
   optOutColor: string;
+  css: string;
 }
 
 export interface PricingSettings {
@@ -31,7 +32,7 @@ export interface ProductSettings {
 }
 
 export interface FulfillmentSettings {
-  fulfillmentType: string;
+  fulfillmentRule: string;
   fulfillmentOptions: Choice[];
 }
 
@@ -131,7 +132,8 @@ export interface CartSettingsData {
   product_collection: any[];
   icons: any[];
   in_collection: boolean;
-  fulfillment_type: number;
+  fulfillment_rule: number;
+  css: string;
 }
 
 export interface UpdateCartSettingsParams {
@@ -156,4 +158,6 @@ export interface UpdateCartSettingsParams {
   selectedCollections: any[];
   icons: any[];
   onlyInCollection: boolean;
+  fulfillmentRule: number;
+  css: string;
 }

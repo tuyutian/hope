@@ -104,6 +104,8 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		PricingRule:       cartSetting.PricingRule,
 		AllPrice:          cartSetting.AllPriceSet,
 		AllTiers:          cartSetting.AllTiersSet,
+		FulfillmentRule:   cartSetting.FulfillmentRule,
+		CSS:               cartSetting.CSS,
 	}, nil
 }
 
@@ -187,6 +189,8 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		PricingRule:       req.PricingRule,
 		AllPriceSet:       utils.ParseMoneyFloat(req.AllPrice),
 		AllTiersSet:       utils.ParseMoneyFloat(req.AllTiers),
+		FulfillmentRule:   req.FulfillmentRule,
+		CSS:               req.CSS,
 	}
 	if cartSetting == nil {
 		// 创建购物车

@@ -328,6 +328,8 @@ CREATE TABLE `user_cart_setting`
     `tiers_select`       text COMMENT '百分比计算范围',
     `all_tiers_set` decimal(12,2) not null default 0.00 comment '所有订单适用固定百分比',
     `all_price_set` decimal(12,2) not null default 0.00 comment '所有订单适用固定金额',
+    `fulfillment_rule` tinyint not null default 0 comment '在订单处于哪个发货阶段才计算保险佣金(0,1,2 分别代表第一个发货完成，全都发货完成，付费后就算)',
+    `css` text comment 'css样式自定义',
     `create_time`        bigint unsigned NOT NULL COMMENT '创建时间',
     `update_time`        bigint unsigned NOT NULL COMMENT '修改时间',
     PRIMARY KEY (`id`),
@@ -531,3 +533,4 @@ CREATE TABLE `app_definition`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='App定义表';
+

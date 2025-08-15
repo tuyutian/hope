@@ -25,6 +25,8 @@ type UserCartSetting struct {
 	TiersSelect       string  `xorm:"'tiers_select' text comment('百分比计算范围')" json:"tiers_select"`
 	AllTiersSet       float64 `xorm:"'all_tiers_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定百分比') " json:"all_tiers_set"`
 	AllPriceSet       float64 `xorm:"'all_price_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定金额') " json:"all_price_set"`
+	FulfillmentRule   int     `xorm:"'fulfillment_rule' tinyint(1) default 0 notnull comment('在订单处于哪个发货阶段才计算保险佣金(0,1,2 分别代表第一个发货完成，全都发货完成，付费后就算)')" json:"fulfillment_rule"`
+	CSS               string  `xorm:"'css' text comment('css样式自定义')" json:"css"`
 	CreateTime        int64   `xorm:"created 'create_time' bigint(20) notnull comment('创建时间')" json:"create_time"`
 	UpdateTime        int64   `xorm:"updated 'update_time' bigint(20) notnull comment('修改时间')" json:"update_time"`
 }

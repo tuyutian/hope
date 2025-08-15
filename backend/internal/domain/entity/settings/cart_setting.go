@@ -28,6 +28,8 @@ type SettingConfigReq struct {
 	InCollection         bool             `json:"onlyInCollection"`
 	SelectedCollections  []CollectionItem `json:"selectedCollections"`
 	Icons                []IconReq        `json:"icons" binding:"required,dive"`
+	FulfillmentRule      int              `json:"fulfillmentRule,omitempty" binding:"oneof=0 1 2"`
+	CSS                  string           `json:"css"`
 }
 
 type CartSettingData struct {
@@ -56,9 +58,11 @@ type CartSettingData struct {
 	// 购物车图标 0 滑动 1 勾选
 	SelectButton int `json:"select_button"`
 	// 产品type
-	ProductType string  `json:"product_type"`
-	AllTiers    float64 `json:"all_tiers"`
-	AllPrice    float64 `json:"all_price"`
+	ProductType     string  `json:"product_type"`
+	AllTiers        float64 `json:"all_tiers"`
+	AllPrice        float64 `json:"all_price"`
+	FulfillmentRule int     `json:"fulfillment_rule"`
+	CSS             string  `json:"css"`
 	// 产品选中集合
 	ProductCollection []CollectionItem `json:"product_collection"`
 	InCollection      bool             `json:"in_collection"`
