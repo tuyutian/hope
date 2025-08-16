@@ -135,17 +135,47 @@ export default function ShippingProtectionSettings() {
     }
   };
 
-  // 添加/删除定价项
+  // 添加/删除定价项 - 更新版本
   const handleAddPricingItem = (type: "price" | "tier") => {
     if (type === "price") {
+      if (pricingSettings.priceSelect.length >= 5) {
+        toastMessage("Up to 5 supported", 3000, true);
+        return;
+      }
+
+      // 计算新区间的默认值，避免 NaN
+      let newMin = "0.00";
+      if (pricingSettings.priceSelect.length > 0) {
+        const lastRange = pricingSettings.priceSelect[pricingSettings.priceSelect.length - 1];
+        const lastMax = parseFloat(lastRange.max);
+        if (!isNaN(lastMax) && lastMax > 0) {
+          newMin = (lastMax + 0.01).toFixed(2);
+        }
+      }
+
       setPricingSettings(prev => ({
         ...prev,
-        priceSelect: [...prev.priceSelect, { min: "", max: "", price: "" }],
+        priceSelect: [...prev.priceSelect, { min: newMin, max: "", price: "" }],
       }));
     } else {
+      if (pricingSettings.tiersSelect.length >= 5) {
+        toastMessage("Up to 5 supported", 3000, true);
+        return;
+      }
+
+      // 计算新区间的默认值，避免 NaN
+      let newMin = "0.00";
+      if (pricingSettings.tiersSelect.length > 0) {
+        const lastRange = pricingSettings.tiersSelect[pricingSettings.tiersSelect.length - 1];
+        const lastMax = parseFloat(lastRange.max);
+        if (!isNaN(lastMax) && lastMax > 0) {
+          newMin = (lastMax + 0.01).toFixed(2);
+        }
+      }
+
       setPricingSettings(prev => ({
         ...prev,
-        tiersSelect: [...prev.tiersSelect, { min: "", max: "", percentage: "" }],
+        tiersSelect: [...prev.tiersSelect, { min: newMin, max: "", percentage: "" }],
       }));
     }
   };
@@ -324,6 +354,8 @@ export default function ShippingProtectionSettings() {
           <Layout.Section variant="oneHalf">
             <div className="preview-sticky-container">
               <CartDemo
+                pricingSettings={pricingSettings}
+                moneySymbol={moneySymbol}
                 iconVisibility={widgetSettings.iconVisibility}
                 selectedIcon={selectedIcon}
                 addonTitle={widgetSettings.addonTitle}

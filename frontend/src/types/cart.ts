@@ -20,7 +20,8 @@ export interface PricingSettings {
   pricingRule: string;
   priceSelect: PriceRange[];
   tiersSelect: TierRange[];
-  restValuePrice: string;
+  outPriceValue: string;
+  outTierValue: string;
   allPriceValue: string;
   allTiersValue: string;
 }
@@ -127,6 +128,8 @@ export interface CartSettingsData {
   price_select: any[];
   tiers_select: any[];
   other_money: number;
+  out_price: number;
+  out_tier: number;
   all_price: number;
   all_tiers: number;
   product_collection: any[];
@@ -152,7 +155,6 @@ export interface UpdateCartSettingsParams {
   pricingRule: number;
   priceSelect: any[];
   tiersSelect: any[];
-  restValuePrice: string;
   allPrice: string;
   allTiers: string;
   selectedCollections: any[];

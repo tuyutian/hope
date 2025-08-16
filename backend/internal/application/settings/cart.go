@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	cartEntity "backend/internal/domain/entity/settings"
 	cartSettingRepo "backend/internal/domain/repo/carts"
@@ -91,7 +90,6 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		FootURL:           cartSetting.FootUrl,
 		InColor:           cartSetting.InColor,
 		OutColor:          cartSetting.OutColor,
-		OtherMoney:        cartSetting.OtherMoney, // 已转换的金额
 		ShowCart:          cartSetting.ShowCart,
 		ShowCartIcon:      cartSetting.ShowCartIcon,
 		Icons:             icons,
@@ -102,6 +100,8 @@ func (s *CartSettingService) GetCart(ctx context.Context, uid int64) (cartEntity
 		TiersSelect:       tiers,
 		PricingType:       cartSetting.PricingType,
 		PricingRule:       cartSetting.PricingRule,
+		OutPrice:          cartSetting.OutSelectPrice,
+		OutTier:           cartSetting.OutSelectTier,
 		AllPrice:          cartSetting.AllPriceSet,
 		AllTiers:          cartSetting.AllTiersSet,
 		FulfillmentRule:   cartSetting.FulfillmentRule,
@@ -146,13 +146,6 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 	}
 
 	tiersStr := string(jsonTiers)
-
-	f, err := strconv.ParseFloat(req.RestValuePrice, 64) // 64代表转成float64
-
-	if err != nil {
-		logger.Error(ctx, "set-cart 其他价格转float异常", "Err:", err.Error())
-		return err
-	}
 	productCollection, err := json.Marshal(req.SelectedCollections)
 	if err != nil {
 		return err
@@ -176,7 +169,6 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		FootUrl:           req.FooterUrl,
 		InColor:           req.OptInColor,
 		OutColor:          req.OptOutColor,
-		OtherMoney:        f,
 		ShowCart:          req.ProtectifyVisibility,
 		ShowCartIcon:      req.IconVisibility,
 		IconUrl:           iconStr,
@@ -187,6 +179,8 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		TiersSelect:       tiersStr,
 		PricingType:       req.PricingType,
 		PricingRule:       req.PricingRule,
+		OutSelectPrice:    utils.ParseMoneyFloat(req.OutPrice),
+		OutSelectTier:     utils.ParseMoneyFloat(req.OutTier),
 		AllPriceSet:       utils.ParseMoneyFloat(req.AllPrice),
 		AllTiersSet:       utils.ParseMoneyFloat(req.AllTiers),
 		FulfillmentRule:   req.FulfillmentRule,
@@ -281,22 +275,25 @@ func (s *CartSettingService) GetPublicCart(ctx context.Context, shop string) (*c
 
 	// 返回购物车设置结构体
 	return &cartEntity.CartPublicData{
-		AddonTitle:   cartSetting.AddonTitle,
-		EnabledDesc:  cartSetting.EnabledDesc,
-		DisabledDesc: cartSetting.DisabledDesc,
-		FootText:     cartSetting.FootText,
-		FootURL:      cartSetting.FootUrl,
-		InColor:      cartSetting.InColor,
-		OutColor:     cartSetting.OutColor,
-		OtherMoney:   cartSetting.OtherMoney, // 已转换的金额
-		ShowCartIcon: cartSetting.ShowCartIcon,
-		Icon:         iconSelect,
-		SelectButton: cartSetting.SelectButton,
-		PriceSelect:  prices,
-		TiersSelect:  tiers,
-		Variants:     variants,
-		ProductId:    productID,
-		MoneyFormat:  user.MoneyFormat,
-		PricingType:  cartSetting.PricingType,
+		AddonTitle:     cartSetting.AddonTitle,
+		EnabledDesc:    cartSetting.EnabledDesc,
+		DisabledDesc:   cartSetting.DisabledDesc,
+		FootText:       cartSetting.FootText,
+		FootURL:        cartSetting.FootUrl,
+		InColor:        cartSetting.InColor,
+		OutColor:       cartSetting.OutColor,
+		ShowCartIcon:   cartSetting.ShowCartIcon,
+		Icon:           iconSelect,
+		SelectButton:   cartSetting.SelectButton,
+		PriceSelect:    prices,
+		TiersSelect:    tiers,
+		OutSelectPrice: cartSetting.OutSelectPrice,
+		OutSelectTier:  cartSetting.OutSelectTier,
+		AllPriceSet:    cartSetting.AllPriceSet,
+		AllTiersSet:    cartSetting.AllTiersSet,
+		Variants:       variants,
+		ProductId:      productID,
+		MoneyFormat:    user.MoneyFormat,
+		PricingType:    cartSetting.PricingType,
 	}, nil
 }

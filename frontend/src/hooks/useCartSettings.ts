@@ -48,9 +48,10 @@ export function useCartSettings(): CartSettingsHook {
       { min: "1.00", max: "100.00", percentage: "10" },
       { min: "101.00", max: "1000.00", percentage: "20" },
     ],
-    restValuePrice: "10.00",
-    allPriceValue: "",
-    allTiersValue: "",
+    allPriceValue: "0",
+    allTiersValue: "0",
+    outPriceValue: "0",
+    outTierValue: "0",
   });
 
   const [productSettings, setProductSettings] = useState<ProductSettings>({
@@ -206,7 +207,8 @@ export function useCartSettings(): CartSettingsHook {
       pricingRule: String(data.pricing_rule),
       priceSelect: Array.isArray(data.price_select) ? data.price_select : prev.priceSelect,
       tiersSelect: Array.isArray(data.tiers_select) ? data.tiers_select : prev.tiersSelect,
-      restValuePrice: String(data.other_money),
+      outPriceValue: String(data.out_price),
+      outTierValue: String(data.out_tier),
       allPriceValue: String(data.all_price),
       allTiersValue: String(data.all_tiers),
     }));
@@ -289,7 +291,8 @@ export function useCartSettings(): CartSettingsHook {
         pricingRule: Number(pricingSettings.pricingRule),
         priceSelect: pricingSettings.priceSelect,
         tiersSelect: pricingSettings.tiersSelect,
-        restValuePrice: pricingSettings.restValuePrice,
+        outPrice: pricingSettings.outPriceValue,
+        outTier: pricingSettings.outTierValue,
         allPrice: pricingSettings.allPriceValue,
         allTiers: pricingSettings.allTiersValue,
         selectedCollections: productSettings.selectedCollections,
