@@ -8,26 +8,29 @@ type CollectionItem struct {
 type SettingConfigReq struct {
 	UserID               int64            `json:"user_id,omitempty"`
 	PlanTitle            string           `json:"planTitle" binding:"required"`
-	IconVisibility       int              `json:"iconVisibility,omitempty" binding:"oneof=0 1"`
-	ProtectifyVisibility int              `json:"protectifyVisibility,omitempty" binding:"oneof=0 1"`
-	SelectButton         int              `json:"selectButton,omitempty" binding:"oneof=0 1"`
-	AddonTitle           string           `json:"addonTitle,omitempty" binding:"required,max=50"`
+	IconVisibility       int              `json:"iconVisibility" binding:"oneof=0 1"`
+	ProtectifyVisibility int              `json:"protectifyVisibility" binding:"oneof=0 1"`
+	SelectButton         int              `json:"selectButton" binding:"oneof=0 1"`
+	AddonTitle           string           `json:"addonTitle" binding:"required,max=50"`
 	EnabledDescription   string           `json:"enabledDescription" binding:"required,max=200"`
 	DisabledDescription  string           `json:"disabledDescription" binding:"required,max=200"`
 	FooterText           string           `json:"footerText"`
 	FooterUrl            string           `json:"footerUrl"`
 	OptInColor           string           `json:"optInColor" binding:"required,max=50"`
 	OptOutColor          string           `json:"optOutColor" binding:"required,max=50"`
-	PricingType          int              `json:"pricingType,omitempty" binding:"oneof=0 1"`
-	PricingRule          int              `json:"pricingRule,omitempty" binding:"oneof=0 1"`
+	PricingType          int              `json:"pricingType" binding:"oneof=0 1"`
+	PricingRule          int              `json:"pricingRule" binding:"oneof=0 1"`
 	PriceSelect          []PriceSelectReq `json:"priceSelect" binding:"required,dive"`
 	TiersSelect          []TierSelectReq  `json:"tiersSelect" binding:"required,dive"`
-	RestValuePrice       string           `json:"restValuePrice" binding:"required"`
+	OutPrice             string           `json:"outPrice" binding:"required"`
+	OutTier              string           `json:"outTier" binding:"required"`
 	AllTiers             string           `json:"allTiers"`
 	AllPrice             string           `json:"allPrice"`
 	InCollection         bool             `json:"onlyInCollection"`
 	SelectedCollections  []CollectionItem `json:"selectedCollections"`
 	Icons                []IconReq        `json:"icons" binding:"required,dive"`
+	FulfillmentRule      int              `json:"fulfillmentRule" binding:"oneof=0 1 2"`
+	CSS                  string           `json:"css"`
 }
 
 type CartSettingData struct {
@@ -47,8 +50,6 @@ type CartSettingData struct {
 	InColor string `json:"in_color"`
 	// 关闭颜色
 	OutColor string `json:"out_color"`
-	// 其他金额
-	OtherMoney float64 `json:"other_money"`
 	// 购物车状态 0 关闭 1 打开
 	ShowCart int `json:"show_cart"`
 	// 购物车图标 0 关闭 1 打开
@@ -56,9 +57,13 @@ type CartSettingData struct {
 	// 购物车图标 0 滑动 1 勾选
 	SelectButton int `json:"select_button"`
 	// 产品type
-	ProductType string  `json:"product_type"`
-	AllTiers    float64 `json:"all_tiers"`
-	AllPrice    float64 `json:"all_price"`
+	ProductType     string  `json:"product_type"`
+	AllTiers        float64 `json:"all_tiers"`
+	AllPrice        float64 `json:"all_price"`
+	OutPrice        float64 `json:"out_price"`
+	OutTier         float64 `json:"out_tier"`
+	FulfillmentRule int     `json:"fulfillment_rule"`
+	CSS             string  `json:"css"`
 	// 产品选中集合
 	ProductCollection []CollectionItem `json:"product_collection"`
 	InCollection      bool             `json:"in_collection"`
@@ -88,21 +93,24 @@ type IconReq struct {
 }
 
 type CartPublicData struct {
-	AddonTitle   string           `json:"addon_title"`              // 保险标题
-	EnabledDesc  string           `json:"enabled_desc"`             // 按钮打开文案
-	DisabledDesc string           `json:"disabled_desc"`            // 按钮关闭文案
-	FootText     string           `json:"foot_text"`                // 保险底部
-	FootURL      string           `json:"foot_url"`                 // 保险跳转
-	InColor      string           `json:"in_color"`                 // 打开颜色
-	OutColor     string           `json:"out_color"`                // 关闭颜色
-	OtherMoney   float64          `json:"other_money"`              // 其他金额
-	ShowCartIcon int              `json:"show_cart_icon,omitempty"` // 购物车图标 0 关闭 1 打开
-	SelectButton int              `json:"select_button,omitempty"`  // 购物车图标 0 滑动 1 勾选
-	PriceSelect  []PriceSelectReq `json:"price_select"`
-	TiersSelect  []TierSelectReq  `json:"tiers_select"`
-	Icon         string           `json:"icon"`
-	Variants     map[string]int64 `json:"variants"`
-	ProductId    int64            `json:"product_id"`
-	MoneyFormat  string           `json:"money_format"`
-	PricingType  int              `json:"pricing_type"`
+	AddonTitle     string           `json:"addon_title"`              // 保险标题
+	EnabledDesc    string           `json:"enabled_desc"`             // 按钮打开文案
+	DisabledDesc   string           `json:"disabled_desc"`            // 按钮关闭文案
+	FootText       string           `json:"foot_text"`                // 保险底部
+	FootURL        string           `json:"foot_url"`                 // 保险跳转
+	InColor        string           `json:"in_color"`                 // 打开颜色
+	OutColor       string           `json:"out_color"`                // 关闭颜色
+	ShowCartIcon   int              `json:"show_cart_icon,omitempty"` // 购物车图标 0 关闭 1 打开
+	SelectButton   int              `json:"select_button,omitempty"`  // 购物车图标 0 滑动 1 勾选
+	PriceSelect    []PriceSelectReq `json:"price_select"`
+	TiersSelect    []TierSelectReq  `json:"tiers_select"`
+	OutSelectPrice float64          `json:"out_select_price"`
+	OutSelectTier  float64          `json:"out_select_tier"`
+	AllTiersSet    float64          `json:"all_tiers_set"`
+	AllPriceSet    float64          `json:"all_price_set"`
+	Icon           string           `json:"icon"`
+	Variants       map[string]int64 `json:"variants"`
+	ProductId      int64            `json:"product_id"`
+	MoneyFormat    string           `json:"money_format"`
+	PricingType    int              `json:"pricing_type"`
 }

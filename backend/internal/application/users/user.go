@@ -327,7 +327,11 @@ func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, plan
 	if err != nil {
 		return fmt.Errorf("获取店铺信息异常: %w", err)
 	}
-
+	logger.Warn(ctx, "update shop info ", zap.Any("shop", map[string]interface{}{
+		"shop":        shop,
+		"user":        user.ID,
+		"shopifyPlan": shopInfo.Plan.DisplayName,
+	}))
 	var userModel = &users.User{}
 	userModel.ID = user.ID
 	userModel.City = shopInfo.BillingAddress.City
@@ -338,6 +342,11 @@ func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, plan
 	userModel.PlanDisplayName = shopInfo.Plan.DisplayName
 
 	_ = u.userRepo.Update(ctx, userModel)
+	logger.Warn(ctx, "update user auth info ", zap.Any("shop", map[string]interface{}{
+		"shop":         shop,
+		"user":         user.ID,
+		"appInstallID": currentInstallation.ID,
+	}))
 	err = u.UpsertUserAppAuth(ctx, userModel, currentInstallation)
 	if err != nil {
 		return err

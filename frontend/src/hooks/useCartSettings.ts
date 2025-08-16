@@ -17,6 +17,7 @@ export function useCartSettings(): CartSettingsHook {
     widgetSettings: WidgetSettings;
     pricingSettings: PricingSettings;
     productSettings: ProductSettings;
+    fulfillmentSettings: FulfillmentSettings;
   } | null>(null);
 
   const [widgetSettings, setWidgetSettings] = useState<WidgetSettings>({
@@ -33,6 +34,7 @@ export function useCartSettings(): CartSettingsHook {
     footerUrl: "",
     optInColor: "#fffff",
     optOutColor: "#fffff",
+    css: "",
   });
 
   const [pricingSettings, setPricingSettings] = useState<PricingSettings>({
@@ -46,9 +48,10 @@ export function useCartSettings(): CartSettingsHook {
       { min: "1.00", max: "100.00", percentage: "10" },
       { min: "101.00", max: "1000.00", percentage: "20" },
     ],
-    restValuePrice: "10.00",
-    allPriceValue: "",
-    allTiersValue: "",
+    allPriceValue: "0",
+    allTiersValue: "0",
+    outPriceValue: "0",
+    outTierValue: "0",
   });
 
   const [productSettings, setProductSettings] = useState<ProductSettings>({
@@ -57,7 +60,7 @@ export function useCartSettings(): CartSettingsHook {
     onlyInCollection: false,
   });
   const [fulfillmentSettings, setFulfillmentSettings] = useState<FulfillmentSettings>({
-    fulfillmentType: "0",
+    fulfillmentRule: "0",
     fulfillmentOptions: [
       {
         label: "Mark as fulfilled when first item(s) are fulfilled",
@@ -133,9 +136,10 @@ export function useCartSettings(): CartSettingsHook {
     const hasWidgetChanges = !deepEqual(widgetSettings, initialDataRef.current.widgetSettings);
     const hasPricingChanges = !deepEqual(pricingSettings, initialDataRef.current.pricingSettings);
     const hasProductChanges = !deepEqual(productSettings, initialDataRef.current.productSettings);
+    const hasFulfillmentChanges = !deepEqual(fulfillmentSettings, initialDataRef.current.fulfillmentSettings);
 
-    return hasWidgetChanges || hasPricingChanges || hasProductChanges;
-  }, [widgetSettings, pricingSettings, productSettings]);
+    return hasWidgetChanges || hasPricingChanges || hasProductChanges || hasFulfillmentChanges;
+  }, [widgetSettings, pricingSettings, productSettings, fulfillmentSettings]);
 
   // 更新dirty状态
   const updateDirtyState = useCallback(() => {
@@ -151,8 +155,9 @@ export function useCartSettings(): CartSettingsHook {
       widgetSettings: deepClone(widgetSettings),
       pricingSettings: deepClone(pricingSettings),
       productSettings: deepClone(productSettings),
+      fulfillmentSettings: deepClone(fulfillmentSettings),
     };
-  }, [widgetSettings, pricingSettings, productSettings]);
+  }, [widgetSettings, pricingSettings, productSettings, fulfillmentSettings]);
 
   const loadInitialData = useCallback(async () => {
     try {
@@ -192,6 +197,7 @@ export function useCartSettings(): CartSettingsHook {
       protectifyVisibility: String(data.show_cart),
       iconVisibility: String(data.show_cart_icon),
       selectButton: String(data.select_button),
+      css: data.css || prev.css,
     }));
 
     // 更新pricing设置
@@ -201,7 +207,8 @@ export function useCartSettings(): CartSettingsHook {
       pricingRule: String(data.pricing_rule),
       priceSelect: Array.isArray(data.price_select) ? data.price_select : prev.priceSelect,
       tiersSelect: Array.isArray(data.tiers_select) ? data.tiers_select : prev.tiersSelect,
-      restValuePrice: String(data.other_money),
+      outPriceValue: String(data.out_price),
+      outTierValue: String(data.out_tier),
       allPriceValue: String(data.all_price),
       allTiersValue: String(data.all_tiers),
     }));
@@ -217,7 +224,7 @@ export function useCartSettings(): CartSettingsHook {
     //更新 fulfillment设置
     setFulfillmentSettings(prev => ({
       ...prev,
-      fulfillmentType: String(data.fulfillment_type),
+      fulfillmentRule: String(data.fulfillment_rule),
     }));
   };
 
@@ -284,12 +291,15 @@ export function useCartSettings(): CartSettingsHook {
         pricingRule: Number(pricingSettings.pricingRule),
         priceSelect: pricingSettings.priceSelect,
         tiersSelect: pricingSettings.tiersSelect,
-        restValuePrice: pricingSettings.restValuePrice,
+        outPrice: pricingSettings.outPriceValue,
+        outTier: pricingSettings.outTierValue,
         allPrice: pricingSettings.allPriceValue,
         allTiers: pricingSettings.allTiersValue,
         selectedCollections: productSettings.selectedCollections,
         icons: productSettings.icons,
         onlyInCollection: productSettings.onlyInCollection,
+        fulfillmentRule: Number(fulfillmentSettings.fulfillmentRule),
+        css: widgetSettings.css,
       };
 
       const res = await cartService.updateSettings(payload);
@@ -304,7 +314,15 @@ export function useCartSettings(): CartSettingsHook {
       console.error("Error saving settings:", error);
       toastMessage("Service Error", 5000, true);
     }
-  }, [widgetSettings, pricingSettings, productSettings, toastMessage, validateFields, saveInitialData]);
+  }, [
+    widgetSettings,
+    pricingSettings,
+    productSettings,
+    fulfillmentSettings,
+    toastMessage,
+    validateFields,
+    saveInitialData,
+  ]);
 
   const discardChanges = useCallback(() => {
     if (initialDataRef.current) {
@@ -331,7 +349,7 @@ export function useCartSettings(): CartSettingsHook {
     if (initialDataRef.current) {
       updateDirtyState();
     }
-  }, [widgetSettings, pricingSettings, productSettings, updateDirtyState]);
+  }, [widgetSettings, pricingSettings, productSettings, fulfillmentSettings, updateDirtyState]);
 
   useEffect(() => {
     void loadInitialData();

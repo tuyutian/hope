@@ -1,5 +1,5 @@
 import React, { useTransition } from "react";
-import { Banner, BlockStack, Box, Card, Layout, Link, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
@@ -15,7 +15,7 @@ import { userService } from "@/services/user";
 import { getMessageState } from "@/stores/messageStore.ts";
 import { cartService } from "@/services/cart";
 import FulfillmentCard from "@/pages/cart/components/FulfillmentCard.tsx";
-import { handleContact } from "@/utils/app.ts";
+import CSSCard from "@/pages/cart/components/CSSCard.tsx";
 
 export default function ShippingProtectionSettings() {
   const {
@@ -135,17 +135,47 @@ export default function ShippingProtectionSettings() {
     }
   };
 
-  // 添加/删除定价项
+  // 添加/删除定价项 - 更新版本
   const handleAddPricingItem = (type: "price" | "tier") => {
     if (type === "price") {
+      if (pricingSettings.priceSelect.length >= 5) {
+        toastMessage("Up to 5 supported", 3000, true);
+        return;
+      }
+
+      // 计算新区间的默认值，避免 NaN
+      let newMin = "0.00";
+      if (pricingSettings.priceSelect.length > 0) {
+        const lastRange = pricingSettings.priceSelect[pricingSettings.priceSelect.length - 1];
+        const lastMax = parseFloat(lastRange.max);
+        if (!isNaN(lastMax) && lastMax > 0) {
+          newMin = (lastMax + 0.01).toFixed(2);
+        }
+      }
+
       setPricingSettings(prev => ({
         ...prev,
-        priceSelect: [...prev.priceSelect, { min: "", max: "", price: "" }],
+        priceSelect: [...prev.priceSelect, { min: newMin, max: "", price: "" }],
       }));
     } else {
+      if (pricingSettings.tiersSelect.length >= 5) {
+        toastMessage("Up to 5 supported", 3000, true);
+        return;
+      }
+
+      // 计算新区间的默认值，避免 NaN
+      let newMin = "0.00";
+      if (pricingSettings.tiersSelect.length > 0) {
+        const lastRange = pricingSettings.tiersSelect[pricingSettings.tiersSelect.length - 1];
+        const lastMax = parseFloat(lastRange.max);
+        if (!isNaN(lastMax) && lastMax > 0) {
+          newMin = (lastMax + 0.01).toFixed(2);
+        }
+      }
+
       setPricingSettings(prev => ({
         ...prev,
-        tiersSelect: [...prev.tiersSelect, { min: "", max: "", percentage: "" }],
+        tiersSelect: [...prev.tiersSelect, { min: newMin, max: "", percentage: "" }],
       }));
     }
   };
@@ -306,30 +336,17 @@ export default function ShippingProtectionSettings() {
                 <FulfillmentCard
                   fulfillmentSettings={fulfillmentSettings}
                   onFulfillmentTypeChange={handleFieldChange(
-                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentType: value })),
+                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentRule: value })),
                     "content"
                   )}
                 />
-                <Card>
-                  <Box paddingBlockEnd="300">
-                    <Text as="h2" variant="headingSm">
-                      CSS
-                    </Text>
-                  </Box>
-                  <BlockStack gap="300">
-                    <Text as="p" variant="bodyMd">
-                      If you would like to adjust the styling of the widgets in your store,{" "}
-                      <Link onClick={handleContact}>contact us</Link> and we will add CSS code here to make custom
-                      changes. This won&#39;t affect your store theme.{" "}
-                    </Text>
-                    <Text as="p" variant="bodyMd">
-                      To add custom CSS, go to{" "}
-                      <Text as="span" variant="bodyMd" fontWeight="bold">
-                        Theme Editor
-                      </Text>
-                    </Text>
-                  </BlockStack>
-                </Card>
+                <CSSCard
+                  widgetSettings={widgetSettings}
+                  onFieldChange={handleFieldChange(
+                    (value: any) => setWidgetSettings(prev => ({ ...prev, ...value })),
+                    "css"
+                  )}
+                />
               </BlockStack>
             </div>
           </Layout.Section>
@@ -337,6 +354,8 @@ export default function ShippingProtectionSettings() {
           <Layout.Section variant="oneHalf">
             <div className="preview-sticky-container">
               <CartDemo
+                pricingSettings={pricingSettings}
+                moneySymbol={moneySymbol}
                 iconVisibility={widgetSettings.iconVisibility}
                 selectedIcon={selectedIcon}
                 addonTitle={widgetSettings.addonTitle}

@@ -35,7 +35,6 @@ FROM alpine:latest
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
     apk --no-cache add ca-certificates tzdata
 
-
 # 创建工作目录和日志目录
 WORKDIR /app
 RUN mkdir -p /app/logs
@@ -56,6 +55,5 @@ RUN chmod +x /app/start.sh
 # 暴露端口
 EXPOSE 8080 8090
 
-# 默认启动 API 服务，可通过命令行参数改变
+# 启动脚本，不设置默认参数，让docker-compose的command能够正确传递
 ENTRYPOINT ["./start.sh"]
-CMD ["api"]

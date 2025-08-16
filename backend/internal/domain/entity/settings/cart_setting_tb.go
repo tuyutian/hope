@@ -12,7 +12,6 @@ type UserCartSetting struct {
 	FootUrl           string  `xorm:"'foot_url' varchar(255) notnull default '' comment('保险跳转')" json:"foot_url"`
 	InColor           string  `xorm:"'in_color' varchar(50) notnull default '' comment('打开颜色')" json:"in_color"`
 	OutColor          string  `xorm:"'out_color' varchar(50) notnull default '' comment('关闭颜色')" json:"out_color"`
-	OtherMoney        float64 `xorm:"'other_money' decimal(12,2) notnull default 0.00 comment('其他金额')" json:"other_money"`
 	ShowCart          int     `xorm:"'show_cart' tinyint(1) default 0 notnull comment('购物车状态 0 关闭 1 打开')" json:"show_cart"`
 	ShowCartIcon      int     `xorm:"'show_cart_icon' tinyint(1) default 0 notnull comment('购物车图标 0 关闭 1 打开')" json:"show_cart_icon"`
 	IconUrl           string  `xorm:"'icon_url' text comment('选中url(json)')" json:"icon_url"`
@@ -23,8 +22,12 @@ type UserCartSetting struct {
 	PricingRule       int     `xorm:"'pricing_rule' tinyint(1) default 0 notnull comment('金额计算方式 0 统一设置 1单独设置')" json:"pricing_rule"`
 	PricingSelect     string  `xorm:"'pricing_select' text comment('金额计算范围')" json:"pricing_select"`
 	TiersSelect       string  `xorm:"'tiers_select' text comment('百分比计算范围')" json:"tiers_select"`
+	OutSelectPrice    float64 `xorm:"'out_select_price' decimal(12,2) notnull default 0.00 comment('范围计算外适用金额') " json:"out_select_price"`
+	OutSelectTier     float64 `xorm:"'out_select_tier' decimal(12,2) notnull default 0.00 comment('范围计算外适用百分比') " json:"out_select_tier"`
 	AllTiersSet       float64 `xorm:"'all_tiers_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定百分比') " json:"all_tiers_set"`
 	AllPriceSet       float64 `xorm:"'all_price_set' decimal(12,2) notnull default 0.00 comment('所有订单适用固定金额') " json:"all_price_set"`
+	FulfillmentRule   int     `xorm:"'fulfillment_rule' tinyint(1) default 0 notnull comment('在订单处于哪个发货阶段才计算保险佣金(0,1,2 分别代表第一个发货完成，全都发货完成，付费后就算)')" json:"fulfillment_rule"`
+	CSS               string  `xorm:"'css' text comment('css样式自定义')" json:"css"`
 	CreateTime        int64   `xorm:"created 'create_time' bigint(20) notnull comment('创建时间')" json:"create_time"`
 	UpdateTime        int64   `xorm:"updated 'update_time' bigint(20) notnull comment('修改时间')" json:"update_time"`
 }

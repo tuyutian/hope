@@ -87,7 +87,7 @@ func (w *WebHookHandler) Shopify(ctx *gin.Context) {
 		w.Error(ctx, code.BadRequest, "缺少 X-Shopify-Topic 头", "")
 		return
 	}
-
+	logger.Warn(ctx, "webhook topic"+topic)
 	// 验证是否为已注册的 topic
 	if !w.isRegisteredTopic(topic, registerTopics) && !w.isRegisteredTopic(topic, complianceTopics) {
 		w.Error(ctx, code.BadRequest, "未注册的 webhook topic", topic)

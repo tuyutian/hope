@@ -12,6 +12,7 @@ export interface WidgetSettings {
   footerUrl: string;
   optInColor: string;
   optOutColor: string;
+  css: string;
 }
 
 export interface PricingSettings {
@@ -19,7 +20,8 @@ export interface PricingSettings {
   pricingRule: string;
   priceSelect: PriceRange[];
   tiersSelect: TierRange[];
-  restValuePrice: string;
+  outPriceValue: string;
+  outTierValue: string;
   allPriceValue: string;
   allTiersValue: string;
 }
@@ -31,7 +33,7 @@ export interface ProductSettings {
 }
 
 export interface FulfillmentSettings {
-  fulfillmentType: string;
+  fulfillmentRule: string;
   fulfillmentOptions: Choice[];
 }
 
@@ -126,12 +128,15 @@ export interface CartSettingsData {
   price_select: any[];
   tiers_select: any[];
   other_money: number;
+  out_price: number;
+  out_tier: number;
   all_price: number;
   all_tiers: number;
   product_collection: any[];
   icons: any[];
   in_collection: boolean;
-  fulfillment_type: number;
+  fulfillment_rule: number;
+  css: string;
 }
 
 export interface UpdateCartSettingsParams {
@@ -150,10 +155,11 @@ export interface UpdateCartSettingsParams {
   pricingRule: number;
   priceSelect: any[];
   tiersSelect: any[];
-  restValuePrice: string;
   allPrice: string;
   allTiers: string;
   selectedCollections: any[];
   icons: any[];
   onlyInCollection: boolean;
+  fulfillmentRule: number;
+  css: string;
 }

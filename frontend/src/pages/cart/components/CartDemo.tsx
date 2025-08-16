@@ -1,6 +1,8 @@
 import React from "react";
 import { BlockStack, Box, Button, Card, InlineStack, Text, Thumbnail } from "@shopify/polaris";
 import CustomSwitch from "./CustomSwitch";
+import { PricingSettings } from "@/types/cart.ts";
+import { calculateProtectionPrice, formatPrice } from "@/utils/pricingCalculator.ts";
 
 interface Icon {
   id: number;
@@ -9,6 +11,8 @@ interface Icon {
 }
 
 interface CartDemoProps {
+  pricingSettings: PricingSettings;
+  moneySymbol: string;
   iconVisibility: string;
   selectedIcon: Icon | undefined;
   addonTitle: string;
@@ -23,6 +27,8 @@ interface CartDemoProps {
 }
 
 const CartDemo: React.FC<CartDemoProps> = ({
+  pricingSettings,
+  moneySymbol,
   iconVisibility,
   selectedIcon,
   addonTitle,
@@ -37,9 +43,18 @@ const CartDemo: React.FC<CartDemoProps> = ({
 }) => {
   const [checked, setChecked] = React.useState(false);
 
+  // 预设商品价格为 20 美元
+  const productPrice = 20.0;
+
+  // 计算保险价格
+  const protectionPrice = React.useMemo(() => {
+    return calculateProtectionPrice(productPrice, pricingSettings);
+  }, [productPrice, pricingSettings]);
+
   const handleViewInStore = function () {
     window.open(`shopify://admin/themes/current/editor?context=apps&template=\${template}`, "_blank");
   };
+
   const renderSelectionControl = () => {
     if (selectButton === "0") {
       return (
@@ -151,7 +166,7 @@ const CartDemo: React.FC<CartDemoProps> = ({
                         {addonTitle || "Shipping Protection"}
                       </Text>
                       <Text tone="subdued" as="span">
-                        (2.00 USD)
+                        ({formatPrice(protectionPrice, moneySymbol)})
                       </Text>
                     </Box>
                     <Text as="p" tone="subdued" variant="bodySm">
@@ -188,7 +203,10 @@ const CartDemo: React.FC<CartDemoProps> = ({
 
           {/* Checkout Button */}
           <Button fullWidth size="large" variant="primary">
-            Checkout {checked || checkboxInput ? "22.00 USD" : "20.00 USD"}
+            Checkout{" "}
+            {checked || checkboxInput
+              ? formatPrice(productPrice + protectionPrice, moneySymbol)
+              : formatPrice(productPrice, moneySymbol)}
           </Button>
         </BlockStack>
       </Box>

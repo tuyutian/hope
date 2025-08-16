@@ -26,24 +26,6 @@ services:
       - "8090:8090"
     environment:
       - TZ=UTC
-      # 数据库配置
-      - DB_HOST=${DB_HOST:-mysql}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_USER=${DB_USER:-hope}
-      - DB_PASSWORD=${DB_PASSWORD:-}
-      - DB_DATABASE=${DB_DATABASE:-hope}
-      # Redis配置
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      - REDIS_DB=${REDIS_DB:-0}
-      # JWT配置
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_USE_ENV}
-      # 应用配置
-      - APP_ENV=${APP_ENV:-prod}
-      - APP_DEBUG=${APP_DEBUG:-false}
-    env_file:
-      - .env
     volumes:
       - ./backend/logs:/app/logs
       - ./backend/app.yaml:/app/app.yaml
@@ -61,24 +43,6 @@ services:
     container_name: hope-go-job
     environment:
       - TZ=UTC
-      # 数据库配置
-      - DB_HOST=${DB_HOST:-mysql}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_USER=${DB_USER:-hope}
-      - DB_PASSWORD=${DB_PASSWORD:-}
-      - DB_DATABASE=${DB_DATABASE:-hope}
-      # Redis配置
-      - REDIS_HOST=${REDIS_HOST:-redis}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      - REDIS_DB=${REDIS_DB:-0}
-      # JWT配置
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_USE_ENV}
-      # 应用配置
-      - APP_ENV=${APP_ENV:-prod}
-      - APP_DEBUG=${APP_DEBUG:-false}
-    env_file:
-      - .env
     volumes:
       - ./backend/logs:/app/logs
       - ./backend/app.yaml:/app/app.yaml

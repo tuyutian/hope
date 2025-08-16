@@ -85,7 +85,9 @@ func (ware *RequestWare) Recover() gin.HandlerFunc {
 					"trace_error", fmt.Sprintf("%v", err),
 					"full_stack", string(utils.CatchStack()),
 				)
-
+				go utils.CallWilding("exec panic " +
+					"trace_error:" + fmt.Sprintf("%v", err) +
+					"full_stack:" + string(utils.CatchStack()))
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
 				var brokenPipe bool

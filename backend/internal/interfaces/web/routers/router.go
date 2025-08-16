@@ -1,17 +1,12 @@
 package routers
 
 import (
-	"fmt"
-	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 
 	"backend/internal/interfaces/web/handler"
 	"backend/internal/interfaces/web/middleware"
-	"backend/pkg/logger"
-	"backend/pkg/utils"
 )
 
 // Middleware 路由中间件
@@ -32,17 +27,7 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 	router.Use(
 		requestWare.Access(),
 		middlewares.CorsWare.Cors(),
-		func() gin.HandlerFunc {
-			return func(c *gin.Context) {
-				defer func() {
-					if err := recover(); err != nil {
-						log.Printf("Panic info is: %v", err)
-						logger.Error(c.Request.Context(), "server panic recover", zap.Any("Panic info is", err))
-						go utils.CallWilding(fmt.Sprintf("Painc App:%s\nInfo is: %v\nRequest is: %s\nDomain: %s", "tms-api", err, c.Request.URL, c.GetHeader("X-Shopify-Shop-Domain")))
-					}
-				}()
-			}
-		}(),
+		requestWare.Recover(),
 		middleware.TimeoutHandler(40*time.Second),
 	)
 
