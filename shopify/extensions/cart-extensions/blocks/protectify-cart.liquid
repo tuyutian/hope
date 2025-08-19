@@ -1,4 +1,4 @@
-{% if request.page_type == "cart"%}
+{% if request.page_type == "cart" and app.metafields.conditional.cart_enable %}
   {% comment %}or request.page_type == "product"{% endcomment %}
   <script src="{{ 'cart.js' | asset_url }}" defer></script>
   <link  rel="stylesheet" href="{{ 'cart.css' | asset_url }}"  type="text/css">
@@ -7,9 +7,8 @@
 
 {% schema %}
 {
-"name": "Protectify-Cart",
+"name": "Protectify Cart",
 "target": "body",
-"available_if": "{{ app.metafields.conditional.cart_enable }}",
 "settings": []
 }
 {% endschema %}
