@@ -5,11 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"backend/internal/domain/entity/apps"
 	cartEntity "backend/internal/domain/entity/settings"
+	shopifyEntity "backend/internal/domain/entity/shopifys"
+	appRepo "backend/internal/domain/repo/apps"
 	cartSettingRepo "backend/internal/domain/repo/carts"
 	"backend/internal/domain/repo/products"
+	shopifyRepo "backend/internal/domain/repo/shopifys"
 	userRepo "backend/internal/domain/repo/users"
+	"backend/internal/infras/shopify_graphql"
 	"backend/internal/providers"
+	"backend/pkg/ctxkeys"
 	"backend/pkg/logger"
 	"backend/pkg/utils"
 )
@@ -20,6 +26,8 @@ type CartSettingService struct {
 	variantRepo      products.VariantRepository
 	productRepo      products.ProductRepository
 	subscriptionRepo userRepo.UserSubscriptionRepository
+	shopGraphqlRepo  shopifyRepo.ShopGraphqlRepository
+	appAuthRepo      appRepo.AppAuthRepository
 }
 
 func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
@@ -29,6 +37,8 @@ func NewCartSettingService(repos *providers.Repositories) *CartSettingService {
 		variantRepo:      repos.VariantRepo,
 		productRepo:      repos.ProductRepo,
 		subscriptionRepo: repos.UserSubscriptionRepo,
+		shopGraphqlRepo:  repos.ShopGraphqlRepo,
+		appAuthRepo:      repos.AppAuthRepo,
 	}
 }
 
@@ -186,19 +196,56 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 		FulfillmentRule:   req.FulfillmentRule,
 		CSS:               req.CSS,
 	}
+	needOpenCartPlugin := 0
 	if cartSetting == nil {
 		// 创建购物车
 		userCartSetting.UserID = req.UserID
 		_, err = s.cartSettingRepo.Create(ctx, &userCartSetting)
+		if userCartSetting.ShowCart == 1 {
+			needOpenCartPlugin = 1
+		}
 	} else {
 		// 更新购物车
 		userCartSetting.Id = cartSetting.Id
 		err = s.cartSettingRepo.Update(ctx, &userCartSetting)
+		if cartSetting.ShowCart == 0 && userCartSetting.ShowCart == 1 {
+			needOpenCartPlugin = 1
+		}
+		if cartSetting.ShowCart == 1 && userCartSetting.ShowCart == 0 {
+			needOpenCartPlugin = 2
+		}
 	}
 
 	if err != nil {
 		logger.Error(ctx, "set-cart-db(2)异常", "Err:", err.Error())
 		return err
+	}
+	if needOpenCartPlugin > 0 {
+		// When needOpenCartPlugin == 1, enable cart; when == 2, disable cart via Shopify app metafield
+		client := ctx.Value(ctxkeys.ShopifyGraphqlClient).(*shopify_graphql.GraphqlClient)
+		appData := ctx.Value(ctxkeys.AppData).(*apps.AppData)
+		// Get current app installation to obtain ownerId for app metafields
+		s.shopGraphqlRepo.WithClient(client)
+		appAuth, err := s.appAuthRepo.GetByUserAndApp(ctx, req.UserID, appData.AppID)
+		if err != nil {
+			logger.Error(ctx, "appAuth fetch fail:"+err.Error())
+			return err
+		}
+		if appAuth == nil || appAuth.InstallationId == 0 {
+			logger.Error(ctx, "set-cart app安装ID为空")
+			return fmt.Errorf("app安装ID为空")
+		}
+
+		// Determine value to set based on needOpenCartPlugin
+		cartEnable := "false"
+		if needOpenCartPlugin == 1 {
+			cartEnable = "true"
+		}
+
+		_, err = s.shopGraphqlRepo.MetafieldSet(ctx, fmt.Sprintf("gid://shopify/AppInstallation/%d", appAuth.InstallationId), shopifyEntity.MetafieldConditionalNs, shopifyEntity.MetafieldTypeBoolean, "cart_enable", cartEnable)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

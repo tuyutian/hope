@@ -47,14 +47,14 @@ export default function WidgetStyleCard({
             <div>Opt-in action button</div>
             <SketchPickerWithInput
               defaultColor={widgetSettings.optInColor}
-              onChange={color => onWidgetSettingsChange({ optInColor: color })}
+              onChange={color => onWidgetSettingsChange({ optInColor: color ? color : "#ffffff" })}
             />
           </Box>
           <Box>
             <div>Opt-out action button</div>
             <SketchPickerWithInput
               defaultColor={widgetSettings.optOutColor}
-              onChange={(color: string) => onWidgetSettingsChange({ optOutColor: color })}
+              onChange={(color: string) => onWidgetSettingsChange({ optOutColor: color ? color : "#ffffff" })}
             />
           </Box>
         </InlineStack>

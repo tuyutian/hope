@@ -188,7 +188,7 @@
   async function initInsuranceModule() {
     try {
       if (!window.Shopify.shop) return
-      const configRes = await fetch('https://xxxx/api/insurance/config', {
+      const configRes = await fetch('https://api.protectifyapp.com/protectify/api/v1/plugin/config', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({shop: window.Shopify.shop})
