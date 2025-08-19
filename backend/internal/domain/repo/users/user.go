@@ -19,7 +19,7 @@ type UserRepository interface {
 	// Update 更新用户信息
 	Update(ctx context.Context, user *users.User) error
 	// UpdateIsDel 更新用户卸载状态
-	UpdateIsDel(ctx context.Context, userID int64) error
+	UpdateIsDel(ctx context.Context, userID int64, isDel int8) error
 	// UpdateIsClose 更新用户关店状态
 	UpdateIsClose(ctx context.Context, userID int64, planDisplayName string) error
 	// UpdateStep 更新用户引导步骤

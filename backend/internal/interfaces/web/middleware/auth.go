@@ -270,7 +270,8 @@ func (auth *AuthWare) checkShop(ctx context.Context, token string, claims *jwt.B
 	}
 	client := utils.NewHTTPClient()
 	sessionToken := new(shopifyEntity.Token)
-	err = client.PostJSON(ctx, url, &data, &sessionToken)
+	authCtx := context.Background()
+	err = client.PostJSON(authCtx, url, &data, &sessionToken)
 	if err != nil {
 		return err
 	}

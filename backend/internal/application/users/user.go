@@ -116,7 +116,6 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	user.AppId = appID
 	user.AccessToken = sessionToken.Token
 	user.Shop = claims.Dest
-	user.IsDel = 0
 	if shop != nil {
 		user.ShopID = utils.GetIdFromShopifyGraphqlId(shop.ID)
 		user.City = shop.BillingAddress.City
@@ -146,6 +145,10 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 			utils.CallWilding("InitUserTask 初始化用户数据失败:" + err.Error())
 			logger.Error(ctx, "InitUserTask 初始化用户数据失败:", err.Error(), initUserTask)
 		}
+	}
+	err = u.userRepo.UpdateIsDel(ctx, user.ID, 0)
+	if err != nil {
+		return nil, err
 	}
 	// 更新 app auth记录
 	err = u.UpsertUserAppAuth(ctx, user, currentInstallation)
@@ -205,7 +208,7 @@ func (u *UserService) Uninstall(ctx context.Context, appId string, shop string) 
 		return nil
 	}
 
-	err = u.userRepo.UpdateIsDel(ctx, user.ID)
+	err = u.userRepo.UpdateIsDel(ctx, user.ID, 1)
 	if err != nil {
 		logger.Error(ctx, "uninstall db异常", "Err:", err.Error())
 		return err
@@ -364,6 +367,9 @@ func (u *UserService) UpsertUserAppAuth(ctx context.Context, user *users.User, c
 	userAppAuth, err := u.appAuthRepo.GetByUserAndApp(ctx, user.ID, appID)
 	if err != nil {
 		return err
+	}
+	if userAppAuth == nil {
+		userAppAuth = &appEntity.UserAppAuth{}
 	}
 	userAppAuth.UserId = user.ID
 	userAppAuth.Shop = user.Shop

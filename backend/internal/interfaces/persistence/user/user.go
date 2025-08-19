@@ -64,7 +64,7 @@ func (u *userRepoImpl) Get(ctx context.Context, id int64, columns ...string) (*u
 func (u *userRepoImpl) GetActiveUser(ctx context.Context, id int64, columns ...string) (*users.User, error) {
 	user := &users.User{}
 	_, err := u.db.Table(user.TableName()).Cols(columns...).
-		Where("id = ?", id).
+		Where("id = ? and is_del = 0", id).
 		Limit(1).
 		Get(user)
 	return user, err
@@ -91,9 +91,17 @@ func (u *userRepoImpl) Update(ctx context.Context, user *users.User) error {
 }
 
 // UpdateIsDel 更新用户卸载状态
-func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int64) error {
-	_, err := u.db.Context(ctx).Where("id = ?", userID).
-		Update(&users.User{IsDel: 2, UninstallTime: time.Now().Unix()})
+func (u *userRepoImpl) UpdateIsDel(ctx context.Context, userID int64, isDel int8) error {
+	user := &users.User{}
+	if isDel > 0 {
+		user.UninstallTime = time.Now().Unix()
+		user.IsDel = isDel
+	} else {
+		user.InstallTime = time.Now().Unix()
+		user.IsDel = isDel
+	}
+	_, err := u.db.Context(ctx).Where("id = ?", userID).MustCols("is_del").
+		Update(user)
 	if err != nil {
 		return err
 	}
@@ -174,7 +182,7 @@ func (u *userRepoImpl) BatchUid(ctx context.Context, userID int64, batchSize int
 // GetByShop 获取用户店铺
 func (u *userRepoImpl) GetByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
 	var user users.User
-	has, err := u.db.Context(ctx).Where("shop = ?", shop).OrderBy("create_time").Get(&user)
+	has, err := u.db.Context(ctx).Where("shop = ? and app_id = ?", shop, appId).OrderBy("create_time").Get(&user)
 	if err != nil {
 		return nil, err
 	}

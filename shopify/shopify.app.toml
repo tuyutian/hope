@@ -10,7 +10,7 @@ embedded = true
 url = "https://s.protectifyapp.com"
 
 [build]
-dev_store_url = "protectify-test1.myshopify.com"
+dev_store_url = "protectify-test.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]
