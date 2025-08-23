@@ -23,9 +23,9 @@ func NewUserRepository(engine *xorm.Engine) userRepo.UserRepository {
 }
 
 // FirstName 根据店铺名称查找用户
-func (u *userRepoImpl) FirstName(ctx context.Context, name string) (*users.User, error) {
+func (u *userRepoImpl) FirstName(ctx context.Context, appId string, name string) (*users.User, error) {
 	var user users.User
-	has, err := u.db.Context(ctx).Where("name = ?", name).Get(&user)
+	has, err := u.db.Context(ctx).Where("name = ? and app_id = ?", name, appId).Get(&user)
 
 	if err != nil {
 		return nil, err
@@ -37,9 +37,9 @@ func (u *userRepoImpl) FirstName(ctx context.Context, name string) (*users.User,
 }
 
 // GetUserIDByShop 根据店铺名称获取用户ID
-func (u *userRepoImpl) GetUserIDByShop(ctx context.Context, appId string, name string) (int64, error) {
+func (u *userRepoImpl) GetUserIDByShop(ctx context.Context, appId string, shop string) (int64, error) {
 	var user users.User
-	has, err := u.db.Context(ctx).Where("name = ?", name).Cols("id").Get(&user)
+	has, err := u.db.Context(ctx).Where("shop = ? and app_id =?", shop, appId).Cols("id").Get(&user)
 
 	if err != nil {
 		return 0, err
@@ -180,7 +180,7 @@ func (u *userRepoImpl) BatchUid(ctx context.Context, userID int64, batchSize int
 }
 
 // GetByShop 获取用户店铺
-func (u *userRepoImpl) GetByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
+func (u *userRepoImpl) FirstByShop(ctx context.Context, appId string, shop string) (*users.User, error) {
 	var user users.User
 	has, err := u.db.Context(ctx).Where("shop = ? and app_id = ?", shop, appId).OrderBy("create_time").Get(&user)
 	if err != nil {

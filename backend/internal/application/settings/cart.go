@@ -250,16 +250,16 @@ func (s *CartSettingService) SetCartSetting(ctx context.Context, req cartEntity.
 	return nil
 }
 
-func (s *CartSettingService) GetPublicCart(ctx context.Context, shop string) (*cartEntity.CartPublicData, error) {
+func (s *CartSettingService) GetPublicCart(ctx context.Context, appId string, shop string) (*cartEntity.CartPublicData, error) {
 	// 获取uid
-	user, err := s.userRepo.FirstName(ctx, shop)
+	user, err := s.userRepo.FirstByShop(ctx, appId, shop)
 
 	if err != nil {
 		logger.Error(ctx, "public-cart db异常", "Err:", err.Error())
 		return nil, err
 	}
 
-	if user == nil || user.IsDel != 1 {
+	if user == nil || user.IsDel > 0 {
 		logger.Error(ctx, "public-cart 用户不存在或卸载", "shop:", shop)
 		return nil, fmt.Errorf("user not found")
 	}

@@ -109,7 +109,7 @@ func (u *UserService) AuthFromSession(ctx context.Context, sessionToken *shopify
 	}
 	appID := appData.AppID
 	// 恢复用户数据
-	user, _ := u.userRepo.GetByShop(ctx, appID, claims.Dest)
+	user, _ := u.userRepo.FirstByShop(ctx, appID, claims.Dest)
 	if user == nil {
 		user = &users.User{}
 	}
@@ -246,8 +246,9 @@ type CollectionOption struct {
 	Value int64  `json:"value"`
 }
 type UserConfigResponse struct {
-	MoneySymbol  string `json:"money_symbol"`
-	HasSubscribe bool   `json:"has_subscribe"`
+	MoneySymbol       string `json:"money_symbol"`
+	HasSubscribe      bool   `json:"has_subscribe"`
+	HasEmbedInstalled bool   `json:"has_embed_installed"`
 }
 type Collection struct {
 	ID    string `json:"id"`
@@ -264,10 +265,144 @@ func (u *UserService) GetUserConf(ctx context.Context, userID int64) (*UserConfi
 
 	subscribe, _ := u.subscriptionRepo.GetActiveSubscription(ctx, userID)
 
+	// 使用 GraphQL 检测 embed block 是否启用
+	hasEmbed := false
+	shopName, _ := utils.GetShopName(user.Shop)
+	if shopName != "" && user.AccessToken != "" {
+		// 为避免请求 ctx 被取消，派生一个独立 ctx 并设置短超时
+		base := context.WithoutCancel(ctx)
+		detectCtx, cancel := context.WithTimeout(base, 5*time.Second)
+		defer cancel()
+		hasEmbed = u.detectAppEmbedInstalledByGraphQL(detectCtx, shopName, user.AccessToken, "protectify")
+	}
+
 	return &UserConfigResponse{
-		MoneySymbol:  user.MoneyFormat,
-		HasSubscribe: subscribe != nil,
+		MoneySymbol:       user.MoneyFormat,
+		HasSubscribe:      subscribe != nil,
+		HasEmbedInstalled: hasEmbed,
 	}, nil
+}
+
+// 使用 Admin GraphQL 检测当前主主题是否启用了本 App 的 embed block
+// keyword 建议传入你的扩展 handle（例如 "protectify"），用于匹配 settings_data.json 中的块标识
+func (u *UserService) detectAppEmbedInstalledByGraphQL(ctx context.Context, shopName, accessToken, keyword string) bool {
+	// 1) 用 GraphQL 查询主主题（role: MAIN）
+	queryTheme := `
+query {
+  themes(first: 10) {
+    nodes {
+      id
+      role
+    }
+  }
+}`
+	type themeNode struct {
+		ID   string `json:"id"`
+		Role string `json:"role"`
+	}
+	var themeResp struct {
+		Themes struct {
+			Nodes []themeNode `json:"nodes"`
+		} `json:"themes"`
+	}
+
+	client := shopify_graphql.NewGraphqlClient(shopName, accessToken)
+	// 临时用 client 直连执行查询
+	if err := client.Query(ctx, queryTheme, nil, &themeResp); err != nil {
+		logger.Warn(ctx, "graphql detect: query themes failed", zap.Error(err))
+		return false
+	}
+	var mainThemeID string
+	for _, t := range themeResp.Themes.Nodes {
+		if strings.EqualFold(t.Role, "MAIN") {
+			mainThemeID = t.ID
+			break
+		}
+	}
+	if mainThemeID == "" {
+		return false
+	}
+
+	// 2) 读取 settings_data.json
+	querySettings := `
+query ($themeId: ID!, $key: String!) {
+  themeAsset(themeId: $themeId, key: $key) {
+    key
+    value
+  }
+}`
+	vars := map[string]any{
+		"themeId": mainThemeID,
+		"key":     "config/settings_data.json",
+	}
+	var assetResp struct {
+		ThemeAsset struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		} `json:"themeAsset"`
+	}
+	if err := client.Query(ctx, querySettings, vars, &assetResp); err != nil {
+		logger.Warn(ctx, "graphql detect: query themeAsset failed", zap.Error(err))
+		return false
+	}
+	raw := assetResp.ThemeAsset.Value
+	if raw == "" {
+		return false
+	}
+
+	// 3) 解析 settings_data.json，检测关键字是否启用（未 disabled）
+	type settingsData struct {
+		Current map[string]any `json:"current"`
+	}
+	var sd settingsData
+	if err := json.Unmarshal([]byte(raw), &sd); err == nil && sd.Current != nil {
+		if containsEnabledAppEmbed(sd.Current, keyword) {
+			return true
+		}
+	}
+
+	// 兜底：字符串包含关键字，且未出现显式 disabled
+	rawLower := strings.ToLower(raw)
+	kw := strings.ToLower(keyword)
+	if strings.Contains(rawLower, kw) && !strings.Contains(rawLower, `"disabled": true`) {
+		return true
+	}
+	return false
+}
+
+// 递归扫描 settings_data.json 的 current 节点，查找包含 keyword 的 app embed 且未禁用
+func containsEnabledAppEmbed(current map[string]any, keyword string) bool {
+	kw := strings.ToLower(keyword)
+	var dfs func(v any) bool
+	dfs = func(v any) bool {
+		switch t := v.(type) {
+		case map[string]any:
+			if disabled, ok := t["disabled"]; ok {
+				if b, ok2 := disabled.(bool); ok2 && b {
+					return false
+				}
+			}
+			for k, vv := range t {
+				if strings.Contains(strings.ToLower(k), kw) {
+					return true
+				}
+				if sv, ok := vv.(string); ok && strings.Contains(strings.ToLower(sv), kw) {
+					return true
+				}
+				if dfs(vv) {
+					return true
+				}
+			}
+		case []any:
+			for _, it := range t {
+				if dfs(it) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	return dfs(current)
 }
 
 func (u *UserService) GetSessionData(ctx context.Context, userID int64) (*userEntity.SessionData, error) {
@@ -292,8 +427,8 @@ func (u *UserService) GetSessionData(ctx context.Context, userID int64) (*userEn
 	}, nil
 }
 
-func (u *UserService) SyncShopifyUserInfo(ctx context.Context, shop string, planDisplayName string) error {
-	user, err := u.userRepo.FirstName(ctx, shop)
+func (u *UserService) SyncShopifyUserInfo(ctx context.Context, appId string, shop string, planDisplayName string) error {
+	user, err := u.userRepo.FirstName(ctx, appId, shop)
 
 	if err != nil {
 		logger.Error(ctx, "sync-user-info db异常", "Err:", err.Error())

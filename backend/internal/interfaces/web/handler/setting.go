@@ -11,7 +11,9 @@ import (
 	"backend/internal/application/products"
 	"backend/internal/application/settings"
 	"backend/internal/application/users"
+	appEntity "backend/internal/domain/entity/apps"
 	settingEntity "backend/internal/domain/entity/settings"
+	"backend/pkg/ctxkeys"
 	"backend/pkg/logger"
 	"backend/pkg/response"
 	"backend/pkg/response/code"
@@ -94,7 +96,7 @@ func (s *SettingHandler) UpdateCart(ctx *gin.Context) {
 
 func (s *SettingHandler) GetPublicCart(ctx *gin.Context) {
 	ctxWithTrace := ctx.Request.Context()
-
+	appData := ctxWithTrace.Value(ctxkeys.AppData).(*appEntity.AppData)
 	var publicCartReq struct {
 		Shop string `form:"shop"`
 	}
@@ -106,7 +108,7 @@ func (s *SettingHandler) GetPublicCart(ctx *gin.Context) {
 		return
 	}
 
-	rsp, err := s.cartSettingService.GetPublicCart(ctxWithTrace, publicCartReq.Shop)
+	rsp, err := s.cartSettingService.GetPublicCart(ctxWithTrace, appData.AppID, publicCartReq.Shop)
 
 	if err != nil {
 		utils.CallWilding(err.Error())

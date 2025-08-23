@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"backend/pkg/logger"
 
@@ -46,7 +47,9 @@ func (ware *CorsWare) isAllowedOrigin(origin string) bool {
 	if origin == "" {
 		return false
 	}
-
+	if strings.Contains(origin, "shopify.com") {
+		return true
+	}
 	// 如果配置了允许的域名列表，使用配置的列表
 	if len(ware.AllowedOrigins) > 0 {
 		for _, allowed := range ware.AllowedOrigins {

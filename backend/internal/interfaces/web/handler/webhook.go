@@ -151,7 +151,7 @@ func (w *WebHookHandler) handleOrderUpdated(ctx *gin.Context, appID string, body
 		return
 	}
 
-	_ = w.orderService.OrderSync(ctxWithTrace, orderEntity.OrderWebHookReq{
+	_ = w.orderService.OrderSync(ctxWithTrace, appID, orderEntity.OrderWebHookReq{
 		Shop:    shopDomain,
 		OrderId: webhookData.ID,
 	})
@@ -306,7 +306,7 @@ func (w *WebHookHandler) handleShopUpdated(ctx *gin.Context, appID string, body 
 		return
 	}
 
-	err := w.userService.SyncShopifyUserInfo(ctxWithTrace, shopDomain, webhookShopData.PlanDisplayName)
+	err := w.userService.SyncShopifyUserInfo(ctxWithTrace, appID, shopDomain, webhookShopData.PlanDisplayName)
 	if err != nil {
 		utils.CallWilding(err.Error())
 		return

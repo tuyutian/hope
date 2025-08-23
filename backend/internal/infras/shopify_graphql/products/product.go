@@ -21,7 +21,7 @@ func NewProductGraphqlRepository() shopifys.ProductGraphqlRepository {
 	return &productGraphqlRepoImpl{}
 }
 
-// CreateProductWithMedia CreateProduct 创建产品
+// CreateProductWithMedia CreateProductWithMedia 创建产品
 func (c *productGraphqlRepoImpl) CreateProductWithMedia(ctx context.Context, productInput productEntity.ProductCreateInput, mediaInput []productEntity.CreateMediaInput) (*productEntity.ProductCreateResponse, error) {
 	mutation := `
         mutation productCreate($product: ProductCreateInput!, $media: [CreateMediaInput!]) {
