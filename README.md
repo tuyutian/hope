@@ -370,7 +370,7 @@ graph LR
     1. orders 顶部统计卡片
 2. protection page 设置
     1. ~~checkbox 样式~~
-    2. demo 的佣金计算逻辑
+    2. ~~demo 的佣金计算逻辑~~
     3. ~~demo 的跳转~~
     4. ~~product 删除后的图片异常问题~~
     5. ~~product 禁用发货设置~~
@@ -379,9 +379,9 @@ graph LR
     7. 插件安装检测banner
     8. fulfillment 规则应用
     9. 佣金设置的默认值
-    10. 佣金设置 other value的针对不同 type 的数据类型设置
+    10. ~~佣金设置 other value的针对不同 type 的数据类型设置~~
     11. cart setting 插件设置应用
-    12. Footer link URL 在 demo 里的应用
+    12. ~~Footer link URL 在 demo 里的应用~~
 3. ~~全局loading样式~~
 4. dashboard 
    1. 图表样式

@@ -52,7 +52,7 @@ func (a *appAuthRepoImpl) Get(ctx context.Context, id int64, columns ...string) 
 }
 func (a *appAuthRepoImpl) GetByUserAndApp(ctx context.Context, userId int64, appId string, columns ...string) (*userEntity.UserAppAuth, error) {
 	var appAuth userEntity.UserAppAuth
-	has, err := a.db.Context(ctx).Table(userEntity.UserAppAuthTable).Where("user_id = ? and app_id = ?", userId, appId).Cols(columns...).Get(&appAuth)
+	has, err := a.db.Table(userEntity.UserAppAuthTable).Where("user_id = ? and app_id = ?", userId, appId).Cols(columns...).Get(&appAuth)
 	if err != nil {
 		return nil, err
 	}

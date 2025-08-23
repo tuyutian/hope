@@ -1,15 +1,14 @@
-{% if request.page_type == "cart"%}
-  {% comment %}or request.page_type == "product"{% endcomment %}
-  <script src="{{ 'cart.js' | asset_url }}" defer></script>
-  <link  rel="stylesheet" href="{{ 'cart.css' | asset_url }}"  type="text/css">
+{% app.metafields.conditional.cart_enable %}
+{% if request.page_type == "cart" and app.metafields.conditional.cart_enable %}
+  <script src="{{ 'protectify.js' | asset_url }}" defer></script>
+  <link  rel="stylesheet" href="{{ 'protectify.css' | asset_url }}"  type="text/css">
 {% endif %}
 
 
 {% schema %}
 {
-"name": "Protectify-Cart",
+"name": "Protectify Cart",
 "target": "body",
-"available_if": "{{ app.metafields.conditional.cart_enable }}",
 "settings": []
 }
 {% endschema %}

@@ -93,7 +93,7 @@ func (o *OrderService) processOrderJob(ctx context.Context, jobId int64) error {
 		return o.fail(ctx, job.Id, "更新Job时间失败", err)
 	}
 
-	user, err := o.userRepo.FirstName(ctx, job.Name)
+	user, err := o.userRepo.Get(ctx, job.UserID)
 	if err != nil || user == nil || user.IsDel != 0 {
 		return o.fail(ctx, job.Id, "查询用户信息失败或卸载", err)
 	}

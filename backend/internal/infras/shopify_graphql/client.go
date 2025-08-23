@@ -3,8 +3,11 @@ package shopify_graphql
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/machinebox/graphql"
+
+	"backend/pkg/utils"
 )
 
 var (
@@ -24,7 +27,12 @@ func NewGraphqlClient(shopName, accessToken string, opts ...GraphqlOption) *Grap
 	endpoint := fmt.Sprintf("https://%s.myshopify.com/%s/%s/graphql.json", shopName, defaultApiPathPrefix, defaultVersion)
 
 	client := graphql.NewClient(endpoint)
-
+	client.Log = func(s string) {
+		if strings.Contains(s, "errors") {
+			utils.CallWilding(s)
+		}
+		fmt.Println(s)
+	}
 	graphqlClient := &GraphqlClient{
 		client:        client,
 		shopName:      shopName,

@@ -69,12 +69,17 @@ const CartDemo: React.FC<CartDemoProps> = ({
     } else {
       return (
         <label className="custom-checkbox">
-          <input type="checkbox" className="absolute" checked={checked} onChange={e => setChecked(e.target.checked)} />
+          <input
+            type="checkbox"
+            className="absolute invisible"
+            checked={checked}
+            onChange={e => setChecked(e.target.checked)}
+          />
           <span
             className="checkmark"
             style={{
               backgroundColor: checked ? optInColor : optOutColor,
-              borderColor: checked ? optInColor : optOutColor,
+              border: "1px solid #efefef",
               transition: "all 0.2s ease-in-out",
               boxShadow: checked ? `0 0 5px ${optInColor}40` : `0 0 5px ${optOutColor}40`,
               transform: checked ? "scale(1.05)" : "scale(1)",

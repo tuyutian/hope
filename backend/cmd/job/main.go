@@ -33,6 +33,7 @@ func main() {
 		logger.WithStdout(true),
 		logger.WithAddCaller(true),
 		logger.WithLogLevel(appConf.GetLogLevel()),
+		logger.WithLogFilename("job.log"),
 	)
 
 	logger.Info(context.Background(), "starting asynq worker", zap.Int("pid", pid))

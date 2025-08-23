@@ -56,7 +56,7 @@ func (w *WebHookHandler) Shopify(ctx *gin.Context) {
 	// 获取已注册的 webhook topics
 	registerTopics := shopifyRepo.ShopifyWebhookTopics
 	complianceTopics := shopifyRepo.ShopifyComplianceTopics
-
+	ctxs := ctx.Request.Context()
 	// 获取 Shopify 签名
 	signature := ctx.GetHeader("X-Shopify-Hmac-Sha256")
 	if signature == "" {
@@ -76,7 +76,7 @@ func (w *WebHookHandler) Shopify(ctx *gin.Context) {
 	// 重新设置请求体供后续使用
 	ctx.Request.Body = io.NopCloser(strings.NewReader(string(body)))
 	// 验证 webhook 签名
-	if !w.appService.VerifyWebhook(ctx, signature, body) {
+	if !w.appService.VerifyWebhook(ctxs, signature, body) {
 		w.Fail(ctx, http.StatusUnauthorized, message.ErrorUnauthorized.Error(), nil)
 		return
 	}
@@ -87,7 +87,7 @@ func (w *WebHookHandler) Shopify(ctx *gin.Context) {
 		w.Error(ctx, code.BadRequest, "缺少 X-Shopify-Topic 头", "")
 		return
 	}
-	logger.Warn(ctx, "webhook topic"+topic)
+	logger.Warn(ctxs, "webhook topic"+topic)
 	// 验证是否为已注册的 topic
 	if !w.isRegisteredTopic(topic, registerTopics) && !w.isRegisteredTopic(topic, complianceTopics) {
 		w.Error(ctx, code.BadRequest, "未注册的 webhook topic", topic)
@@ -121,7 +121,7 @@ func (w *WebHookHandler) Shopify(ctx *gin.Context) {
 	default:
 		// 记录未处理的 topic（虽然通过了注册验证，但可能是新增的）
 		fmt.Printf("收到已注册但未处理的 webhook topic: %s\n", topic)
-		ctx.JSON(http.StatusOK, gin.H{"message": "webhook received but not processed"})
+		w.Success(ctx, "webhook received but not processed", nil)
 	}
 }
 
@@ -151,7 +151,7 @@ func (w *WebHookHandler) handleOrderUpdated(ctx *gin.Context, appID string, body
 		return
 	}
 
-	_ = w.orderService.OrderSync(ctxWithTrace, orderEntity.OrderWebHookReq{
+	_ = w.orderService.OrderSync(ctxWithTrace, appID, orderEntity.OrderWebHookReq{
 		Shop:    shopDomain,
 		OrderId: webhookData.ID,
 	})
@@ -306,7 +306,7 @@ func (w *WebHookHandler) handleShopUpdated(ctx *gin.Context, appID string, body 
 		return
 	}
 
-	err := w.userService.SyncShopifyUserInfo(ctxWithTrace, shopDomain, webhookShopData.PlanDisplayName)
+	err := w.userService.SyncShopifyUserInfo(ctxWithTrace, appID, shopDomain, webhookShopData.PlanDisplayName)
 	if err != nil {
 		utils.CallWilding(err.Error())
 		return

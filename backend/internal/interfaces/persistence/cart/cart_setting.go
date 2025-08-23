@@ -45,7 +45,7 @@ func (s *cartSettingRepoImpl) Create(ctx context.Context, setting *entity.UserCa
 
 // Update 更新购物车设置
 func (s *cartSettingRepoImpl) Update(ctx context.Context, setting *entity.UserCartSetting) error {
-	_, err := s.db.Context(ctx).ID(setting.Id).Update(setting)
+	_, err := s.db.Context(ctx).ID(setting.Id).MustCols("show_cart", "show_cart_icon", "select_button", "in_collection", "pricing_rule", "pricing_type", "fulfillment_rule").Update(setting)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (s *cartSettingRepoImpl) ExistsByShowID(ctx context.Context, userID int64) 
 // CloseCart 关闭购物车
 func (s *cartSettingRepoImpl) CloseCart(ctx context.Context, userID int64) error {
 	zero := 0
-	_, err := s.db.Context(ctx).Where("user_id = ?", userID).
+	_, err := s.db.Context(ctx).Where("user_id = ?", userID).MustCols("show_cart").
 		Update(&entity.UserCartSetting{ShowCart: zero}) // ShowCart 设为 0
 	if err != nil {
 		return err

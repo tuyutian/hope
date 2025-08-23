@@ -28,7 +28,7 @@ func InitRouters(router *gin.Engine, handlers *handler.Handlers, middlewares *Mi
 		requestWare.Access(),
 		middlewares.CorsWare.Cors(),
 		requestWare.Recover(),
-		middleware.TimeoutHandler(40*time.Second),
+		middleware.TimeoutHandler(400*time.Second),
 	)
 
 	// gin 框架prometheus接入

@@ -8,6 +8,7 @@ import (
 	shopifyEntity "backend/internal/domain/entity/shopifys"
 	shopifyRepo "backend/internal/domain/repo/shopifys"
 	"backend/internal/infras/shopify_graphql"
+	"backend/pkg/logger"
 )
 
 var _ shopifyRepo.ShopGraphqlRepository = (*shopGraphqlRepoImpl)(nil)
@@ -476,4 +477,59 @@ func (c *shopGraphqlRepoImpl) GetPublicationID(ctx context.Context) (string, err
 	}
 	// 返回查询结果
 	return "", nil
+}
+
+func (c *shopGraphqlRepoImpl) MetafieldSet(ctx context.Context, ownerId string, namespace string, fieldType string, key string, value string) (*[]shopifyEntity.Metafield, error) {
+	mutation := `
+			mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+				metafieldsSet(metafields: $metafields) {
+					metafields {
+						id
+						namespace
+						key
+						value
+						owner {
+							__typename
+						}
+					}
+					userErrors {
+						field
+						message
+					}
+				}
+			}
+		`
+
+	variables := map[string]interface{}{
+		"metafields": []map[string]interface{}{
+			{
+				"ownerId":   ownerId,
+				"namespace": namespace,
+				"key":       key,
+				"type":      fieldType,
+				"value":     value,
+			},
+		},
+	}
+
+	var resp struct {
+		MetafieldsSet struct {
+			Metafields []shopifyEntity.Metafield `json:"metafields"`
+			UserErrors []struct {
+				Field   []string `json:"field"`
+				Message string   `json:"message"`
+			} `json:"userErrors"`
+		} `json:"metafieldsSet"`
+	}
+
+	mErr := c.Client.Mutate(ctx, mutation, variables, &resp)
+	if mErr != nil {
+		logger.Error(ctx, "set-cart 更新metafield失败", "Err:", mErr.Error())
+		return nil, mErr
+	}
+	if len(resp.MetafieldsSet.UserErrors) > 0 {
+		logger.Error(ctx, "set-cart 更新metafield错误", "Err:", resp.MetafieldsSet.UserErrors[0].Message)
+		return nil, fmt.Errorf("metafieldsSet 错误: %s", resp.MetafieldsSet.UserErrors[0].Message)
+	}
+	return &resp.MetafieldsSet.Metafields, nil
 }

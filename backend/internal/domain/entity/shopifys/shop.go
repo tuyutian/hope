@@ -225,3 +225,15 @@ type WebhookSubscription struct {
 	IncludeFields       []string `json:"includeFields"`
 	MetafieldNamespaces []string `json:"metafieldNamespaces"`
 }
+
+type Metafield struct {
+	ID        string `json:"id"`
+	Namespace string `json:"namespace"`
+	Key       string `json:"key"`
+	Value     string `json:"value"`
+}
+
+const (
+	MetafieldTypeBoolean   string = "boolean"
+	MetafieldConditionalNs string = "conditional"
+)

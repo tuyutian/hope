@@ -419,7 +419,7 @@ CREATE TABLE `job_order`
 (
     `id`          bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
     `order_id`    bigint unsigned NOT NULL DEFAULT 0 COMMENT 'shopify 订单id',
-    `name`        varchar(100)    NOT NULL DEFAULT '' COMMENT '店铺name',
+    `user_id`     bigint unsigned not null DEFAULT 0 COMMENT '用户 id',
     `job_time`    bigint unsigned NOT NULL COMMENT '队列时间(毫秒时间戳)',
     `is_success`  tinyint         NOT NULL DEFAULT 0 COMMENT '处理状态 0 未处理完成 1 处理成功',
     `create_time` bigint unsigned NOT NULL COMMENT '创建时间',
@@ -427,7 +427,7 @@ CREATE TABLE `job_order`
     PRIMARY KEY (`id`),
     KEY `idx_order_id` (`order_id`),
     KEY `idx_job_time_status` (`job_time`, `is_success`),
-    KEY `idx_name` (`name`),
+    KEY `idx_user_id` (`user_id`),
     KEY `idx_create_time` (`create_time`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"backend/pkg/logger"
 
@@ -17,15 +18,8 @@ func (ware *CorsWare) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 
-		// 添加调试日志
-		logger.Info(c.Request.Context(), "CORS 请求",
-			"origin", origin,
-			"method", c.Request.Method,
-			"path", c.Request.URL.Path)
-
 		// 如果是直接访问（没有 Origin 头），允许通过
 		if origin == "" {
-			logger.Info(c.Request.Context(), "CORS 直接访问，允许通过")
 			c.Next()
 			return
 		}
@@ -40,12 +34,10 @@ func (ware *CorsWare) Cors() gin.HandlerFunc {
 
 		// 处理预检请求
 		if c.Request.Method == "OPTIONS" {
-			logger.Info(c.Request.Context(), "CORS 预检请求", "origin", origin)
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 
-		logger.Info(c.Request.Context(), "CORS 继续处理请求")
 		c.Next()
 	}
 }
@@ -55,7 +47,9 @@ func (ware *CorsWare) isAllowedOrigin(origin string) bool {
 	if origin == "" {
 		return false
 	}
-
+	if strings.Contains(origin, "shopify.com") {
+		return true
+	}
 	// 如果配置了允许的域名列表，使用配置的列表
 	if len(ware.AllowedOrigins) > 0 {
 		for _, allowed := range ware.AllowedOrigins {
@@ -99,7 +93,4 @@ func (ware *CorsWare) setCorsHeaders(c *gin.Context, origin string) {
 	c.Header("Access-Control-Max-Age", "172800")
 	c.Header("Access-Control-Allow-Credentials", "true")
 
-	logger.Info(c.Request.Context(), "CORS 头已设置",
-		"origin", origin,
-		"allow_credentials", "true")
 }

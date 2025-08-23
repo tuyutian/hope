@@ -105,7 +105,7 @@ func (o *OrderService) OrderList(ctx context.Context, req orderEntity.QueryOrder
 }
 
 // OrderSync 处理订单同步 WebHook
-func (o *OrderService) OrderSync(ctx context.Context, req orderEntity.OrderWebHookReq) error {
+func (o *OrderService) OrderSync(ctx context.Context, appId string, req orderEntity.OrderWebHookReq) error {
 	go func(req orderEntity.OrderWebHookReq) {
 		// 每个协程自己 new ctx，超时保护，防止协程卡死
 		newCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -125,9 +125,13 @@ func (o *OrderService) OrderSync(ctx context.Context, req orderEntity.OrderWebHo
 
 		logger.Info(ctx, "OrderSync 订单日志不存在，开始插入：", req.OrderId, req.Shop)
 
+		userID, err := o.userRepo.GetUserIDByShop(ctx, appId, req.Shop)
+		if err != nil {
+			logger.Error(ctx, "get user error:"+err.Error())
+		}
 		log, err := o.jobOrderRepo.Create(newCtx, &jobs.JobOrder{
 			OrderId: req.OrderId,
-			Name:    req.Shop,
+			UserID:  userID,
 		})
 		if err != nil {
 			logger.Error(ctx, "OrderSync 插入订单日志失败:", err.Error())

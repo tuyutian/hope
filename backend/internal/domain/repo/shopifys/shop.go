@@ -35,4 +35,9 @@ type ShopGraphqlRepository interface {
 	QueryWebhookSubscriptions(ctx context.Context, queryParams string) ([]shopifys.WebhookSubscription, error)
 	CreateWebhookSubscription(ctx context.Context, topic string, callbackUrl string) error
 	UpdateWebhookSubscription(ctx context.Context, id string, callbackUrl string) error
+	MetafieldSet(ctx context.Context, ownerId string, namespace string, fieldType string, key string, value string) (*[]shopifys.Metafield, error)
+}
+
+type ThemeGraphqlRepository interface {
+	GetMainThemeSettingJson(ctx context.Context) (string, error)
 }
