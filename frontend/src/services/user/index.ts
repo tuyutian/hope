@@ -4,6 +4,7 @@ import type { ApiResponse } from "@/types/api.ts";
 export interface UserConfig {
   money_symbol: string;
   has_subscribe: boolean;
+  has_embed_installed: boolean;
 }
 
 export interface UpdateUserParams {

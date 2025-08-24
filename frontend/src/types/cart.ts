@@ -64,6 +64,7 @@ export interface CartSettingsHook {
   errors: Record<string, string>;
   isLoading: boolean;
   hasSubscribe: boolean;
+  hasEmbedInstalled: boolean;
   dirty: boolean;
   setWidgetSettings: (setter: (prev: WidgetSettings) => WidgetSettings) => void;
   setPricingSettings: (setter: (prev: PricingSettings) => PricingSettings) => void;
