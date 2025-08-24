@@ -1,4 +1,3 @@
-{% app.metafields.conditional.cart_enable %}
 {% if request.page_type == "cart" and app.metafields.conditional.cart_enable %}
   <script src="{{ 'protectify.js' | asset_url }}" defer></script>
   <link  rel="stylesheet" href="{{ 'protectify.css' | asset_url }}"  type="text/css">
