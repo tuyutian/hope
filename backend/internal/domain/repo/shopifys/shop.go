@@ -39,5 +39,6 @@ type ShopGraphqlRepository interface {
 }
 
 type ThemeGraphqlRepository interface {
+	BaseGraphqlRepository
 	GetMainThemeSettingJson(ctx context.Context) (string, error)
 }

@@ -21,44 +21,45 @@ func NewThemeGraphqlRepository() shopifys.ThemeGraphqlRepository {
 
 func (t *ThemeGraphqlRepoImpl) GetMainThemeSettingJson(ctx context.Context) (string, error) {
 
-	query := `query GetMainThemeSettingJson($filenames: [String!]!,$roles: [ThemeRole!]!) {
-	themes (first: 1) {
-nodes {
-	files(filenames: $filenames) {
-      nodes {
-        body {
-          ... on OnlineStoreThemeFileBodyBase64 {
-            contentBase64
+	query := `query GetMainThemeSettingJson($filenames: [String!]!, $roles: [ThemeRole!]!) {
+  themes(first: 1, roles: $roles) {
+    nodes {
+      files(filenames: $filenames) {
+        nodes {
+          body {
+            ... on OnlineStoreThemeFileBodyBase64 {
+              contentBase64
+            }
+            ... on OnlineStoreThemeFileBodyText {
+              content
+            }
+            ... on OnlineStoreThemeFileBodyUrl {
+              url
+            }
           }
-          ... on OnlineStoreThemeFileBodyText {
-            content
-          }
-          ... on OnlineStoreThemeFileBodyUrl {
-            url
-          }
+          checksumMd5
+          contentType
+          createdAt
+          filename
+          size
+          updatedAt
         }
-        checksumMd5
-        contentType
-        createdAt
-        filename
-        size
-        updatedAt
+        userErrors {
+          code
+          filename
+        }
       }
-      userErrors {
-        code
-        filename
-      }
-	createdAt
-	id
-	name
-	prefix
-	processing
-	processingFailed
-	role
-	themeStoreId
-	updatedAt
-}
-}
+      createdAt
+      id
+      name
+      prefix
+      processing
+      processingFailed
+      role
+      themeStoreId
+      updatedAt
+    }
+  }
 }`
 	variables := map[string]interface{}{
 		"filenames": []string{"config/settings_data.json"},
@@ -72,7 +73,7 @@ nodes {
 	}
 	err := t.Client.Query(ctx, query, variables, &response)
 	if err != nil {
-		return "", fmt.Errorf("查询店铺信息失败: %w", err)
+		return "", fmt.Errorf("查询店铺主题设置信息失败: %w", err)
 	}
 	if response.Themes.Nodes != nil && len(response.Themes.Nodes) > 0 && response.Themes.Nodes[0].Files.Nodes != nil && len(response.Themes.Nodes[0].Files.Nodes) > 0 {
 		return response.Themes.Nodes[0].Files.Nodes[0].Body.Content, nil

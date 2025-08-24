@@ -80,6 +80,7 @@ type ShopifyRepos struct {
 	OrderGraphqlRepo        shopifys.OrderGraphqlRepository
 	SubscriptionGraphqlRepo shopifys.SubscriptionGraphqlRepository
 	UsageChargeGraphqlRepo  shopifys.UsageChargeGraphqlRepository
+	ThemeGraphqlRepo        shopifys.ThemeGraphqlRepository
 }
 
 // NewRepositories 创建 Repositories
@@ -166,6 +167,7 @@ func NewShopifyRepos(shopifyConf *config.Shopify) ShopifyRepos {
 	orderGraphqlRepo := shopifyOrderRepo.NewOrderGraphqlRepository()
 	subscriptionGraphqlRepo := shopifyBillingRepo.NewSubscriptionGraphqlRepository()
 	usageChargeGraphqlRepo := shopifyBillingRepo.NewUsageChargeGraphqlRepository()
+	themeGraphqlRepo := shopifyShopRepo.NewThemeGraphqlRepository()
 	return ShopifyRepos{
 		ShopifyRepo:             shopifyRepos,
 		ProductGraphqlRepo:      productGraphqlRepo,
@@ -173,5 +175,6 @@ func NewShopifyRepos(shopifyConf *config.Shopify) ShopifyRepos {
 		OrderGraphqlRepo:        orderGraphqlRepo,
 		SubscriptionGraphqlRepo: subscriptionGraphqlRepo,
 		UsageChargeGraphqlRepo:  usageChargeGraphqlRepo,
+		ThemeGraphqlRepo:        themeGraphqlRepo,
 	}
 }

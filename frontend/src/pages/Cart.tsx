@@ -1,19 +1,19 @@
-import React, { useTransition } from "react";
-import { Banner, BlockStack, Layout, Page, Text } from "@shopify/polaris";
+import React, {useTransition} from "react";
+import {Banner, BlockStack, Layout, Page, Text} from "@shopify/polaris";
 import SkeletonScreen from "@/pages/cart/components/Skeleton";
 import CartDemo from "@/pages/cart/components/CartDemo";
 import PublishWidget from "@/pages/cart/components/PublishWidget";
-import { useCartSettings } from "@/hooks/useCartSettings";
+import {useCartSettings} from "@/hooks/useCartSettings";
 import ContentCard from "@/pages/cart/components/ContentCard.tsx";
 import PricingCard from "@/pages/cart/components/PricingCard.tsx";
 import WidgetStyleCard from "@/pages/cart/components/WidgetStyleCard.tsx";
 import ProductCard from "@/pages/cart/components/ProductCard.tsx";
 import PageSaveBar from "@/components/form/PageSaveBar.tsx";
 import "@/styles/cart.css";
-import { ResourceItem } from "@/types/cart.ts";
-import { userService } from "@/services/user";
-import { getMessageState } from "@/stores/messageStore.ts";
-import { cartService } from "@/services/cart";
+import {ResourceItem} from "@/types/cart.ts";
+import {userService} from "@/services/user";
+import {getMessageState} from "@/stores/messageStore.ts";
+import {cartService} from "@/services/cart";
 import FulfillmentCard from "@/pages/cart/components/FulfillmentCard.tsx";
 import CSSCard from "@/pages/cart/components/CSSCard.tsx";
 
@@ -34,6 +34,7 @@ export default function ShippingProtectionSettings() {
     setErrors,
     saveSettings,
     hasSubscribe,
+    hasEmbedInstalled,
     discardChanges,
   } = useCartSettings();
   const [isPending, startTransition] = useTransition();
@@ -45,7 +46,7 @@ export default function ShippingProtectionSettings() {
       const transformedValue = transform ? transform(value) : value;
       setter(transformedValue);
       if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: "" }));
+        setErrors(prev => ({...prev, [field]: ""}));
       }
     };
 
@@ -110,9 +111,9 @@ export default function ShippingProtectionSettings() {
         priceSelect: prev.priceSelect.map((item, i) =>
           i === index
             ? {
-                ...item,
-                [field]: value,
-              }
+              ...item,
+              [field]: value,
+            }
             : item
         ),
       }));
@@ -122,16 +123,16 @@ export default function ShippingProtectionSettings() {
         tiersSelect: prev.tiersSelect.map((item, i) =>
           i === index
             ? {
-                ...item,
-                [field]: value,
-              }
+              ...item,
+              [field]: value,
+            }
             : item
         ),
       }));
     }
 
     if (errors[errorKey]) {
-      setErrors(prev => ({ ...prev, [errorKey]: "" }));
+      setErrors(prev => ({...prev, [errorKey]: ""}));
     }
   };
 
@@ -155,7 +156,7 @@ export default function ShippingProtectionSettings() {
 
       setPricingSettings(prev => ({
         ...prev,
-        priceSelect: [...prev.priceSelect, { min: newMin, max: "", price: "" }],
+        priceSelect: [...prev.priceSelect, {min: newMin, max: "", price: ""}],
       }));
     } else {
       if (pricingSettings.tiersSelect.length >= 5) {
@@ -175,7 +176,7 @@ export default function ShippingProtectionSettings() {
 
       setPricingSettings(prev => ({
         ...prev,
-        tiersSelect: [...prev.tiersSelect, { min: newMin, max: "", percentage: "" }],
+        tiersSelect: [...prev.tiersSelect, {min: newMin, max: "", percentage: ""}],
       }));
     }
   };
@@ -271,16 +272,17 @@ export default function ShippingProtectionSettings() {
     >
       <PageSaveBar dirty={dirty} onSave={saveSettings} onDiscard={discardChanges} />
       <BlockStack gap="400">
-        <Banner
+        {!hasEmbedInstalled && <Banner
           title="App embed is not enabled"
           tone="warning"
-          secondaryAction={{ onAction: handleEnableEmbed, content: "Enable embed" }}
+          secondaryAction={{onAction: handleEnableEmbed, content: "Enable embed"}}
         >
           <Text as="p">
-            Shipping Protection widget were published, but the app embed does not appear to be enabled. Please enable
+            Shipping Protection widget were published, but the app embed does not appear to be
+            enabled. Please enable
             that to display the widget on your storefront cart.
           </Text>
-        </Banner>
+        </Banner>}
 
         <Layout>
           <Layout.Section variant="oneHalf">
@@ -297,7 +299,7 @@ export default function ShippingProtectionSettings() {
                   widgetSettings={widgetSettings}
                   icons={productSettings.icons}
                   onWidgetSettingsChange={handleFieldChange(
-                    (value: any) => setWidgetSettings(prev => ({ ...prev, ...value })),
+                    (value: any) => setWidgetSettings(prev => ({...prev, ...value})),
                     "widgetSettings"
                   )}
                   onIconClick={handleIconClick}
@@ -308,7 +310,7 @@ export default function ShippingProtectionSettings() {
                   widgetSettings={widgetSettings}
                   errors={errors}
                   onFieldChange={handleFieldChange(
-                    (value: any) => setWidgetSettings(prev => ({ ...prev, ...value })),
+                    (value: any) => setWidgetSettings(prev => ({...prev, ...value})),
                     "content"
                   )}
                 />
@@ -318,7 +320,7 @@ export default function ShippingProtectionSettings() {
                   moneySymbol={moneySymbol}
                   errors={errors}
                   onSettingsChange={handleFieldChange(
-                    (value: any) => setPricingSettings(prev => ({ ...prev, ...value })),
+                    (value: any) => setPricingSettings(prev => ({...prev, ...value})),
                     "pricing"
                   )}
                   onPricingChange={handlePricingChange}
@@ -336,14 +338,17 @@ export default function ShippingProtectionSettings() {
                 <FulfillmentCard
                   fulfillmentSettings={fulfillmentSettings}
                   onFulfillmentTypeChange={handleFieldChange(
-                    (value: string) => setFulfillmentSettings(prev => ({ ...prev, fulfillmentRule: value })),
+                    (value: string) => setFulfillmentSettings(prev => ({
+                      ...prev,
+                      fulfillmentRule: value
+                    })),
                     "content"
                   )}
                 />
                 <CSSCard
                   widgetSettings={widgetSettings}
                   onFieldChange={handleFieldChange(
-                    (value: any) => setWidgetSettings(prev => ({ ...prev, ...value })),
+                    (value: any) => setWidgetSettings(prev => ({...prev, ...value})),
                     "css"
                   )}
                 />

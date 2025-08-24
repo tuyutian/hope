@@ -78,6 +78,7 @@ export function useCartSettings(): CartSettingsHook {
   });
   const [moneySymbol, setMoneySymbol] = useState("$");
   const [hasSubscribe, setHasSubscribe] = useState(false);
+  const [hasEmbedInstalled, setHasEmbedInstalled] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
@@ -172,8 +173,9 @@ export function useCartSettings(): CartSettingsHook {
     const res = await userService.getConfig();
     if (res.code !== 0 || !res.data) return;
 
-    const { money_symbol, has_subscribe } = res.data;
+    const { money_symbol, has_subscribe, has_embed_installed } = res.data;
     if (money_symbol) setMoneySymbol(money_symbol);
+    if (has_embed_installed) setHasEmbedInstalled(has_embed_installed);
     setHasSubscribe(has_subscribe);
   };
 
@@ -363,6 +365,7 @@ export function useCartSettings(): CartSettingsHook {
     fulfillmentSettings,
     moneySymbol,
     hasSubscribe,
+    hasEmbedInstalled,
     errors,
     isLoading,
     dirty,
